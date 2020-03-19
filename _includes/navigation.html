@@ -1,0 +1,9 @@
+<nav id="navbar">
+    {% assign ordered_pages = site.pages | sort:'order' %}
+
+    {% for page in ordered_pages %}
+    {% if page.order %}
+    <a href="#{{ page.title | downcase }}">{{ page.title }}</a>
+    {% endif %}
+    {% endfor %}
+</nav>

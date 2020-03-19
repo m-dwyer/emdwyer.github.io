@@ -1,0 +1,42 @@
+:root {
+    --accent-color: hsl(200,100%,70%);
+    --nav-font-color: hsl(0, 0%, 90%);
+    --main-font-color: hsl(0, 0%, 90%);
+}
+
+body {
+    color: var(--main-font-color);
+}
+
+main {
+    margin-top: 1.5rem;
+}
+
+h1 {
+    font-size: 6rem;
+}
+
+#navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    background: var(--accent-color);
+}
+  
+#navbar a {
+    text-decoration: none;
+    padding: 1.5rem;
+    color: var(--nav-font-color);
+}
+  
+.page-section {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
