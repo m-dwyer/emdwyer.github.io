@@ -4,6 +4,7 @@
     --nav-font-selected-color: hsl(0, 0%, 90%);
     --main-font-color: hsl(0, 0%, 90%);
     --page-section-background-color: hsl(0, 0%, 14%);
+    --post-background-color: hsl(0, 0%, 14%);
 }
 
 body {
@@ -57,4 +58,41 @@ h1 {
 
 .page-section:focus {
     outline: none;
+}
+
+.post {
+    background-color: var(--post-background-color);
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.article {
+    margin: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 1px 2px 1px rgba(0,0,0,0.4);
+    background-color: hsl(0, 0%, 12%);
+    text-align: justify;
+    font-family: 'Ubuntu', sans-serif;
+}
+
+.article header {
+    font-size: 2rem;
+}
+
+.grid-container {
+    display: grid;
+    width: 100%;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: stretch;
+}
+
+.grid-item {
+    @extend .article;
+    align-self: stretch;
 }

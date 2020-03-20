@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{page.title}}</title>
+        <link rel="stylesheet" href="/assets/styles.css">
+        <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <header>
+            {% include navigation.html %}
+        </header>
+        <main class="post">
+            <article class="article">
+                {{ content }}
+            </article>
+        </main>
+    </body>
+</html>
