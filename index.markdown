@@ -7,7 +7,7 @@ title: Home
 
 {% for page in ordered_pages %}
 {% if page.order %}
-<section class="page-section" id="{{ page.title | downcase }}">
+<section tabindex="0" class="page-section" id="{{ page.title | downcase }}">
 {{ page.content }}
 </section>
 {% endif %}
