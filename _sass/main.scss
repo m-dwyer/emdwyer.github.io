@@ -1,5 +1,5 @@
 :root {
-    --accent-color: hsl(200,100%,70%);
+    --accent-color: hsl(275,59%,47%);
     --nav-font-color: hsl(0, 0%, 90%);
     --main-font-color: hsl(0, 0%, 90%);
     --page-section-background-color: hsl(0, 0%, 14%);
@@ -15,7 +15,9 @@ html {
 }
 
 h1 {
-    font-size: 6rem;
+    font-size: 4rem;
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 600;
 }
 
 #navbar {
@@ -32,6 +34,8 @@ h1 {
     text-decoration: none;
     padding: 1.5rem;
     color: var(--nav-font-color);
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 400;
 }
   
 .page-section {
