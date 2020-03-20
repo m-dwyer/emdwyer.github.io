@@ -14,10 +14,6 @@ html {
     scroll-behavior: smooth;
 }
 
-main {
-    margin-top: 1.5rem;
-}
-
 h1 {
     font-size: 6rem;
 }
@@ -46,4 +42,5 @@ h1 {
     flex-direction: column;
     align-items: center;
     background-color: var(--page-section-background-color);
+    margin: 0;
 }
