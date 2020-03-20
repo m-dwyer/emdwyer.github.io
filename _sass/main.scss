@@ -44,3 +44,7 @@ h1 {
     background-color: var(--page-section-background-color);
     margin: 0;
 }
+
+.page-section:focus {
+    outline: none;
+}
