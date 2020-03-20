@@ -1,6 +1,7 @@
 :root {
     --accent-color: hsl(275,59%,47%);
-    --nav-font-color: hsl(0, 0%, 90%);
+    --nav-font-color: hsl(0, 0%, 70%);
+    --nav-font-selected-color: hsl(0, 0%, 90%);
     --main-font-color: hsl(0, 0%, 90%);
     --page-section-background-color: hsl(0, 0%, 14%);
 }
@@ -28,6 +29,7 @@ h1 {
     justify-content: flex-end;
     width: 100%;
     background: var(--accent-color);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.4);
 }
   
 #navbar a {
@@ -36,6 +38,10 @@ h1 {
     color: var(--nav-font-color);
     font-family: 'Ubuntu', sans-serif;
     font-weight: 400;
+}
+
+#navbar a:hover {
+    color: var(--nav-font-selected-color);
 }
   
 .page-section {
