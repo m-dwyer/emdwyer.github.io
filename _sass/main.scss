@@ -96,3 +96,8 @@ h1 {
     @extend .article;
     align-self: stretch;
 }
+
+.grid-container a {
+    color: inherit;
+    text-decoration: inherit;
+}
