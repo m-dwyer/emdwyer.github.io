@@ -2,10 +2,12 @@
     --accent-color: hsl(200,100%,70%);
     --nav-font-color: hsl(0, 0%, 90%);
     --main-font-color: hsl(0, 0%, 90%);
+    --page-section-background-color: hsl(0, 0%, 14%);
 }
 
 body {
     color: var(--main-font-color);
+    margin: 0;
 }
 
 html {
@@ -43,4 +45,5 @@ h1 {
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    background-color: var(--page-section-background-color);
 }
