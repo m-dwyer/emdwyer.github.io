@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Home
+permalink: /
 ---
 
 {% assign ordered_pages = site.pages | sort:'order' %}
