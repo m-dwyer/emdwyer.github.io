@@ -12,7 +12,7 @@ export default function Home({ data }) {
   const fgHighlightedColor = mainFontColor;
 
   const navItemStyle = css`
-    padding: 15px;
+    padding: 24px;
     text-decoration: none;
     color: ${fgColor};
     &:hover {
@@ -60,7 +60,9 @@ export default function Home({ data }) {
             top: 0;
             left: 0;
             margin: 0;
-            background-color: ${navBgColor}
+            background-color: ${navBgColor};
+            position: fixed;
+            width: 100%;
           `}
       >
         <div css={css`padding: 15px; color: ${fgColor}`}>
