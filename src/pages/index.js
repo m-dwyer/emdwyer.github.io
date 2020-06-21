@@ -5,13 +5,19 @@ import { css, Global } from "@emotion/core";
 import avatar from '../images/avatar.jpg';
 
 export default function Home({ data }) {
-  const bgColor = 'hsl(275,59%,47%)';
-  const fgColor = 'hsl(0, 0%, 90%)';
+  const navBgColor = 'hsl(275,59%,47%)';
+  const bgColor = 'hsl(0, 0%, 14%)';
+  const fgColor = 'hsl(0, 0%, 70%)';
+  const mainFontColor = 'hsl(0, 0%, 90%)'
+  const fgHighlightedColor = mainFontColor;
 
   const navItemStyle = css`
     padding: 15px;
     text-decoration: none;
-    color: ${fgColor}
+    color: ${fgColor};
+    &:hover {
+      color: ${fgHighlightedColor};
+    }
   `;
 
   return (
@@ -20,6 +26,29 @@ export default function Home({ data }) {
         styles={css`
           body {
             margin: 0;
+            background-color: ${bgColor};
+            color: ${mainFontColor}; 
+          }
+
+          @font-face {
+            font-family: 'Ubuntu';
+            src: url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
+          }
+
+          section {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+          }
+
+          h1 {
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: 600;
+            font-size: 4rem;
           }
         `}
       />
@@ -31,7 +60,7 @@ export default function Home({ data }) {
             top: 0;
             left: 0;
             margin: 0;
-            background-color: ${bgColor}
+            background-color: ${navBgColor}
           `}
       >
         <div css={css`padding: 15px; color: ${fgColor}`}>
@@ -46,6 +75,11 @@ export default function Home({ data }) {
           <Link to="/blog" css={navItemStyle}>Blog</Link>
         </nav>
       </header>
+      <main>
+        <section>
+          <h1>Hi, I'm mdwyer</h1>
+        </section>
+      </main>
     </div>
 
   );
