@@ -8,3 +8,12 @@ module.exports = {
   /* Your site config here */
   plugins: [],
 }
+module.exports = {
+  siteMetadata: {
+    title: 'mdwyer.io',
+    description: 'mdwyer\'s personal site',
+  },
+  plugins: [
+    'gatsby-plugin-emotion'
+  ]
+};
