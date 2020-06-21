@@ -1,8 +1,26 @@
 import React from "react";
-import { Link } from "gatsby";
+import { Link, useStaticQuery, graphql } from "gatsby";
 import { css, Global } from "@emotion/core";
 
 export default function Layout({ children }) {
+    const data = useStaticQuery(
+        graphql`
+          query {
+            allFile(filter: {internal: {mediaType: {eq: "text/markdown"}}, sourceInstanceName: {eq: "pages"}}) {
+              nodes {
+                childMarkdownRemark {
+                  excerpt
+                  frontmatter {
+                    title
+                  }
+                  html
+                }
+              }
+            }
+          }
+        `
+    );
+    
     const navBgColor = 'hsl(275,59%,47%)';
     const bgColor = 'hsl(0, 0%, 14%)';
     const fgColor = 'hsl(0, 0%, 70%)';
@@ -70,13 +88,19 @@ export default function Layout({ children }) {
             display: flex;
             justify-content: flex-end;
           `}>
-            <Link to="/about" css={navItemStyle}>About</Link>
-            <Link to="/contact" css={navItemStyle}>Contact</Link>
-            <Link to="/blog" css={navItemStyle}>Blog</Link>
+            { 
+              data.allFile.nodes.map(({childMarkdownRemark}) => {
+                console.log(childMarkdownRemark.frontmatter.title);
+                return <Link
+                          to="#"
+                          css={navItemStyle}
+                        >{childMarkdownRemark.frontmatter.title}</Link>
+              })
+            }
           </nav>
         </header>
         <main>
-            { children }
+            {children}
         </main>
       </div>
     );

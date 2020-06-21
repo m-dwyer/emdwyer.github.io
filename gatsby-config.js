@@ -14,6 +14,14 @@ module.exports = {
     description: 'mdwyer\'s personal site',
   },
   plugins: [
-    'gatsby-plugin-emotion'
+    'gatsby-plugin-emotion',
+    {
+      resolve: 'gatsby-source-filesystem',
+      options: {
+        name: 'pages',
+        path: `${__dirname}/content/pages/`
+      }
+    },
+    'gatsby-transformer-remark'
   ]
 };
