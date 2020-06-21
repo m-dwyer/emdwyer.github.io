@@ -1,88 +1,12 @@
 import React from "react";
-import { Link } from "gatsby";
-import { css, Global } from "@emotion/core";
-
-import avatar from '../images/avatar.jpg';
+import Layout from "../components/layout";
 
 export default function Home({ data }) {
-  const navBgColor = 'hsl(275,59%,47%)';
-  const bgColor = 'hsl(0, 0%, 14%)';
-  const fgColor = 'hsl(0, 0%, 70%)';
-  const mainFontColor = 'hsl(0, 0%, 90%)'
-  const fgHighlightedColor = mainFontColor;
-
-  const navItemStyle = css`
-    padding: 24px;
-    text-decoration: none;
-    color: ${fgColor};
-    &:hover {
-      color: ${fgHighlightedColor};
-    }
-  `;
-
   return (
-    <div>
-      <Global
-        styles={css`
-          body {
-            margin: 0;
-            background-color: ${bgColor};
-            color: ${mainFontColor}; 
-          }
-
-          @font-face {
-            font-family: 'Ubuntu';
-            src: url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
-          }
-
-          section {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100vh;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-          }
-
-          h1 {
-            font-family: 'Ubuntu', sans-serif;
-            font-weight: 600;
-            font-size: 4rem;
-          }
-        `}
-      />
-      <header
-        css={css`
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            top: 0;
-            left: 0;
-            margin: 0;
-            background-color: ${navBgColor};
-            position: fixed;
-            width: 100%;
-          `}
-      >
-        <div css={css`padding: 15px; color: ${fgColor}`}>
-          mdwyer
-        </div>
-        <nav css={css`
-          display: flex;
-          justify-content: flex-end;
-        `}>
-          <Link to="/about" css={navItemStyle}>About</Link>
-          <Link to="/contact" css={navItemStyle}>Contact</Link>
-          <Link to="/blog" css={navItemStyle}>Blog</Link>
-        </nav>
-      </header>
-      <main>
-        <section>
-          <h1>Hi, I'm mdwyer</h1>
-        </section>
-      </main>
-    </div>
-
+    <Layout>
+      <section>
+        <h1>Hi, I'm mdwyer</h1>
+      </section>
+    </Layout>    
   );
 }
