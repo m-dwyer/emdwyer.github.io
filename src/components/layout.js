@@ -91,7 +91,8 @@ export default function Layout({ children }) {
             display: flex;
             justify-content: flex-end;
           `}>
-            { 
+            <Link to="/" css={navItemStyle}>Home</Link>
+            {
               data.allFile.nodes.map(({childMarkdownRemark}) => {
                 return <Link
                           to={childMarkdownRemark.fields.slug}
