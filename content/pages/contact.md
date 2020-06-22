@@ -2,6 +2,4 @@
 title: Contact
 ---
 
-# Contact
-
-Blahblah
+Contact details here

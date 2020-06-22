@@ -14,6 +14,9 @@ export default function Layout({ children }) {
                     title
                   }
                   html
+                  fields {
+                    slug
+                  }
                 }
               }
             }
@@ -90,9 +93,8 @@ export default function Layout({ children }) {
           `}>
             { 
               data.allFile.nodes.map(({childMarkdownRemark}) => {
-                console.log(childMarkdownRemark.frontmatter.title);
                 return <Link
-                          to="#"
+                          to={childMarkdownRemark.fields.slug}
                           css={navItemStyle}
                         >{childMarkdownRemark.frontmatter.title}</Link>
               })
