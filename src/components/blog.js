@@ -17,7 +17,7 @@ export default function Blog(props) {
           <article key={p.fields.slug}>
             <header>
               <h3>
-                <Link to="" css={css`
+                <Link to={p.fields.slug} css={css`
                   color: inherit;
                   text-decoration: none;
                 `}>
