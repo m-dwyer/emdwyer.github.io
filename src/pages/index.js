@@ -2,6 +2,7 @@ import React from "react";
 import { css } from "@emotion/core";
 import Layout from "../components/layout";
 import About from "../components/about";
+import Posts from "../components/posts";
 import { FaArrowDown } from "react-icons/fa";
 
 class Index extends React.Component {
@@ -41,6 +42,9 @@ class Index extends React.Component {
       </section>
       <section ref={this.separator}>
         <About />
+      </section>
+      <section>
+        <Posts />
       </section>
     </Layout>  
     );
