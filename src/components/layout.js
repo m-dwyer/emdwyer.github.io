@@ -54,7 +54,7 @@ export default function Layout({ children }) {
               src: url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
             }
   
-            section {
+            .index-section {
               display: flex;
               flex-direction: column;
               width: 100%;
