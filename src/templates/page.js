@@ -4,9 +4,10 @@ import { graphql } from "gatsby";
 
 export default function Page({ data }) {
   const content = data.markdownRemark;
+  console.log("content: ", content);
   return (
     <Layout>
-      <section>
+      <section className="index-section">
         <h1>{content.frontmatter.title}</h1>
         <div dangerouslySetInnerHTML={{ __html: content.html }} />
       </section>
