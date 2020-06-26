@@ -15,23 +15,23 @@ export default function Blog(props) {
         console.log("slug!: ", p.fields.slug);
         return (
           <article key={p.fields.slug}>
-            <header>
-              <h3>
-                <Link to={p.fields.slug} css={css`
+            <Link to={p.fields.slug} css={css`
                   color: inherit;
                   text-decoration: none;
                 `}>
-                  {p.frontmatter.title}
-                </Link>
-              </h3>
-            </header>
-            <section>
-              <p
-                dangerouslySetInnerHTML={{
-                  __html: p.frontmatter.description || p.excerpt
-                }}
-               />
-            </section>
+              <header>
+                <h3>
+                    {p.frontmatter.title}
+                </h3>
+              </header>
+              <section>
+                <p
+                  dangerouslySetInnerHTML={{
+                    __html: p.frontmatter.description || p.excerpt
+                  }}
+                />
+              </section>
+            </Link>
           </article>
         );
       })}
