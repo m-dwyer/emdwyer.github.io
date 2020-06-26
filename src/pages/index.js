@@ -67,7 +67,7 @@ export default Index;
 
 export const query = graphql`
   query {
-     posts: allFile(filter: {sourceInstanceName: {eq: "posts"}}) {
+     posts: allFile(filter: {sourceInstanceName: {eq: "posts"}}, limit: 3) {
       nodes {
         childMarkdownRemark {
           id
