@@ -12,7 +12,6 @@ export default function Blog(props) {
         Posts
       </h1>
       {props.posts.map(({childMarkdownRemark: p}) => {
-        console.log("slug!: ", p.fields.slug);
         return (
           <article key={p.fields.slug}>
             <Link to={p.fields.slug} css={css`
@@ -21,8 +20,11 @@ export default function Blog(props) {
                 `}>
               <header>
                 <h3>
-                    {p.frontmatter.title}
+                  {p.frontmatter.title}
                 </h3>
+                <small>
+                  {p.frontmatter.date}
+                </small>
               </header>
               <section>
                 <p

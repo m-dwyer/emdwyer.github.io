@@ -67,13 +67,14 @@ export default Index;
 
 export const query = graphql`
   query {
-     posts: allFile(filter: {sourceInstanceName: {eq: "posts"}}, limit: 3) {
+     posts: allFile(filter: {sourceInstanceName: {eq: "posts"}}, limit: 3,  sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}) {
       nodes {
         childMarkdownRemark {
           id
           excerpt
           frontmatter {
             title
+            date(formatString: "dddd, MMMM Do YYYY")
           }
           fields {
             slug
