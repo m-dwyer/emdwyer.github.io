@@ -19,7 +19,7 @@ export default function About() {
           flex: 1 1 auto;
         `}>
           <h2>Interests</h2>
-          <p>
+          <div>
             <ul
               css={css`
                 list-style: none;
@@ -43,14 +43,14 @@ export default function About() {
               </li>
               <li>LGBTIQA+ Rights and Causes</li>
             </ul>
-          </p>
+          </div>
         </div>
         <div css={css`
           flex: 1 1 auto;
           max-width: 50%;
         `}>
           <h2>Background</h2>
-          <p>
+          <div>
             <ul
               css={css`
                 list-style: none;
@@ -64,7 +64,7 @@ export default function About() {
               <li>Experience in Ruby, C#, .NET, Bash</li>
               <li>Currently learning a new stack with HTML5, CSS3, React, Node - follow my adventures!</li>
             </ul>
-          </p>
+          </div>
         </div>
       </div>
     </div>
