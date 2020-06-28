@@ -63,7 +63,12 @@ export default function Layout({ children }) {
               align-items: center;
               margin: 0;
             }
-  
+
+            .link {
+              color: inherit;
+              text-decoration: none;
+            }
+
             h1 {
               font-family: 'Ubuntu', sans-serif;
               font-weight: 600;

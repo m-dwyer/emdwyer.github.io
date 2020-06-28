@@ -12,6 +12,9 @@ module.exports = {
   siteMetadata: {
     title: 'mdwyer.io',
     description: 'mdwyer\'s personal site',
+    contact: {
+      github: 'https://github.com/m-dwyer'
+    }
   },
   plugins: [
     'gatsby-plugin-emotion',

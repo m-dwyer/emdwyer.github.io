@@ -2,6 +2,7 @@ import React from "react";
 import { css } from "@emotion/core";
 import Layout from "../components/layout";
 import About from "../components/about";
+import Contact from "../components/contact"
 import Blog from "../components/blog";
 import { FaArrowDown } from "react-icons/fa";
 import { graphql } from "gatsby";
@@ -55,6 +56,9 @@ class Index extends React.Component {
       </section>
       <section ref={this.separator} className="index-section">
         <About />
+      </section>
+      <section className="index-section">
+        <Contact />
       </section>
       <section className="index-section">
         <Blog posts={posts} />
