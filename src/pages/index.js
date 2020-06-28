@@ -4,6 +4,7 @@ import Layout from "../components/layout";
 import About from "../components/about";
 import Blog from "../components/blog";
 import { FaArrowDown } from "react-icons/fa";
+import { graphql } from "gatsby";
 
 class Index extends React.Component {
   constructor(props) {
