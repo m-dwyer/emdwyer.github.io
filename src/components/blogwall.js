@@ -1,7 +1,7 @@
 import React from "react";
 import { css } from "@emotion/core";
 import { Link } from "gatsby";
-import { FaCalendar, FaArrowRight } from "react-icons/fa";
+import { FaCalendar } from "react-icons/fa";
 
 export default function BlogWall(props) {
   return (
