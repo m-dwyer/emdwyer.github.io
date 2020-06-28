@@ -8,10 +8,9 @@ export default function BlogWall(props) {
     <React.Fragment>
       {props.posts.map(({childMarkdownRemark: p}) => {
         return (
-          <React.Fragment>
+          <React.Fragment key={p.fields.slug}>
             <article
               className="blog-preview"
-              key={p.fields.slug}
               css={css`
                 display: flex;
                 justify-content: space-between;

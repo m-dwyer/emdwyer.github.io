@@ -100,6 +100,7 @@ export default function Layout({ children }) {
             {
               data.allFile.nodes.map(({childMarkdownRemark}) => {
                 return <Link
+                          key={childMarkdownRemark.fields.slug}
                           to={childMarkdownRemark.fields.slug}
                           css={navItemStyle}
                         >{childMarkdownRemark.frontmatter.title}</Link>
