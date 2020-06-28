@@ -23,6 +23,16 @@ class Index extends React.Component {
   render() {
     const {
       data: {
+        site: {
+          siteMetadata: {
+            contact: contacts
+          }
+        }
+      }
+    } = this.props;
+
+    const {
+      data: {
         posts: {
           nodes: [
             ...posts
@@ -30,8 +40,6 @@ class Index extends React.Component {
         }
       }
     } = this.props;
-    
-    console.log("my posts: ", posts);
 
     return (
       <Layout>
@@ -58,7 +66,7 @@ class Index extends React.Component {
         <About />
       </section>
       <section className="index-section">
-        <Contact />
+        <Contact contacts={contacts} />
       </section>
       <section className="index-section">
         <Blog posts={posts} />
@@ -72,7 +80,7 @@ export default Index;
 
 export const query = graphql`
   query {
-     posts: allFile(filter: {sourceInstanceName: {eq: "posts"}}, limit: 3,  sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}) {
+    posts: allFile(filter: {sourceInstanceName: {eq: "posts"}}, limit: 3,  sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}) {
       nodes {
         childMarkdownRemark {
           id
@@ -84,6 +92,14 @@ export const query = graphql`
           fields {
             slug
           }
+        }
+      }
+    }
+    site {
+      siteMetadata {
+        contact {
+          github
+          strava
         }
       }
     }

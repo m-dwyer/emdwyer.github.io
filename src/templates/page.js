@@ -4,7 +4,6 @@ import { graphql } from "gatsby";
 
 export default function Page({ data }) {
   const content = data.markdownRemark;
-  console.log("content: ", content);
   return (
     <Layout>
       <section className="index-section">

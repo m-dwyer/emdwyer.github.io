@@ -1,29 +1,10 @@
 import React from "react";
 import { css } from "@emotion/core";
 import { FaGithub, FaTwitter, FaStrava } from "react-icons/fa";
-import { useStaticQuery, graphql, Link } from "gatsby";
+import { Link } from "gatsby";
 
 export default function Contact(props) {
-  const {
-    site: {
-      siteMetadata: {
-        contact: contacts
-      }
-    }
-  } = useStaticQuery(
-    graphql`
-      query {
-        site {
-          siteMetadata {
-            contact {
-              github
-              strava
-            }
-          }
-        }
-      }
-    `
-  );
+  const contacts = props.contacts;
 
   return (
     <div>
