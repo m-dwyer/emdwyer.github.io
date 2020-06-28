@@ -4,7 +4,7 @@ const path = require('path');
 exports.onCreateNode = ({ node, getNode, actions }) => {
   if (node.internal.type == 'MarkdownRemark') {
     const sourcePaths = {
-      posts: 'posts'
+      posts: '/posts'
     };
 
     const fileNode = getNode(node.parent);
