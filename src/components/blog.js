@@ -1,7 +1,8 @@
 import React from "react";
 import { css } from "@emotion/core";
 import { Link } from "gatsby";
-import { FaCalendar, FaArrowRight } from "react-icons/fa";
+import { FaArrowRight } from "react-icons/fa";
+import BlogWall from "../components/blogwall";
 
 export default function Blog(props) {
   return (
@@ -12,42 +13,7 @@ export default function Blog(props) {
       `}>
         Posts
       </h1>
-      {props.posts.map(({childMarkdownRemark: p}) => {
-        return (
-          <React.Fragment>
-            <article
-              className="blog-preview"
-              key={p.fields.slug}
-              css={css`
-                display: flex;
-                justify-content: space-between;
-                width: 60vw;
-              `}>
-              <Link to={p.fields.slug} css={css`
-                    color: inherit;
-                    text-decoration: none;
-                  `}>
-                <header>
-                  <h3>
-                    {p.frontmatter.title}
-                  </h3>
-                  <small>
-                    <FaCalendar />  {p.frontmatter.date}
-                  </small>
-                </header>
-                <section>
-                  <p
-                    dangerouslySetInnerHTML={{
-                      __html: p.frontmatter.description || p.excerpt
-                    }}
-                  />
-                </section>
-              </Link>
-            </article>
-            <hr />
-          </React.Fragment>
-        );
-      })}
+      <BlogWall posts={props.posts} />
       <div>
         <Link className="link" to="/posts/">
           <span>More</span>
