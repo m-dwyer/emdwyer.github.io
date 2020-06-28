@@ -1,7 +1,6 @@
 import React from "react";
 import { css } from "@emotion/core";
 import { FaGithub, FaTwitter, FaStrava } from "react-icons/fa";
-import { Link } from "gatsby";
 
 export default function Contact(props) {
   const contacts = props.contacts;
@@ -19,9 +18,10 @@ export default function Contact(props) {
         justify-content: center;
         width: 90vw;
       `}>
-        {contacts['github'] && <Link to={contacts['github']} className="link" target="_blank"><FaGithub size={60} /></Link>}
-        {contacts['twitter'] && <Link to={contacts['twitter']} className="link" target="_blank"><FaTwitter size={60} /></Link>}
-        {contacts['strava'] && <Link to={contacts['strava']} className="link" target="_blank"><FaStrava size={60} /></Link>}
+        
+        {contacts['github'] && <a href={contacts['github']} className="link" rel="noreferrer" target="_blank"><FaGithub size={60} /></a>}
+        {contacts['twitter'] && <a href={contacts['twitter']} className="link" rel="noreferrer" target="_blank"><FaTwitter size={60} /></a>}
+        {contacts['strava'] && <a href={contacts['strava']} className="link" rel="noreferrer" target="_blank"><FaStrava size={60} /></a>}
       </div>
     </div>
   );
