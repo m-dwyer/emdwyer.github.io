@@ -1,6 +1,6 @@
 import React from "react";
 import { css } from "@emotion/core";
-import { FaGithub, FaTwitter } from "react-icons/fa";
+import { FaGithub, FaTwitter, FaStrava } from "react-icons/fa";
 import { useStaticQuery, graphql, Link } from "gatsby";
 
 export default function Contact(props) {
@@ -17,6 +17,7 @@ export default function Contact(props) {
           siteMetadata {
             contact {
               github
+              strava
             }
           }
         }
@@ -39,6 +40,7 @@ export default function Contact(props) {
       `}>
         {contacts['github'] && <Link to={contacts['github']} className="link" target="_blank"><FaGithub size={60} /></Link>}
         {contacts['twitter'] && <Link to={contacts['twitter']} className="link" target="_blank"><FaTwitter size={60} /></Link>}
+        {contacts['strava'] && <Link to={contacts['strava']} className="link" target="_blank"><FaStrava size={60} /></Link>}
       </div>
     </div>
   );

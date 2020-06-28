@@ -13,7 +13,8 @@ module.exports = {
     title: 'mdwyer.io',
     description: 'mdwyer\'s personal site',
     contact: {
-      github: 'https://github.com/m-dwyer'
+      github: 'https://github.com/m-dwyer',
+      strava: 'https://www.strava.com/athletes/thatmd'
     }
   },
   plugins: [
