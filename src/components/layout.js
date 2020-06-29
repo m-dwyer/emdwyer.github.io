@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useStaticQuery, graphql } from "gatsby";
+import Img from "gatsby-image";
 import { css, Global } from "@emotion/core";
 
 export default function Layout({ children }) {
@@ -17,6 +18,17 @@ export default function Layout({ children }) {
                   fields {
                     slug
                   }
+                }
+              }
+            }
+            file(relativePath: {eq: "icon.png"}, sourceInstanceName: {eq: "images"}) {
+              childImageSharp {
+                fixed(width: 35, height: 35) {
+                  base64
+                  width
+                  height
+                  src
+                  srcSet
                 }
               }
             }
@@ -89,8 +101,23 @@ export default function Layout({ children }) {
               width: 100%;
             `}
         >
-          <div css={css`padding: 15px; color: ${fgColor}`}>
-            mdwyer
+          <div css={css`
+            padding: 10px;
+            color: ${fgColor};
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          `}>
+            <Img
+              fixed={data.file.childImageSharp.fixed}
+              alt="Logo"
+              css={css`
+                border-radius: 50%;
+              `}
+            />
+            <div css={css`
+              margin: 0 15px;
+            `}>mdwyer</div>
           </div>
           <nav css={css`
             display: flex;
