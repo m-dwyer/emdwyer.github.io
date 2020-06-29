@@ -33,6 +33,18 @@ module.exports = {
         path: `${__dirname}/content/posts`
       }
     },
-    'gatsby-transformer-remark'
+    'gatsby-transformer-remark',
+    {
+      resolve: 'gatsby-plugin-manifest',
+      options: {
+        name: 'mdwyerio',
+        short_name: 'mdwyerio',
+        start_url: '/',
+        background_color: '#323232',
+        theme_color: '#cb4ec7',
+        display: 'standalone',
+        icon: 'src/images/icon.png'
+      }
+    }
   ]
 };
