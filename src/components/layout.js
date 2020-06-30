@@ -122,10 +122,16 @@ export default function Layout({ children }) {
           `}>
             <CrossfadeImage>
               <div className="cf-bg">
-                <Img fixed={data.avatar.childImageSharp.fixed} />
+                <Img
+                  fixed={data.avatar.childImageSharp.fixed}
+                  css={css`border-radius: 50%;`}
+                />
               </div>
               <div className="cf-fg">
-                <Img fixed={data.logo.childImageSharp.fixed} />
+                <Img
+                  fixed={data.logo.childImageSharp.fixed}
+                  css={css`border-radius: 50%;`}
+                />
               </div>
             </CrossfadeImage>
             <div css={css`
