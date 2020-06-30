@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useStaticQuery, graphql } from "gatsby";
 import Img from "gatsby-image";
 import { css, Global } from "@emotion/core";
-import CrossfadeImage from "./crossfadeimage";
+import Crossfade from "./crossfade";
 
 export default function Layout({ children }) {
     const data = useStaticQuery(
@@ -62,6 +62,18 @@ export default function Layout({ children }) {
         color: ${fgHighlightedColor};
       }
     `;
+
+    const backgroundLogo =
+      <Img
+        fixed={data.avatar.childImageSharp.fixed}
+        css={css`border-radius: 50%;`}
+      />;
+
+    const foregroundLogo =
+      <Img
+        fixed={data.logo.childImageSharp.fixed}
+        css={css`border-radius: 50%;`}
+      />;
   
     return (
         <div>
@@ -120,20 +132,10 @@ export default function Layout({ children }) {
             justify-content: center;
             align-items: center;
           `}>
-            <CrossfadeImage>
-              <div className="cf-bg">
-                <Img
-                  fixed={data.avatar.childImageSharp.fixed}
-                  css={css`border-radius: 50%;`}
-                />
-              </div>
-              <div className="cf-fg">
-                <Img
-                  fixed={data.logo.childImageSharp.fixed}
-                  css={css`border-radius: 50%;`}
-                />
-              </div>
-            </CrossfadeImage>
+            <Crossfade
+              background={backgroundLogo}
+              foreground={foregroundLogo}
+            />
             <div css={css`
               margin: 0 15px;
             `}>mdwyer</div>

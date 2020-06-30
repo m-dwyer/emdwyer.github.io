@@ -1,7 +1,7 @@
 import React from "react";
 import { css } from "@emotion/core";
 
-export default function CrossfadeImage({children, ...props}) {
+export default function Crossfade({background, foreground, ...props}) {
   return (
     <div css={css`
       display: flex;
@@ -19,17 +19,22 @@ export default function CrossfadeImage({children, ...props}) {
         }
       }
 
-      .cf-fg {
+      .crossfade-fg {
         position: absolute;
       }
 
-      .cf-fg:hover {
+      .crossfade-fg:hover {
         animation-name: crossfade;
         animation-duration: 1s;
         animation-fill-mode: forwards;
       }
     `} {...props}>
-      {children}
+      <div class="crossfade-bg">
+        {background}
+      </div>
+      <div class="crossfade-fg">
+        {foreground}
+      </div>
     </div>
   );
 }
