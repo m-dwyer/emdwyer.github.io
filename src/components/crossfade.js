@@ -29,10 +29,10 @@ export default function Crossfade({background, foreground, ...props}) {
         animation-fill-mode: forwards;
       }
     `} {...props}>
-      <div class="crossfade-bg">
+      <div className="crossfade-bg">
         {background}
       </div>
-      <div class="crossfade-fg">
+      <div className="crossfade-fg">
         {foreground}
       </div>
     </div>
