@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useStaticQuery, graphql } from "gatsby";
 import Img from "gatsby-image";
 import { css, Global } from "@emotion/core";
+import CrossfadeImage from "./crossfadeimage";
 
 export default function Layout({ children }) {
     const data = useStaticQuery(
@@ -18,10 +19,21 @@ export default function Layout({ children }) {
                   fields {
                     slug
                   }
+                } 
+              }
+            }
+            logo: file(relativePath: {eq: "icon.png"}, sourceInstanceName: {eq: "images"}) {
+              childImageSharp {
+                fixed(width: 35, height: 35) {
+                  base64
+                  width
+                  height
+                  src
+                  srcSet
                 }
               }
             }
-            file(relativePath: {eq: "icon.png"}, sourceInstanceName: {eq: "images"}) {
+            avatar: file(relativePath: {eq: "avatar.jpg"}, sourceInstanceName: {eq: "images"}) {
               childImageSharp {
                 fixed(width: 35, height: 35) {
                   base64
@@ -108,13 +120,14 @@ export default function Layout({ children }) {
             justify-content: center;
             align-items: center;
           `}>
-            <Img
-              fixed={data.file.childImageSharp.fixed}
-              alt="Logo"
-              css={css`
-                border-radius: 50%;
-              `}
-            />
+            <CrossfadeImage>
+              <div className="cf-bg">
+                <Img fixed={data.avatar.childImageSharp.fixed} />
+              </div>
+              <div className="cf-fg">
+                <Img fixed={data.logo.childImageSharp.fixed} />
+              </div>
+            </CrossfadeImage>
             <div css={css`
               margin: 0 15px;
             `}>mdwyer</div>
