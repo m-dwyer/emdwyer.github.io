@@ -21,8 +21,13 @@ export default function Posts({data}) {
 }
 
 export const query = graphql`
-  query {
-    posts: allFile(filter: {sourceInstanceName: {eq: "posts"}}, limit: 10,  sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}) {
+  query($skip: Int = 0, $limit: Int = 3) {
+    posts: allFile(
+      filter: {sourceInstanceName: {eq: "posts"}},
+      sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC},
+      limit: $limit,
+      skip: $skip
+    ) {
       nodes {
         childMarkdownRemark {
           id
