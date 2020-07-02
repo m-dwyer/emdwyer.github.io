@@ -3,10 +3,10 @@ import { css } from "@emotion/core";
 import { Link } from "gatsby";
 import { FaCalendar } from "react-icons/fa";
 
-export default function BlogWall(props) {
+export default function BlogWall({ posts }) {
   return (
     <React.Fragment>
-      {props.posts.map(({childMarkdownRemark: p}) => {
+      {posts.map(({childMarkdownRemark: p}) => {
         return (
           <React.Fragment key={p.fields.slug}>
             <article

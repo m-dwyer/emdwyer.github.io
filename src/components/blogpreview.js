@@ -1,10 +1,33 @@
 import React from "react";
 import { css } from "@emotion/core";
-import { Link } from "gatsby";
+import { Link, useStaticQuery } from "gatsby";
 import { FaArrowRight } from "react-icons/fa";
 import BlogWall from "./blogwall";
 
-export default function BlogPreview(props) {
+export default function BlogPreview() {
+  const data = 
+    useStaticQuery(
+      graphql`
+        query {
+          posts: allFile(filter: {sourceInstanceName: {eq: "blog"}}, limit: 3,  sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}) {
+            nodes {
+              childMarkdownRemark {
+                id
+                excerpt
+                frontmatter {
+                  title
+                  date(formatString: "dddd, MMMM Do YYYY")
+                }
+                fields {
+                  slug
+                }
+              }
+            }
+          }
+        }
+      `
+    );
+
   return (
     <div>
       <h1 css={css`
@@ -13,7 +36,7 @@ export default function BlogPreview(props) {
       `}>
         Posts
       </h1>
-      <BlogWall posts={props.posts} />
+      <BlogWall posts={data.posts.nodes} />
       <div>
         <Link className="link" to="/blog/">
           <span>More</span>
