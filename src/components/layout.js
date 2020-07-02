@@ -82,7 +82,8 @@ export default function Layout({ children }) {
             body {
               margin: 0;
               background-color: ${bgColor};
-              color: ${mainFontColor}; 
+              color: ${mainFontColor};
+              padding-top: 1vh;
             }
   
             @font-face {
@@ -93,11 +94,11 @@ export default function Layout({ children }) {
             .index-section {
               display: flex;
               flex-direction: column;
-              width: 100%;
+              width: 80vw;
               height: 100vh;
               justify-content: center;
               align-items: center;
-              margin: 0;
+              margin: 0 auto;
             }
 
             .link {
@@ -123,6 +124,7 @@ export default function Layout({ children }) {
               background-color: ${navBgColor};
               position: fixed;
               width: 100%;
+              max-height: 20vh;
             `}
         >
           <div css={css`

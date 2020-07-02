@@ -1,4 +1,5 @@
 const { createFilePath } = require('gatsby-source-filesystem');
+const { paginate } = require('gatsby-awesome-pagination');
 const path = require('path');
 
 exports.onCreateNode = ({ node, getNode, actions }) => {
@@ -36,13 +37,11 @@ exports.createPages = async({ graphql, actions }) => {
       }    
     `);
 
-    result.data.allMarkdownRemark.edges.forEach(({ node }) => {
-      createPage({
-        path: node.fields.slug,
-        component: path.resolve('./src/templates/page.js'),
-        context: {
-          slug: node.fields.slug
-        }
-      });
+    paginate({
+      createPage,
+      items: result.data.allMarkdownRemark.edges,
+      itemsPerPage: 5,
+      pathPrefix: '/posts',
+      component: path.resolve('./src/templates/posts.js')
     });
 };

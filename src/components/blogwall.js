@@ -14,7 +14,6 @@ export default function BlogWall(props) {
               css={css`
                 display: flex;
                 justify-content: space-between;
-                width: 60vw;
               `}>
               <Link to={p.fields.slug} css={css`
                     color: inherit;
