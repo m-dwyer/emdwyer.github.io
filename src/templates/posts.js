@@ -30,12 +30,13 @@ export default function Posts({data, pageContext}) {
               <Link className="link" to={pageContext.nextPagePath} rel="next">Next</Link>
               </span>
             ) 
-            }
-            {pageContext.previousPagePath !== "" && (
+          }
+          {pageContext.previousPagePath !== "" && (
               <span>
                 <Link className="link" to={pageContext.previousPagePath} rel="prev">Previous</Link>
               </span>
-            )}
+            )
+          }
           </div>
           <hr />
           <BlogWall posts={posts} />
