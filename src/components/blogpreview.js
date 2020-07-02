@@ -2,9 +2,9 @@ import React from "react";
 import { css } from "@emotion/core";
 import { Link } from "gatsby";
 import { FaArrowRight } from "react-icons/fa";
-import BlogWall from "../components/blogwall";
+import BlogWall from "./blogwall";
 
-export default function Blog(props) {
+export default function BlogPreview(props) {
   return (
     <div>
       <h1 css={css`
@@ -15,7 +15,7 @@ export default function Blog(props) {
       </h1>
       <BlogWall posts={props.posts} />
       <div>
-        <Link className="link" to="/posts/">
+        <Link className="link" to="/blog/">
           <span>More</span>
           <button
                 css={css`

@@ -3,7 +3,7 @@ import { css } from "@emotion/core";
 import Layout from "../components/layout";
 import About from "../components/about";
 import Contact from "../components/contact"
-import Blog from "../components/blog";
+import BlogPreview from "../components/blogpreview";
 import { FaArrowDown } from "react-icons/fa";
 import { graphql } from "gatsby";
 
@@ -69,7 +69,7 @@ class Index extends React.Component {
         <Contact contacts={contacts} />
       </section>
       <section className="index-section">
-        <Blog posts={posts} />
+        <BlogPreview posts={posts} />
       </section>
     </Layout>  
     );
@@ -80,7 +80,7 @@ export default Index;
 
 export const query = graphql`
   query {
-    posts: allFile(filter: {sourceInstanceName: {eq: "posts"}}, limit: 3,  sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}) {
+    posts: allFile(filter: {sourceInstanceName: {eq: "blog"}}, limit: 3,  sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}) {
       nodes {
         childMarkdownRemark {
           id

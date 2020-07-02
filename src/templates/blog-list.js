@@ -14,8 +14,6 @@ export default function Posts({data, pageContext}) {
     }
   } =  data;
 
-  console.log("pageContext: ", pageContext);
-
   return (
     <Layout>
       <section className="index-section">
@@ -35,7 +33,7 @@ export default function Posts({data, pageContext}) {
 export const query = graphql`
   query($skip: Int = 0, $limit: Int = 3) {
     posts: allFile(
-      filter: {sourceInstanceName: {eq: "posts"}},
+      filter: {sourceInstanceName: {eq: "blog"}},
       sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC},
       limit: $limit,
       skip: $skip

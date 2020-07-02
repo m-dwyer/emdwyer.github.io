@@ -5,7 +5,7 @@ const path = require('path');
 exports.onCreateNode = ({ node, getNode, actions }) => {
   if (node.internal.type == 'MarkdownRemark') {
     const sourcePaths = {
-      posts: '/posts'
+      blog: '/blog'
     };
 
     const fileNode = getNode(node.parent);
@@ -25,7 +25,7 @@ exports.createPages = async({ graphql, actions }) => {
 
     const result = await graphql(`
       query {
-        allMarkdownRemark {
+        posts: allMarkdownRemark {
           edges {
             node {
               fields {
@@ -37,11 +37,21 @@ exports.createPages = async({ graphql, actions }) => {
       }    
     `);
 
+    result.data.posts.edges.forEach(({ node }) => {
+      createPage({
+        path: node.fields.slug,
+        component: path.resolve('./src/templates/page.js'),
+        context: {
+          slug: node.fields.slug
+        }
+      });
+    });
+
     paginate({
       createPage,
-      items: result.data.allMarkdownRemark.edges,
+      items: result.data.posts.edges,
       itemsPerPage: 5,
-      pathPrefix: '/posts',
-      component: path.resolve('./src/templates/posts.js')
+      pathPrefix: '/blog',
+      component: path.resolve('./src/templates/blog-list.js')
     });
 };
