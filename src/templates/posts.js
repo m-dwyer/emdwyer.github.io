@@ -3,6 +3,7 @@ import { Link } from "gatsby";
 import { css } from "@emotion/core";
 import Layout from "../components/layout";
 import BlogWall from "../components/blogwall";
+import BlogNavigation from "../components/blognavigation";
 
 export default function Posts({data, pageContext}) {
   const {
@@ -19,25 +20,10 @@ export default function Posts({data, pageContext}) {
     <Layout>
       <section className="index-section">
       <div>
-        <div css={css`
-          display: flex;
-          flex-flow: row nowrap;
-          justify-content: space-between;
-        `}>
-          {
-            pageContext.nextPagePath !== "" && (
-              <span>
-              <Link className="link" to={pageContext.nextPagePath} rel="next">Next</Link>
-              </span>
-            ) 
-          }
-          {pageContext.previousPagePath !== "" && (
-              <span>
-                <Link className="link" to={pageContext.previousPagePath} rel="prev">Previous</Link>
-              </span>
-            )
-          }
-          </div>
+          <BlogNavigation
+            previousPagePath={pageContext.previousPagePath}
+            nextPagePath={pageContext.nextPagePath}
+          />
           <hr />
           <BlogWall posts={posts} />
           </div>
