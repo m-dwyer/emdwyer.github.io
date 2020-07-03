@@ -1,8 +1,10 @@
 import React from "react";
-import { Link, useStaticQuery, graphql } from "gatsby";
+import { useStaticQuery, graphql } from "gatsby";
 import Img from "gatsby-image";
 import { css, Global } from "@emotion/core";
+import { ThemeProvider } from "emotion-theming";
 import Crossfade from "./crossfade";
+import NavBar from "./navbar";
 
 export default function Layout({ children }) {
     const data = useStaticQuery(
@@ -48,20 +50,14 @@ export default function Layout({ children }) {
         `
     );
     
-    const navBgColor = 'hsl(275,59%,47%)';
-    const bgColor = 'hsl(0, 0%, 14%)';
-    const fgColor = 'hsl(0, 0%, 70%)';
-    const mainFontColor = 'hsl(0, 0%, 90%)'
-    const fgHighlightedColor = mainFontColor;
-  
-    const navItemStyle = css`
-      padding: 24px;
-      text-decoration: none;
-      color: ${fgColor};
-      &:hover {
-        color: ${fgHighlightedColor};
+    const theme = {
+      colors: {
+        fontColor: 'hsl(0, 0%, 90%)',
+        bgColor: 'hsl(0, 0%, 14%)',
+        fgColor: 'hsl(0, 0%, 70%)',
+        secondaryBgColor: 'hsl(275,59%,47%)'
       }
-    `;
+    }
 
     const backgroundLogo =
       <Img
@@ -76,13 +72,13 @@ export default function Layout({ children }) {
       />;
   
     return (
-        <div>
+        <ThemeProvider theme={theme}>
         <Global
-          styles={css`
+          styles={theme => css`
             body {
               margin: 0;
-              background-color: ${bgColor};
-              color: ${mainFontColor};
+              background-color: ${theme.colors.bgColor};
+              color: ${theme.colors.fontColor};
               padding-top: 1vh;
             }
   
@@ -114,22 +110,22 @@ export default function Layout({ children }) {
           `}
         />
         <header
-          css={css`
+          css={theme => css`
               display: flex;
               justify-content: space-between;
               align-items: center;
               top: 0;
               left: 0;
               margin: 0;
-              background-color: ${navBgColor};
+              background-color: ${theme.colors.secondaryBgColor};
               position: fixed;
               width: 100%;
               max-height: 20vh;
             `}
         >
-          <div css={css`
+          <div css={theme => css`
             padding: 10px;
-            color: ${fgColor};
+            color: ${theme.colors.fontColor};
             display: flex;
             justify-content: center;
             align-items: center;
@@ -142,26 +138,11 @@ export default function Layout({ children }) {
               margin: 0 15px;
             `}>mdwyer</div>
           </div>
-          <nav css={css`
-            display: flex;
-            justify-content: flex-end;
-          `}>
-            <Link to="/" css={navItemStyle}>Home</Link>
-            <Link to="/blog"css={navItemStyle}>Blog</Link>
-            {
-              data.allFile.nodes.map(({childMarkdownRemark}) => {
-                return <Link
-                          key={childMarkdownRemark.fields.slug}
-                          to={childMarkdownRemark.fields.slug}
-                          css={navItemStyle}
-                        >{childMarkdownRemark.frontmatter.title}</Link>
-              })
-            }
-          </nav>
+          <NavBar />
         </header>
         <main>
             {children}
         </main>
-      </div>
+      </ThemeProvider>
     );
 }
