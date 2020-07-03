@@ -10,7 +10,6 @@ export default function BlogWall({ posts }) {
         return (
           <React.Fragment key={p.fields.slug}>
             <article
-              className="blog-preview"
               css={css`
                 display: flex;
                 justify-content: space-between;
