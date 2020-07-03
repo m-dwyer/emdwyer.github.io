@@ -13,12 +13,15 @@ export default function Layout({ children }) {
 `;
 
   return (
-    <nav css={css`
-      display: flex;
-      justify-content: flex-end;
-    `}>
-      <Link to="/" css={navItemStyle}>Home</Link>
-      <Link to="/blog"css={navItemStyle}>Blog</Link>
+    <nav>
+      <ul css={css`
+        display: flex;
+        justify-content: flex-end;
+        list-style-type: none;
+      `}>
+        <li><Link to="/" css={navItemStyle}>Home</Link></li>
+        <li><Link to="/blog"css={navItemStyle}>Blog</Link></li>
+      </ul>
     </nav>
   );
 }
