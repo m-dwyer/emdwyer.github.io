@@ -1,6 +1,6 @@
 import React from "react";
-import Layout from "../components/layout";
 import { graphql } from "gatsby";
+import Layout from "../components/layout";
 
 export default function Page({ data }) {
   const content = data.markdownRemark;

@@ -1,11 +1,11 @@
 import React from "react";
 import { css } from "@emotion/core";
+import { FaArrowDown } from "react-icons/fa";
+import { graphql } from "gatsby";
 import Layout from "../components/layout";
 import About from "../components/about";
 import Contact from "../components/contact"
 import BlogPreview from "../components/blogpreview";
-import { FaArrowDown } from "react-icons/fa";
-import { graphql } from "gatsby";
 
 class Index extends React.Component {
   constructor(props) {
