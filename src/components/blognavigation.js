@@ -5,23 +5,41 @@ import { Link } from "gatsby";
 export default function BlogNavigation({previousPagePath, nextPagePath}) {
   return (
     <div css={css`
-      display: flex;
-      flex-flow: row nowrap;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
     `}>
-      {
-        nextPagePath !== "" && (
-          <span>
-          <Link className="link" to={nextPagePath} rel="next">Next</Link>
-          </span>
-        ) 
-      }
-      {previousPagePath !== "" && (
-          <span>
-            <Link className="link" to={previousPagePath} rel="prev">Previous</Link>
-          </span>
-        )
-      }
+      <div css={css`
+        text-align: left;
+      `}>
+        {previousPagePath !== "" && (
+              <Link
+              className="link"
+              css={css`
+                grid-column: 1;
+              `}
+              to={previousPagePath}
+              rel="prev">
+                &lt;&lt; Previous
+              </Link>
+
+          )
+        }
+      </div>
+      <div css={css`
+        text-align: right;
+      `}>
+        {
+          nextPagePath !== "" && (
+            <Link
+            className="link"
+            css={css`
+              grid-column: 2;
+            `}
+            to={nextPagePath}
+            rel="next">Next &gt;&gt;</Link>
+          )
+        }
+      </div>
     </div>
   );
 }
