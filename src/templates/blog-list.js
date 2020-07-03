@@ -15,17 +15,17 @@ export default function Posts({data, pageContext}) {
   return (
     <Layout>
       <section className="index-section">
-      <div>
+        <div>
           <BlogNavigation
             previousPagePath={pageContext.previousPagePath}
             nextPagePath={pageContext.nextPagePath}
           />
           <hr />
           <BlogWall posts={posts} />
-          </div>
+        </div>
       </section>
     </Layout>
-  )
+  );
 }
 
 export const query = graphql`

@@ -7,48 +7,53 @@ import Crossfade from "./crossfade";
 import NavBar from "./navbar";
 
 export default function Layout({ children }) {
-    const data = useStaticQuery(
-        graphql`
-          query {
-            allFile(filter: {internal: {mediaType: {eq: "text/markdown"}}, sourceInstanceName: {eq: "pages"}}) {
-              nodes {
-                childMarkdownRemark {
-                  excerpt
-                  frontmatter {
-                    title
-                  }
-                  html
-                  fields {
-                    slug
-                  }
-                } 
+  const data = useStaticQuery(
+    graphql`
+      query {
+        allFile(
+          filter: {
+            internal: {mediaType: {eq: "text/markdown"}},
+            sourceInstanceName: {eq: "pages"}
+          }
+        ) {
+          nodes {
+            childMarkdownRemark {
+              excerpt
+              frontmatter {
+                title
               }
-            }
-            logo: file(relativePath: {eq: "icon.png"}, sourceInstanceName: {eq: "images"}) {
-              childImageSharp {
-                fixed(width: 35, height: 35) {
-                  base64
-                  width
-                  height
-                  src
-                  srcSet
-                }
-              }
-            }
-            avatar: file(relativePath: {eq: "avatar.jpg"}, sourceInstanceName: {eq: "images"}) {
-              childImageSharp {
-                fixed(width: 35, height: 35) {
-                  base64
-                  width
-                  height
-                  src
-                  srcSet
-                }
+              html
+              fields {
+                slug
               }
             }
           }
-        `
-    );
+        }
+        logo: file(relativePath: {eq: "icon.png"}, sourceInstanceName: {eq: "images"}) {
+          childImageSharp {
+            fixed(width: 35, height: 35) {
+              base64
+              width
+              height
+              src
+              srcSet
+            }
+          }
+        }
+        avatar: file(relativePath: {eq: "avatar.jpg"}, sourceInstanceName: {eq: "images"}) {
+          childImageSharp {
+            fixed(width: 35, height: 35) {
+              base64
+              width
+              height
+              src
+              srcSet
+            }
+          }
+        }
+      }
+    `
+  );
     
     const theme = {
       colors: {
@@ -72,7 +77,7 @@ export default function Layout({ children }) {
       />;
   
     return (
-        <ThemeProvider theme={theme}>
+      <ThemeProvider theme={theme}>
         <Global
           styles={theme => css`
             body {
@@ -109,26 +114,26 @@ export default function Layout({ children }) {
             }
           `}
         />
-        <header
-          css={theme => css`
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              top: 0;
-              left: 0;
-              margin: 0;
-              background-color: ${theme.colors.secondaryBgColor};
-              position: fixed;
-              width: 100%;
-              max-height: 20vh;
-            `}
-        >
-          <div css={theme => css`
-            padding: 10px;
-            color: ${theme.colors.fontColor};
+        <header css={
+          theme => css`
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
+            top: 0;
+            left: 0;
+            margin: 0;
+            background-color: ${theme.colors.secondaryBgColor};
+            position: fixed;
+            width: 100%;
+            max-height: 20vh;
+          `}>
+          <div css={
+            theme => css`
+              padding: 10px;
+              color: ${theme.colors.fontColor};
+              display: flex;
+              justify-content: center;
+              align-items: center;
           `}>
             <Crossfade
               background={backgroundLogo}

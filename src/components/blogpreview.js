@@ -1,6 +1,6 @@
 import React from "react";
 import { css } from "@emotion/core";
-import { Link, useStaticQuery } from "gatsby";
+import { Link, graphql, useStaticQuery } from "gatsby";
 import { FaArrowRight } from "react-icons/fa";
 import BlogWall from "./blogwall";
 
@@ -9,7 +9,11 @@ export default function BlogPreview() {
     useStaticQuery(
       graphql`
         query {
-          posts: allFile(filter: {sourceInstanceName: {eq: "blog"}}, limit: 3,  sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}) {
+          posts: allFile(
+            filter: {sourceInstanceName: {eq: "blog"}},
+            limit: 3,
+            sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}
+          ) {
             nodes {
               childMarkdownRemark {
                 id
@@ -40,20 +44,14 @@ export default function BlogPreview() {
       <div>
         <Link className="link" to="/blog/">
           <span>More</span>
-          <button
-                css={css`
-                  border: 0;
-                  border-radius: 50%;
-                  height: 20px;
-                  width: 20px;
-                  cursor: pointer;
-                `}
-              >
-                <FaArrowRight
-                  size={10}
-                  css={css`
-                  `}
-                />
+          <button css={css`
+            border: 0;
+            border-radius: 50%;
+            height: 20px;
+            width: 20px;
+            cursor: pointer;
+          `}>
+            <FaArrowRight size={10} />
           </button>
         </Link>
       </div>

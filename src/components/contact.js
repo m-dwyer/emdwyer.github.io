@@ -18,10 +18,21 @@ export default function Contact(props) {
         justify-content: center;
         width: 90vw;
       `}>
-        
-        {contacts['github'] && <a href={contacts['github']} className="link" rel="noreferrer" target="_blank"><FaGithub size={60} /></a>}
-        {contacts['twitter'] && <a href={contacts['twitter']} className="link" rel="noreferrer" target="_blank"><FaTwitter size={60} /></a>}
-        {contacts['strava'] && <a href={contacts['strava']} className="link" rel="noreferrer" target="_blank"><FaStrava size={60} /></a>}
+        {contacts['github'] &&
+          <a href={contacts['github']} className="link" rel="noreferrer" target="_blank">
+            <FaGithub size={60} />
+          </a>
+        }
+        {contacts['twitter'] &&
+          <a href={contacts['twitter']} className="link" rel="noreferrer" target="_blank">
+            <FaTwitter size={60} />
+          </a>
+        }
+        {contacts['strava'] &&
+          <a href={contacts['strava']} className="link" rel="noreferrer" target="_blank">
+            <FaStrava size={60} />
+          </a>
+        }
       </div>
     </div>
   );

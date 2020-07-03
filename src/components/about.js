@@ -20,13 +20,12 @@ export default function About() {
         `}>
           <h2>Interests</h2>
           <div>
-            <ul
-              css={css`
-                list-style: none;
-                padding-left: 0;
-                li {
-                  padding: 10px 0 10px 0;
-                }
+            <ul css={css`
+              list-style: none;
+              padding-left: 0;
+              li {
+                padding: 10px 0 10px 0;
+              }
             `}>
               <li>Development (Full stack)</li>
               <li>Linux</li>
@@ -51,13 +50,12 @@ export default function About() {
         `}>
           <h2>Background</h2>
           <div>
-            <ul
-              css={css`
-                list-style: none;
-                padding-left: 0;
-                li {
-                  padding: 10px 0 10px 0;
-                }
+            <ul css={css`
+              list-style: none;
+              padding-left: 0;
+              li {
+                padding: 10px 0 10px 0;
+              }
             `}>
               <li>B. Engineering (Software)</li>
               <li>Over a decade in various IT roles, including Development, QA Engineering, Automation and Support</li>

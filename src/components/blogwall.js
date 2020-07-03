@@ -15,10 +15,12 @@ export default function BlogWall({ posts }) {
                 display: flex;
                 justify-content: space-between;
               `}>
-              <Link to={p.fields.slug} css={css`
-                    color: inherit;
-                    text-decoration: none;
-                  `}>
+              <Link
+                to={p.fields.slug}
+                css={css`
+                  color: inherit;
+                  text-decoration: none;
+                `}>
                 <header>
                   <h3>
                     {p.frontmatter.title}

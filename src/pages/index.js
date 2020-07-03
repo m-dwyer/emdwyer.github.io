@@ -43,35 +43,33 @@ class Index extends React.Component {
 
     return (
       <Layout>
-      <section className="index-section">
-        <h1>Hi, I'm mdwyer</h1>
-        <button
-          css={css`
-            border: 0;
-            border-radius: 50%;
-            height: 80px;
-            width: 80px;
-            cursor: pointer;
-          `}
-          onClick={this.scrollToContent}
-        >
-          <FaArrowDown
-            size={60}
+        <section className="index-section">
+          <h1>Hi, I'm mdwyer</h1>
+          <button
             css={css`
+              border: 0;
+              border-radius: 50%;
+              height: 80px;
+              width: 80px;
+              cursor: pointer;
             `}
-          />
-        </button>
-      </section>
-      <section ref={this.separator} className="index-section">
-        <About />
-      </section>
-      <section className="index-section">
-        <Contact contacts={contacts} />
-      </section>
-      <section className="index-section">
-        <BlogPreview posts={posts} />
-      </section>
-    </Layout>  
+            onClick={this.scrollToContent}
+          >
+            <FaArrowDown
+              size={60}
+            />
+          </button>
+        </section>
+        <section ref={this.separator} className="index-section">
+          <About />
+        </section>
+        <section className="index-section">
+          <Contact contacts={contacts} />
+        </section>
+        <section className="index-section">
+          <BlogPreview posts={posts} />
+        </section>
+      </Layout>  
     );
   }
 }
@@ -80,7 +78,10 @@ export default Index;
 
 export const query = graphql`
   query {
-    posts: allFile(filter: {sourceInstanceName: {eq: "blog"}}, limit: 3,  sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}) {
+    posts: allFile(
+      filter: {sourceInstanceName: {eq: "blog"}}, limit: 3,
+      sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}
+    ) {
       nodes {
         childMarkdownRemark {
           id
