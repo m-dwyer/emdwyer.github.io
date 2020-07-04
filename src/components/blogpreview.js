@@ -33,14 +33,16 @@ export default function BlogPreview() {
     );
 
   return (
-    <div>
+    <React.Fragment>
       <h1 css={css`
         display: flex;
         justify-content: center;
       `}>
         Posts
       </h1>
-      <BlogWall posts={data.posts.nodes} />
+      <div>
+        <BlogWall posts={data.posts.nodes} />
+      </div>
       <div>
         <Link className="link" to="/blog/">
           <span>More</span>
@@ -55,6 +57,6 @@ export default function BlogPreview() {
           </button>
         </Link>
       </div>
-    </div>
+    </React.Fragment>
   );
 }
