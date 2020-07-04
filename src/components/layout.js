@@ -86,10 +86,10 @@ export default function Layout({ children }) {
               color: ${theme.colors.fontColor};
               padding-top: 1vh;
             }
-  
+
             @font-face {
               font-family: 'Ubuntu';
-              src: url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
+              src: url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
             }
   
             .index-section {
@@ -102,15 +102,18 @@ export default function Layout({ children }) {
               margin: 0 auto;
             }
 
-            .link {
-              color: inherit;
-              text-decoration: none;
+            body {
+              font-family: 'Ubuntu', sans-serif;
             }
 
             h1 {
-              font-family: 'Ubuntu', sans-serif;
               font-weight: 600;
               font-size: 4rem;
+            }
+
+            .link {
+              color: inherit;
+              text-decoration: none;
             }
           `}
         />
