@@ -109,6 +109,7 @@ export default function Layout({ children }) {
             h1 {
               font-weight: 600;
               font-size: 4rem;
+              text-align: center;
             }
 
             .link {
