@@ -80,16 +80,17 @@ export default function Layout({ children }) {
       <ThemeProvider theme={theme}>
         <Global
           styles={theme => css`
+            @font-face {
+              font-family: 'Ubuntu';
+              src: url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
+            }
+
             body {
+              font-family: 'Ubuntu', sans-serif;
               margin: 0;
               background-color: ${theme.colors.bgColor};
               color: ${theme.colors.fontColor};
               padding-top: 1vh;
-            }
-
-            @font-face {
-              font-family: 'Ubuntu';
-              src: url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
             }
   
             .index-section {
@@ -100,10 +101,6 @@ export default function Layout({ children }) {
               justify-content: center;
               align-items: center;
               margin: 0 auto;
-            }
-
-            body {
-              font-family: 'Ubuntu', sans-serif;
             }
 
             h1 {
