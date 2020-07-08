@@ -40,7 +40,7 @@ exports.createPages = async({ graphql, actions }) => {
     result.data.posts.edges.forEach(({ node }) => {
       createPage({
         path: node.fields.slug,
-        component: path.resolve('./src/templates/page.js'),
+        component: path.resolve('./src/templates/blog-post.js'),
         context: {
           slug: node.fields.slug
         }
