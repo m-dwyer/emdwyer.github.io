@@ -4,10 +4,21 @@ import { graphql } from "gatsby";
 import Layout from "../components/layout";
 import { FaCalendar } from "react-icons/fa";
 import BlogNavigation from "../components/blognavigation";
+import { generateNavigation } from "../utils/helpers";
+import  _  from 'lodash';
 
 export default function BlogPost({data, pageContext}) {
   const content = data.markdownRemark;
-  const { previous = null, next = null } = pageContext;
+
+  const previousSlug = _.get(pageContext, 'previous.fields.slug');
+  const previousTitle = _.get(pageContext, 'previous.frontmatter.title');
+
+  const nextSlug = _.get(pageContext, 'next.fields.slug');
+  const nextTitle = _.get(pageContext, 'next.frontmatter.title');
+
+  const previous = generateNavigation(previousSlug, previousTitle);
+  const next = generateNavigation(nextSlug, nextTitle);
+
   return (
     <Layout>
       <main css={css`
@@ -40,8 +51,8 @@ export default function BlogPost({data, pageContext}) {
             margin-top: 2em;
           `}>
             <BlogNavigation
-              previous={previous ? {path: previous.fields.slug , label: previous.frontmatter.title} : null}
-              next={next ? {path: next.fields.slug, label: next.frontmatter.title} : null}
+              previous={previous}
+              next={next}
             />
           </footer>
         </article>

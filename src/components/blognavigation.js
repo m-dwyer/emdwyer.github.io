@@ -13,12 +13,12 @@ export default function BlogNavigation({previous, next}) {
       `}>
         {previous && (
               <Link
-              className="link"
-              css={css`
-                grid-column: 1;
-              `}
-              to={previous.path}
-              rel="prev">
+                className="link"
+                css={css`
+                  grid-column: 1;
+                `}
+                to={previous.path}
+                rel="prev">
                 {previous.label}
               </Link>
 
@@ -31,12 +31,14 @@ export default function BlogNavigation({previous, next}) {
         {
           next && (
             <Link
-            className="link"
-            css={css`
-              grid-column: 2;
-            `}
-            to={next.path}
-            rel="next">{next.label}</Link>
+              className="link"
+              css={css`
+                grid-column: 2;
+              `}
+              to={next.path}
+              rel="next">
+              {next.label}
+            </Link>
           )
         }
       </div>

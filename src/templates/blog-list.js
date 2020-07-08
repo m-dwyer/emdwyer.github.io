@@ -2,6 +2,7 @@ import React from "react";
 import Layout from "../components/layout";
 import BlogWall from "../components/blogwall";
 import BlogNavigation from "../components/blognavigation";
+import { generateNavigation } from "../utils/helpers";
 
 export default function Posts({data, pageContext}) {
   const {
@@ -12,13 +13,16 @@ export default function Posts({data, pageContext}) {
     }
   } =  data;
 
+  const previous = generateNavigation(pageContext.previousPagePath, 'Previous');
+  const next = generateNavigation(pageContext.nextPagePath, 'Next');
+
   return (
     <Layout>
       <section className="index-section">
         <div>
           <BlogNavigation
-            previous={pageContext.previousPagePath !== "" ? {path: pageContext.previousPagePath, label: 'Previous'} : null}
-            next={pageContext.nextPagePath !== "" ? {path: pageContext.nextPagePath, label: 'Next'} : null}
+            previous={previous}
+            next={next}
           />
           <hr />
           <BlogWall posts={posts} />

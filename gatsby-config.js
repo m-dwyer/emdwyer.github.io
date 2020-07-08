@@ -48,6 +48,12 @@ module.exports = {
         icon: 'src/images/icon.png'
       }
     },
-    'gatsby-awesome-pagination'
+    'gatsby-awesome-pagination',
+    {
+      resolve: 'gatsby-plugin-lodash',
+      options: {
+        disableFeatures: ['cloning']
+      }
+    }
   ]
 };
