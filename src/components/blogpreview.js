@@ -43,20 +43,29 @@ export default function BlogPreview() {
       <div>
         <BlogWall posts={data.posts.nodes} />
       </div>
-      <div>
-        <Link className="link" to="/blog/">
-          <span>More</span>
-          <button css={css`
-            border: 0;
-            border-radius: 50%;
-            height: 20px;
-            width: 20px;
-            cursor: pointer;
-          `}>
-            <FaArrowRight size={10} />
-          </button>
-        </Link>
+      <Link className="link" to="/blog/">
+      <div css={css`
+        display: flex;
+        align-items: center;
+      `}>
+        <span css={css`
+          font-size: 2em;
+          padding: 0;
+        `}>More</span>
+        <button css={css`
+          border: 0;
+          border-radius: 50%;
+          height: 2em;
+          width: 2em;
+          cursor: pointer;
+          margin-top: 0.5em;
+        `}>
+          <FaArrowRight
+            size="1.25em"
+            css={css``} />
+        </button>
       </div>
+      </Link>
     </React.Fragment>
   );
 }
