@@ -11,19 +11,19 @@ export default function BlogWall({ posts }) {
           <React.Fragment key={p.fields.slug}>
             <article
               css={css`
-                display: flex;
-                justify-content: space-between;
               `}>
-              <Link
-                to={p.fields.slug}
-                css={css`
-                  color: inherit;
-                  text-decoration: none;
-                `}>
                 <header>
-                  <h3>
-                    {p.frontmatter.title}
-                  </h3>
+                  <h2 css={css`
+                    margin-bottom: 0.75em;
+                  `}>
+                    <Link
+                      to={p.fields.slug}
+                      css={css`
+                        color: inherit;
+                      `}>
+                          {p.frontmatter.title}
+                    </Link>
+                  </h2>
                   <small>
                     <FaCalendar css={css`
                       margin: 0 10px 0 0;
@@ -32,14 +32,16 @@ export default function BlogWall({ posts }) {
                 </header>
                 <section>
                   <p
+                    css={css`
+                      margin-top: 0.75em;
+                      margin-bottom: 2.5em;
+                    `}
                     dangerouslySetInnerHTML={{
                       __html: p.frontmatter.description || p.excerpt
                     }}
                   />
                 </section>
-              </Link>
             </article>
-            <hr />
           </React.Fragment>
         );
       })}
