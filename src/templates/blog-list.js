@@ -17,8 +17,8 @@ export default function Posts({data, pageContext}) {
       <section className="index-section">
         <div>
           <BlogNavigation
-            previousPagePath={pageContext.previousPagePath}
-            nextPagePath={pageContext.nextPagePath}
+            previous={pageContext.previousPagePath !== "" ? {path: pageContext.previousPagePath, label: 'Previous'} : null}
+            next={pageContext.nextPagePath !== "" ? {path: pageContext.nextPagePath, label: 'Next'} : null}
           />
           <hr />
           <BlogWall posts={posts} />

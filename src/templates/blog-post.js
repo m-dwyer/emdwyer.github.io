@@ -3,9 +3,11 @@ import { css } from "@emotion/core";
 import { graphql } from "gatsby";
 import Layout from "../components/layout";
 import { FaCalendar } from "react-icons/fa";
+import BlogNavigation from "../components/blognavigation";
 
-export default function BlogPost({ data }) {
+export default function BlogPost({data, pageContext}) {
   const content = data.markdownRemark;
+  const { previous = null, next = null } = pageContext;
   return (
     <Layout>
       <main css={css`
@@ -34,8 +36,13 @@ export default function BlogPost({ data }) {
           <section>
             <div dangerouslySetInnerHTML={{ __html: content.html }} />
           </section>
-          <footer>
-
+          <footer css={css`
+            margin-top: 2em;
+          `}>
+            <BlogNavigation
+              previous={previous ? {path: previous.fields.slug , label: previous.frontmatter.title} : null}
+              next={next ? {path: next.fields.slug, label: next.frontmatter.title} : null}
+            />
           </footer>
         </article>
       </main>

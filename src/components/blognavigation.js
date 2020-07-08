@@ -2,7 +2,7 @@ import React from "react";
 import { css } from "@emotion/core";
 import { Link } from "gatsby";
 
-export default function BlogNavigation({previousPagePath, nextPagePath}) {
+export default function BlogNavigation({previous, next}) {
   return (
     <div css={css`
       display: grid;
@@ -11,15 +11,15 @@ export default function BlogNavigation({previousPagePath, nextPagePath}) {
       <div css={css`
         text-align: left;
       `}>
-        {previousPagePath !== "" && (
+        {previous && (
               <Link
               className="link"
               css={css`
                 grid-column: 1;
               `}
-              to={previousPagePath}
+              to={previous.path}
               rel="prev">
-                &lt;&lt; Previous
+                {previous.label}
               </Link>
 
           )
@@ -29,14 +29,14 @@ export default function BlogNavigation({previousPagePath, nextPagePath}) {
         text-align: right;
       `}>
         {
-          nextPagePath !== "" && (
+          next && (
             <Link
             className="link"
             css={css`
               grid-column: 2;
             `}
-            to={nextPagePath}
-            rel="next">Next &gt;&gt;</Link>
+            to={next.path}
+            rel="next">{next.label}</Link>
           )
         }
       </div>
