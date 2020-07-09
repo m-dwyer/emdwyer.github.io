@@ -1,4 +1,5 @@
 import React from "react";
+import { css } from "@emotion/core";
 import Layout from "../components/layout";
 import BlogWall from "../components/blogwall";
 import BlogNavigation from "../components/blognavigation";
@@ -18,7 +19,13 @@ export default function Posts({data, pageContext}) {
 
   return (
     <Layout>
-      <section className="index-section">
+      <section css={css`
+        margin-left: auto;
+        margin-right: auto;
+        padding: 5em 3em;
+        max-height: 80vh;
+        max-width: 80vw;
+      `}>
         <div>
           <BlogNavigation
             previous={previous}
