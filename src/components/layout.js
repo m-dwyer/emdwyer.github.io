@@ -3,8 +3,9 @@ import { useStaticQuery, graphql } from "gatsby";
 import Img from "gatsby-image";
 import { css, Global } from "@emotion/core";
 import { ThemeProvider } from "emotion-theming";
-import Crossfade from "./crossfade";
 import NavBar from "./navbar";
+import Header from "./header";
+import Crossfade from "./crossfade";
 
 export default function Layout({ children }) {
   const data = useStaticQuery(
@@ -76,6 +77,11 @@ export default function Layout({ children }) {
       css={css`border-radius: 50%;`}
     />;
 
+  const logo = <Crossfade
+                  background={backgroundLogo}
+                  foreground={foregroundLogo}
+                />;
+
   return (
     <ThemeProvider theme={theme}>
       <Global
@@ -115,37 +121,9 @@ export default function Layout({ children }) {
           }
         `}
       />
-      <header css={
-        theme => css`
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          top: 0;
-          left: 0;
-          margin: 0;
-          background-color: ${theme.colors.secondaryBgColor};
-          position: fixed;
-          width: 100%;
-          max-height: 20vh;
-        `}>
-        <div css={
-          theme => css`
-            padding: 10px;
-            color: ${theme.colors.fontColor};
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        `}>
-          <Crossfade
-            background={backgroundLogo}
-            foreground={foregroundLogo}
-          />
-          <div css={css`
-            margin: 0 15px;
-          `}>mdwyer</div>
-        </div>
+      <Header logo={logo}>
         <NavBar />
-      </header>
+      </Header>
       <main>
           {children}
       </main>
