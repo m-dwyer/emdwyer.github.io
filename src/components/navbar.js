@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "gatsby";
 import { css } from "@emotion/core";
 
-export default function Layout({ children }) {
+export default function NavBar({ children }) {
   return (
     <nav>
       <ul css={theme => css`
