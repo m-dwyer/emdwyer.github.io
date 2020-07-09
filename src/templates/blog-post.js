@@ -5,7 +5,7 @@ import Layout from "../components/layout";
 import { FaCalendar } from "react-icons/fa";
 import BlogNavigation from "../components/blognavigation";
 import { generateNavigation } from "../utils/helpers";
-import  _  from 'lodash';
+import _ from 'lodash';
 
 export default function BlogPost({data, pageContext}) {
   const content = data.markdownRemark;
