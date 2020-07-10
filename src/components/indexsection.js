@@ -1,6 +1,5 @@
 import React from "react";
 import { css } from "@emotion/core";
-import { render } from "react-dom";
 
 class IndexSection extends React.Component {
   constructor(props) {
