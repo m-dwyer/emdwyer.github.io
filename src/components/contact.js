@@ -3,7 +3,7 @@ import { css } from "@emotion/core";
 import { FaGithub, FaTwitter, FaStrava } from "react-icons/fa";
 
 export default function Contact(props) {
-  const contacts = props.contacts;
+  const { contacts } = props;
 
   return (
     <div>

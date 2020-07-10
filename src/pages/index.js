@@ -3,6 +3,7 @@ import { css } from "@emotion/core";
 import { FaArrowDown } from "react-icons/fa";
 import { graphql } from "gatsby";
 import Layout from "../components/layout";
+import IndexSection from "../components/indexsection";
 import About from "../components/about";
 import Contact from "../components/contact"
 import BlogPreview from "../components/blogpreview";
@@ -43,7 +44,7 @@ class Index extends React.Component {
 
     return (
       <Layout>
-        <section className="index-section">
+        <IndexSection>
           <h1>Hi, I'm mdwyer</h1>
           <button
             css={css`
@@ -59,16 +60,16 @@ class Index extends React.Component {
               size={60}
             />
           </button>
-        </section>
-        <section ref={this.separator} className="index-section">
+        </IndexSection>
+        <IndexSection forwardedRef={this.separator}>
           <About />
-        </section>
-        <section className="index-section">
+        </IndexSection>
+        <IndexSection>
           <Contact contacts={contacts} />
-        </section>
-        <section className="index-section">
+        </IndexSection>
+        <IndexSection>
           <BlogPreview posts={posts} />
-        </section>
+        </IndexSection>
       </Layout>  
     );
   }
