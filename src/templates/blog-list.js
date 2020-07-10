@@ -4,15 +4,10 @@ import Layout from "../components/layout";
 import BlogWall from "../components/blogwall";
 import BlogNavigation from "../components/blognavigation";
 import { generateNavigation } from "../utils/helpers";
+import _ from "lodash";
 
 export default function Posts({data, pageContext}) {
-  const {
-    posts: {
-      nodes: [
-        ...posts
-      ]
-    }
-  } =  data;
+  const posts = _.get(data, "posts.nodes");
 
   const previous = generateNavigation(pageContext.previousPagePath, 'Previous');
   const next = generateNavigation(pageContext.nextPagePath, 'Next');

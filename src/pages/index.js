@@ -7,6 +7,7 @@ import IndexSection from "../components/indexsection";
 import About from "../components/about";
 import Contact from "../components/contact"
 import BlogPreview from "../components/blogpreview";
+import _ from 'lodash';
 
 class Index extends React.Component {
   constructor(props) {
@@ -22,25 +23,8 @@ class Index extends React.Component {
   }
 
   render() {
-    const {
-      data: {
-        site: {
-          siteMetadata: {
-            contact: contacts
-          }
-        }
-      }
-    } = this.props;
-
-    const {
-      data: {
-        posts: {
-          nodes: [
-            ...posts
-          ]
-        }
-      }
-    } = this.props;
+    const contacts = _.get(this.props, "data.site.siteMetadata.contact");
+    const posts = _.get(this.props, "data.posts.nodes");
 
     return (
       <Layout>
