@@ -1,15 +1,16 @@
 import React from "react";
 import { graphql } from "gatsby";
 import Layout from "../components/layout";
+import IndexSection from "../components/indexsection";
 
 export default function Page({ data }) {
   const content = data.markdownRemark;
   return (
     <Layout>
-      <section className="index-section">
+      <IndexSection>
         <h1>{content.frontmatter.title}</h1>
         <div dangerouslySetInnerHTML={{ __html: content.html }} />
-      </section>
+      </IndexSection>
     </Layout>
   );
 }

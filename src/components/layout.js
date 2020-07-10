@@ -99,16 +99,6 @@ export default function Layout({ children }) {
             padding-top: 1vh;
           }
 
-          .index-section {
-            display: flex;
-            flex-direction: column;
-            width: 80vw;
-            height: 100vh;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto;
-          }
-
           h1 {
             font-weight: 600;
             font-size: 4rem;
