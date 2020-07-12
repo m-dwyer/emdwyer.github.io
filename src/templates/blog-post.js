@@ -28,17 +28,20 @@ export default function BlogPost({data, pageContext}) {
         max-height: 80vh;
         max-width: 80vw;
       `}>
-        <article>
+        <article css={css`
+          max-width: 50vw;
+          margin: 0 auto;
+        `}>
           <header css={css`
             margin-bottom: 2em;
           `}>
             <h1 css={css`
               text-align: left;
               margin-top: 2em;
-              margin-bottom: 0;
+              margin-bottom: 1em;
             `}>{content.frontmatter.title}</h1>
             <p css={css`
-              margin-top: 0.75rem;
+              margin-bottom: 4em;
             `}>
               <FaCalendar
                 css={css`
