@@ -4,6 +4,7 @@ import { graphql } from "gatsby";
 import Layout from "../components/layout";
 import { FaCalendar } from "react-icons/fa";
 import BlogNavigation from "../components/blognavigation";
+import BodyText from "../components/bodytext"
 import { generateNavigation } from "../utils/helpers";
 import _ from 'lodash';
 
@@ -51,7 +52,7 @@ export default function BlogPost({data, pageContext}) {
             </p>
           </header>
           <section>
-            <div dangerouslySetInnerHTML={{ __html: content.html }} />
+            <BodyText content={content.html} />
           </section>
           <footer css={css`
             margin-top: 2em;
