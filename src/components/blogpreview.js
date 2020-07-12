@@ -10,7 +10,10 @@ export default function BlogPreview() {
       graphql`
         query {
           posts: allFile(
-            filter: {sourceInstanceName: {eq: "blog"}},
+            filter: {
+              sourceInstanceName: {eq: "blog"},
+              internal: {mediaType: {eq: "text/markdown"}}
+            },
             limit: 3,
             sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}
           ) {
@@ -21,6 +24,13 @@ export default function BlogPreview() {
                 frontmatter {
                   title
                   date(formatString: "dddd, MMMM Do YYYY")
+                  cover {
+                    childImageSharp {
+                      fluid(maxWidth: 600) {
+                        ...GatsbyImageSharpFluid
+                      }
+                    }
+                  }
                 }
                 fields {
                   slug

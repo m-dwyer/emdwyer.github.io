@@ -1,12 +1,15 @@
 import React from "react";
 import { css } from "@emotion/core";
 import { Link } from "gatsby";
+import Img from "gatsby-image";
 import { FaCalendar } from "react-icons/fa";
+import _ from 'lodash';
 
 export default function BlogWall({ posts }) {
   return (
     <React.Fragment>
       {posts.map(({childMarkdownRemark: p}) => {
+        const fluid = _.get(p, "frontmatter.cover.childImageSharp.fluid");
         return (
           <React.Fragment key={p.fields.slug}>
             <article
@@ -31,6 +34,15 @@ export default function BlogWall({ posts }) {
                   </small>
                 </header>
                 <section>
+                <div css={css`
+                  max-width: 40vw;
+                  margin: 1.5em auto;
+                `}>
+                  <Img
+                    fluid={fluid}
+                    css={css`border-radius: 10px;`}
+                  />
+                </div>
                   <p
                     css={css`
                       margin-top: 0.75em;

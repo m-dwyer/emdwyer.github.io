@@ -64,7 +64,10 @@ export default Index;
 export const query = graphql`
   query {
     posts: allFile(
-      filter: {sourceInstanceName: {eq: "blog"}}, limit: 3,
+      filter: {
+        sourceInstanceName: {eq: "blog"},
+        internal: {mediaType: {eq: "text/markdown"}}
+      }, limit: 3,
       sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}
     ) {
       nodes {

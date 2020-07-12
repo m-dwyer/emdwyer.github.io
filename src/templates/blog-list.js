@@ -37,7 +37,10 @@ export default function Posts({data, pageContext}) {
 export const query = graphql`
   query($skip: Int = 0, $limit: Int = 3) {
     posts: allFile(
-      filter: {sourceInstanceName: {eq: "blog"}},
+      filter: {
+        sourceInstanceName: {eq: "blog"},
+        internal: {mediaType: {eq: "text/markdown"}}
+      },
       sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC},
       limit: $limit,
       skip: $skip
@@ -49,6 +52,13 @@ export const query = graphql`
           frontmatter {
             title
             date(formatString: "dddd, MMMM Do YYYY")
+            cover {
+              childImageSharp {
+                fluid(maxWidth: 600) {
+                  ...GatsbyImageSharpFluid
+                }
+              }
+            }
           }
           fields {
             slug
