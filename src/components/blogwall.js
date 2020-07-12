@@ -14,8 +14,14 @@ export default function BlogWall({ posts }) {
           <React.Fragment key={p.fields.slug}>
             <article
               css={css`
+                max-width: 40vw;
+                margin: 1.5em auto;
               `}>
                 <header>
+                  <Img
+                    fluid={fluid}
+                    css={css`border-radius: 10px;`}
+                  />
                   <h2 css={css`
                     margin-bottom: 0.75em;
                   `}>
@@ -34,15 +40,6 @@ export default function BlogWall({ posts }) {
                   </small>
                 </header>
                 <section>
-                <div css={css`
-                  max-width: 40vw;
-                  margin: 1.5em auto;
-                `}>
-                  <Img
-                    fluid={fluid}
-                    css={css`border-radius: 10px;`}
-                  />
-                </div>
                   <p
                     css={css`
                       margin-top: 0.75em;

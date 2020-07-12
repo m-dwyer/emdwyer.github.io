@@ -50,9 +50,7 @@ export default function BlogPreview() {
       `}>
         Posts
       </h1>
-      <div>
-        <BlogWall posts={data.posts.nodes} />
-      </div>
+      <BlogWall posts={data.posts.nodes} />
       <Link className="link" to="/blog/">
       <div css={css`
         display: flex;
