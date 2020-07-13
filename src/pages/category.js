@@ -31,15 +31,18 @@ export default function Category({data}) {
             <section key={category}>
               <h2>{_.capitalize(category)}</h2>
               <ul css={css`
-                list-style-type: none;
                 margin: 0;
-                padding: 0;
+                list-style: circle;
+                padding-left: 20px;
               `}>
                 {
                   postsByCategory[category].slice(0, LIMIT_PER_CATEGORY).map(p => {
                     return (
                       <li key={p.fields.slug}>
-                        <Link to={p.fields.slug}>
+                        <Link
+                          css={css`text-decoration: none;`}
+                          to={p.fields.slug}
+                        >
                           {p.frontmatter.title}
                         </Link>
                       </li>
