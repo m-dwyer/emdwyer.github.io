@@ -9,7 +9,7 @@ export default function Category({data}) {
 
   let postsByCategory = {};
   posts.reduce((accum, {node: post}) => {
-    let category = _.get(post, "frontmatter.category") ?? "miscellaneous";
+    let category = _.get(post, "frontmatter.category");
     category = category.toLowerCase();
 
     if (!accum.hasOwnProperty(category)) {
@@ -28,8 +28,18 @@ export default function Category({data}) {
       {
         Object.keys(postsByCategory).map(category => {
           return (
-            <section key={category}>
-              <h2>{_.capitalize(category)}</h2>
+            <section
+              key={category}
+              css={css`margin-bottom: 5em`}
+            >
+              <h2>
+              <Link
+                to={`/category/${category}`}
+                css={css`text-decoration: none;`}
+              >
+                {_.capitalize(category)}
+              </Link>
+              </h2>
               <ul css={css`
                 margin: 0;
                 list-style: circle;
@@ -40,8 +50,8 @@ export default function Category({data}) {
                     return (
                       <li key={p.fields.slug}>
                         <Link
-                          css={css`text-decoration: none;`}
                           to={p.fields.slug}
+                          css={css`text-decoration: none;`}
                         >
                           {p.frontmatter.title}
                         </Link>

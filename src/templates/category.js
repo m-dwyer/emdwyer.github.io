@@ -6,7 +6,6 @@ import IndexSection from "../components/indexsection";
 import _ from "lodash";
 
 export default function Category({data, pageContext}) {
-  console.log("data: ", data);
   return(
     <Layout>
       <IndexSection>
