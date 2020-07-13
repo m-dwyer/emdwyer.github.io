@@ -14,7 +14,7 @@ export default function BlogWall({ posts }) {
           <React.Fragment key={p.fields.slug}>
             <article
               css={css`
-                max-width: 40vw;
+                width: 40vw;
                 margin: 1.5em auto;
               `}>
                 <header>
