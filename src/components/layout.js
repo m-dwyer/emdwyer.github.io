@@ -105,9 +105,8 @@ export default function Layout({ children }) {
             text-align: center;
           }
 
-          .link {
+          a {
             color: inherit;
-            text-decoration: none;
           }
         `}
       />
