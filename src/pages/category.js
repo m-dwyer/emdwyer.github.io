@@ -20,6 +20,8 @@ export default function Category({data}) {
     return accum;
   }, postsByCategory);
 
+  const LIMIT_PER_CATEGORY = 5;
+
   return (
     <Layout>
       <h1>Posts by category</h1>
@@ -34,7 +36,7 @@ export default function Category({data}) {
                 padding: 0;
               `}>
                 {
-                  postsByCategory[category].map(p => {
+                  postsByCategory[category].slice(0, LIMIT_PER_CATEGORY).map(p => {
                     return <li key={p.fields.slug}>{p.frontmatter.title}</li>;
                   })
                 }
