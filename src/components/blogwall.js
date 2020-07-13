@@ -18,26 +18,27 @@ export default function BlogWall({ posts }) {
                 margin: 1.5em auto;
               `}>
                 <header>
-                  <Img
-                    fluid={fluid}
-                    css={css`border-radius: 10px;`}
-                  />
-                  <h2 css={css`
-                    margin-bottom: 0.75em;
+                  <Link
+                    to={p.fields.slug}
+                    css={css`
+                      color: inherit;
+                      text-decoration: none;
                   `}>
-                    <Link
-                      to={p.fields.slug}
-                      css={css`
-                        color: inherit;
-                      `}>
-                          {p.frontmatter.title}
-                    </Link>
-                  </h2>
-                  <small>
-                    <FaCalendar css={css`
-                      margin: 0 10px 0 0;
-                    `} />  {p.frontmatter.date}
-                  </small>
+                    <Img
+                      fluid={fluid}
+                      css={css`border-radius: 10px;`}
+                    />
+                    <h2 css={css`
+                      margin-bottom: 0.75em;
+                    `}>
+                    {p.frontmatter.title}
+                    </h2>
+                    <small>
+                      <FaCalendar css={css`
+                        margin: 0 10px 0 0;
+                      `} />  {p.frontmatter.date}
+                    </small>
+                  </Link>
                 </header>
                 <section>
                   <p
