@@ -9,11 +9,14 @@ export default function Category({data}) {
 
   let postsByCategory = {};
   posts.reduce((accum, {node: post}) => {
-    if (!accum.hasOwnProperty(post.frontmatter.category)) {
-      accum[post.frontmatter.category] = [];
+    let category = _.get(post, "frontmatter.category") ?? "miscellaneous";
+    category = category.toLowerCase();
+
+    if (!accum.hasOwnProperty(category)) {
+      accum[category] = [];
     }
 
-    accum[post.frontmatter.category].push(post);
+    accum[category].push(post);
     return accum;
   }, postsByCategory);
 
@@ -22,10 +25,9 @@ export default function Category({data}) {
       <h1>Posts by category</h1>
       {
         Object.keys(postsByCategory).map(category => {
-          console.log("category: ", category);
           return (
-            <div>
-              <h2>{category}</h2>
+            <section key={category}>
+              <h2>{_.capitalize(category)}</h2>
               <ul css={css`
                 list-style-type: none;
                 margin: 0;
@@ -37,7 +39,7 @@ export default function Category({data}) {
                   })
                 }
               </ul>
-            </div>
+            </section>
           );
         })
       }
