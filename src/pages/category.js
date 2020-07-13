@@ -1,6 +1,6 @@
 import React from "react";
 import { css } from "@emotion/core";
-import { graphql } from "gatsby";
+import { graphql, Link } from "gatsby";
 import Layout from "../components/layout";
 import _ from 'lodash';
 
@@ -37,7 +37,13 @@ export default function Category({data}) {
               `}>
                 {
                   postsByCategory[category].slice(0, LIMIT_PER_CATEGORY).map(p => {
-                    return <li key={p.fields.slug}>{p.frontmatter.title}</li>;
+                    return (
+                      <li key={p.fields.slug}>
+                        <Link to={p.fields.slug}>
+                          {p.frontmatter.title}
+                        </Link>
+                      </li>
+                    );
                   })
                 }
               </ul>
