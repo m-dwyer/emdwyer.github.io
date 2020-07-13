@@ -1,5 +1,6 @@
 ---
 title: First post
+category: development
 date: 2020-03-30
 cover: danielle-macinnes-IuLgi9PWETU-unsplash.jpg
 author: mdwyer

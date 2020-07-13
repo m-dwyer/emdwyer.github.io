@@ -31,6 +31,9 @@ exports.createPages = async({ graphql, actions }) => {
               fields {
                 slug
               }
+              frontmatter {
+                category
+              }
             }
             next {
               fields {
@@ -53,8 +56,14 @@ exports.createPages = async({ graphql, actions }) => {
       }    
     `);
 
+    let categories = new Set();
+
     result.data.posts.edges.forEach(edge => {
       const { node, next = null, previous = null } = edge;
+
+      if (node.frontmatter.category) {
+        categories.add(node.frontmatter.category.toLowerCase());
+      }
 
       createPage({
         path: node.fields.slug,
@@ -66,7 +75,16 @@ exports.createPages = async({ graphql, actions }) => {
         }
       });
     });
-
+    
+    categories.forEach(c => {
+      createPage({
+        path: `/category/${c}`,
+        component: path.resolve('./src/templates/category.js'),
+        context: {
+          category: c
+        }
+      });
+    });
 
     paginate({
       createPage,
