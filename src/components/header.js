@@ -15,6 +15,7 @@ export default function Header({ logo, children }) {
         position: fixed;
         width: 100%;
         max-height: 20vh;
+        z-index: 1;
       `}>
       <div css={
         theme => css`
