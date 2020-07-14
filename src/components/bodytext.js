@@ -11,6 +11,10 @@ export default function BodyText({ content }) {
           p {
             margin: 0 0 3em;
           }
+
+          ul {
+            margin: 0 0 3em;
+          }
         `}
         />
     </React.Fragment>
