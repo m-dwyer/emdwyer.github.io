@@ -17,28 +17,27 @@ export default function BlogWall({ posts }) {
                 width: 40vw;
                 margin: 1.5em auto;
               `}>
+              <Link
+                to={p.fields.slug}
+                css={css`
+                color: inherit;
+                text-decoration: none;
+              `}>
                 <header>
-                  <Link
-                    to={p.fields.slug}
-                    css={css`
-                      color: inherit;
-                      text-decoration: none;
+                  <Img
+                    fluid={fluid}
+                    css={css`border-radius: 10px;`}
+                  />
+                  <h2 css={css`
+                    margin-bottom: 0.75em;
                   `}>
-                    <Img
-                      fluid={fluid}
-                      css={css`border-radius: 10px;`}
-                    />
-                    <h2 css={css`
-                      margin-bottom: 0.75em;
-                    `}>
                     {p.frontmatter.title}
-                    </h2>
-                    <small>
-                      <FaCalendar css={css`
-                        margin: 0 10px 0 0;
-                      `} />  {p.frontmatter.date}
-                    </small>
-                  </Link>
+                  </h2>
+                  <small>
+                    <FaCalendar css={css`
+                      margin: 0 10px 0 0;
+                    `} />  {p.frontmatter.date}
+                  </small>
                 </header>
                 <section>
                   <p
@@ -51,6 +50,7 @@ export default function BlogWall({ posts }) {
                     }}
                   />
                 </section>
+              </Link>
             </article>
           </React.Fragment>
         );
