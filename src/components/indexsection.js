@@ -11,15 +11,17 @@ class IndexSection extends React.Component {
 
     const ReferencedSection = React.forwardRef((props, ref) => {
       return (
-        <section css={css`
-          display: flex;
-          flex-direction: column;
-          width: 80vw;
-          height: 100vh;
-          justify-content: center;
-          align-items: center;
-          margin: 0 auto;
-        `} ref={ref}>
+        <section
+          css={css`
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+          `}
+          ref={ref}>
           {props.children}
         </section>
     )});
