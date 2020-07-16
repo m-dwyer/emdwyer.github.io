@@ -1,6 +1,5 @@
 import React from "react";
 import { css } from "@emotion/core";
-import { Link } from "gatsby";
 
 class SectionScroll extends React.Component {
   constructor(props) {
