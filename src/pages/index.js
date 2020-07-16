@@ -10,18 +10,24 @@ import BlogPreview from "../components/blogpreview";
 import CallToAction from "../components/calltoaction";
 import _ from 'lodash';
 import HeroBackground from "../../static/bg.svg";
+import SectionScroll from "../components/sectionscroll";
 
 class Index extends React.Component {
   constructor(props) {
     super(props);
 
-    this.separator = React.createRef();
+    this.heroRef = React.createRef();
+    this.aboutRef = React.createRef();
+    this.contactRef = React.createRef();
+    this.blogRef = React.createRef();
+
+    this.allRefs = [this.heroRef, this.aboutRef, this.contactRef, this.blogRef];
 
     this.scrollToContent = this.scrollToContent.bind(this);
   }
 
   scrollToContent() {
-    this.separator.current.scrollIntoView({ block: "start", behavior: "smooth" });
+    this.contactRef.current.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
   render() {
@@ -30,12 +36,15 @@ class Index extends React.Component {
 
     return (
       <Layout>
+        <SectionScroll sectionRefs={this.allRefs} />
         <IndexSection css={css`
           background-image: linear-gradient(rgba(0, 0, 0, 0.5),rgba(0, 0, 0, 0.5)), url(${HeroBackground});
           background-position: center;
           background-size: cover;
           background-repeat: no-repeat;
-        `}>
+        `}
+          forwardedRef={this.heroRef}
+        >
           <h1>Hi, I'm mdwyer</h1>
           <button
             css={css`
@@ -50,13 +59,13 @@ class Index extends React.Component {
             <CallToAction />
           </button>
         </IndexSection>
-        <IndexSection forwardedRef={this.separator}>
+        <IndexSection forwardedRef={this.aboutRef}>
           <About />
         </IndexSection>
-        <IndexSection>
+        <IndexSection forwardedRef={this.contactRef}>
           <Contact contacts={contacts} />
         </IndexSection>
-        <IndexSection>
+        <IndexSection forwardedRef={this.blogRef}>
           <BlogPreview posts={posts} />
         </IndexSection>
       </Layout>  
