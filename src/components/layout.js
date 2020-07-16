@@ -60,6 +60,8 @@ export default function Layout({ children }) {
     colors: {
       fontColor: 'hsl(0, 0%, 90%)',
       bgColor: 'hsl(0, 0%, 14%)',
+      altBgColor: 'hsl(0, 0%, 14%)',
+      altBgColor2: 'hsl(0, 5%, 14%)',
       fgColor: 'hsl(0, 0%, 70%)',
       secondaryBgColor: 'hsl(275,59%,47%)'
     }
@@ -91,12 +93,19 @@ export default function Layout({ children }) {
             src: url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
           }
 
+          html, body {
+            margin: 0;
+            padding: 0;
+          }
+
+          * {
+            box-sizing: border-box;
+          }
+
           body {
             font-family: 'Ubuntu', sans-serif;
-            margin: 0;
             background-color: ${theme.colors.bgColor};
             color: ${theme.colors.fontColor};
-            padding-top: 1vh;
           }
 
           h1 {
@@ -113,7 +122,15 @@ export default function Layout({ children }) {
       <Header logo={logo}>
         <NavBar />
       </Header>
-      <main>
+      <main css={theme => css`
+        section:nth-child(1n) {
+          background-color: ${theme.colors.altBgColor};
+        }
+
+        section:nth-child(2n) {
+          background-color: ${theme.colors.altBgColor2};
+        }
+      `}>
           {children}
       </main>
     </ThemeProvider>
