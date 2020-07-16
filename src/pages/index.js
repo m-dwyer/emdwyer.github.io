@@ -8,6 +8,7 @@ import About from "../components/about";
 import Contact from "../components/contact"
 import BlogPreview from "../components/blogpreview";
 import _ from 'lodash';
+import HeroBackground from "../../static/bg.svg";
 
 class Index extends React.Component {
   constructor(props) {
@@ -28,7 +29,12 @@ class Index extends React.Component {
 
     return (
       <Layout>
-        <IndexSection>
+        <IndexSection css={css`
+          background-image: linear-gradient(rgba(0, 0, 0, 0.5),rgba(0, 0, 0, 0.5)), url(${HeroBackground});
+          background-position: center;
+          background-size: cover;
+          background-repeat: no-repeat;
+        `}>
           <h1>Hi, I'm mdwyer</h1>
           <button
             css={css`

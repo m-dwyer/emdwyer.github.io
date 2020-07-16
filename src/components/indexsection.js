@@ -21,7 +21,7 @@ class IndexSection extends React.Component {
             align-items: center;
             margin: 0 auto;
           `}
-          ref={ref}>
+          ref={ref} {...props}>
           {props.children}
         </section>
     )});
