@@ -17,6 +17,7 @@ export default function Header({ logo, children }) {
         height: 6vh;
         opacity: 0.9;
         z-index: 1;
+        box-shadow: 0px 2px 10px hsl(0, 0%, 15%);
       `}>
       <div css={
         theme => css`
