@@ -10,7 +10,7 @@ import BlogPreview from "../components/blogpreview";
 import CallToAction from "../components/calltoaction";
 import _ from 'lodash';
 import HeroBackground from "../../static/bg.svg";
-import SectionScroll from "../components/sectionscroll";
+import ScrollIndicator from "../components/scrollindicator";
 
 class Index extends React.Component {
   constructor(props) {
@@ -36,7 +36,7 @@ class Index extends React.Component {
 
     return (
       <Layout>
-        <SectionScroll sectionRefs={this.allRefs} />
+        <ScrollIndicator sectionRefs={this.allRefs} />
         <IndexSection css={css`
           background-image: linear-gradient(rgba(0, 0, 0, 0.5),rgba(0, 0, 0, 0.5)), url(${HeroBackground});
           background-position: center;
