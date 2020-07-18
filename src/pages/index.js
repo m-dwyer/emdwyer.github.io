@@ -66,7 +66,13 @@ class Index extends React.Component {
           <Contact contacts={contacts} />
         </IndexSection>
         <IndexSection forwardedRef={this.blogRef}>
+          <div css={css`
+            width: 40vw;
+            margin: 1.5em auto;
+          `}>
           <BlogPreview posts={posts} />
+          </div>
+
         </IndexSection>
       </Layout>  
     );

@@ -55,6 +55,7 @@ export default function BlogPreview() {
       <div css={css`
         display: flex;
         align-items: center;
+        justify-content: center;
       `}>
         <span css={css`
           font-size: 2em;

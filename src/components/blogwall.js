@@ -12,11 +12,7 @@ export default function BlogWall({ posts }) {
         const fluid = _.get(p, "frontmatter.cover.childImageSharp.fluid");
         return (
           <React.Fragment key={p.fields.slug}>
-            <article
-              css={css`
-                width: 40vw;
-                margin: 1.5em auto;
-              `}>
+            <article>
               <Link
                 to={p.fields.slug}
                 css={css`
