@@ -123,11 +123,11 @@ export default function Layout({ children }) {
         <NavBar />
       </Header>
       <main css={theme => css`
-        section:nth-child(1n) {
+        > section:nth-child(1n) {
           background-color: ${theme.colors.altBgColor};
         }
 
-        section:nth-child(2n) {
+        > section:nth-child(2n) {
           background-color: ${theme.colors.altBgColor2};
         }
       `}>

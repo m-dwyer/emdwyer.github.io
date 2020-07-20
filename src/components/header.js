@@ -14,7 +14,7 @@ export default function Header({ logo, children }) {
         background-color: ${theme.colors.secondaryBgColor};
         position: fixed;
         width: 100%;
-        height: 6vh;
+        height: 6vmax;
         opacity: 0.9;
         z-index: 1;
         box-shadow: 0px 2px 10px hsl(0, 0%, 15%);
