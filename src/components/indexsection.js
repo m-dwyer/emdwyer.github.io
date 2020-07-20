@@ -1,5 +1,6 @@
 import React from "react";
 import { css } from "@emotion/core";
+import FluidContainer from "./fluidcontainer";
 
 class IndexSection extends React.Component {
   constructor(props) {
@@ -22,16 +23,9 @@ class IndexSection extends React.Component {
             margin: auto;
         `}
           ref={ref} {...props}>
-          <div css={css`
-            max-width: 90%;
-            margin: 6rem auto 0 auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-          `}>
-          {props.children}
-          </div>
+          <FluidContainer>
+            {props.children}
+          </FluidContainer>
         </section>
     )});
 

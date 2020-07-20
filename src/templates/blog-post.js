@@ -7,6 +7,7 @@ import BlogNavigation from "../components/blognavigation";
 import BodyText from "../components/bodytext"
 import { generateNavigation } from "../utils/helpers";
 import _ from 'lodash';
+import FluidContainer from "../components/fluidcontainer";
 
 export default function BlogPost({data, pageContext}) {
   const content = data.markdownRemark;
@@ -22,45 +23,41 @@ export default function BlogPost({data, pageContext}) {
 
   return (
     <Layout>
-      <main css={css`
-        margin-left: auto;
-        margin-right: auto;
-        max-width: 42rem;
-        padding: 3rem;
-      `}>
-        <article css={css`
-        `}>
-          <header css={css`
-            margin-bottom: 2em;
-          `}>
-            <h1 css={css`
-              text-align: left;
-              margin-top: 2em;
-              margin-bottom: 1em;
-            `}>{content.frontmatter.title}</h1>
-            <p css={css`
-              margin-bottom: 4em;
+      <FluidContainer>
+        <main>
+          <article>
+            <header css={css`
+              margin-bottom: 2rem;
             `}>
-              <FaCalendar
-                css={css`
-                  margin: 0 10px 0 0;
-                `} />
-                {content.frontmatter.date}
-            </p>
-          </header>
-          <section>
-            <BodyText content={content.html} />
-          </section>
-          <footer css={css`
-            margin-top: 2em;
-          `}>
-            <BlogNavigation
-              previous={previous}
-              next={next}
-            />
-          </footer>
-        </article>
-      </main>
+              <h1 css={css`
+                text-align: left;
+                margin-top: 2rem;
+                margin-bottom: 1rem;
+              `}>{content.frontmatter.title}</h1>
+              <p css={css`
+                margin-bottom: 4rem;
+              `}>
+                <FaCalendar
+                  css={css`
+                    margin: 0 10px 0 0;
+                  `} />
+                  {content.frontmatter.date}
+              </p>
+            </header>
+            <section>
+              <BodyText content={content.html} />
+            </section>
+            <footer css={css`
+              margin-top: 2rem;
+            `}>
+              <BlogNavigation
+                previous={previous}
+                next={next}
+              />
+            </footer>
+          </article>
+        </main>
+      </FluidContainer>
     </Layout>
   );
 }
