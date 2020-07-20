@@ -25,13 +25,10 @@ export default function BlogPost({data, pageContext}) {
       <main css={css`
         margin-left: auto;
         margin-right: auto;
-        padding: 5em 3em;
-        max-height: 80vh;
-        max-width: 80vw;
+        max-width: 42rem;
+        padding: 3rem;
       `}>
         <article css={css`
-          max-width: 50vw;
-          margin: 0 auto;
         `}>
           <header css={css`
             margin-bottom: 2em;

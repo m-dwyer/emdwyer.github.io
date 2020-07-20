@@ -23,11 +23,10 @@ class IndexSection extends React.Component {
         `}
           ref={ref} {...props}>
           <div css={css`
-            max-width: 45rem;
+            max-width: 90%;
             margin: 6rem auto 0 auto;
             display: flex;
             flex-direction: column;
-            width: 100%;
             justify-content: center;
             align-items: center;
           `}>
