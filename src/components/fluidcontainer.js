@@ -6,7 +6,6 @@ export default function FluidContainer({ children }) {
     <div css={css`
     margin-left: auto;
     margin-right: auto;
-    background-color: pink;
     padding: 2.5rem 1.3rem;
     max-width: 42rem;
     display: flex;
