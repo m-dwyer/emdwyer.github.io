@@ -3,7 +3,7 @@ import { css } from "@emotion/core";
 
 export default function About() {
   return (
-    <div>
+    <div css={css`min-width: 90vw;`}>
       <h1>
         About me
       </h1>
@@ -13,14 +13,18 @@ export default function About() {
         flex-direction: row;
         flex-wrap: wrap;
       `}>
-        <div css={css`
+        <section css={css`
           flex: 1 1 50%;
-          min-width: 10rem;
+          min-width: 12rem;
         `}>
           <h2>Interests</h2>
           <ul css={css`
             list-style: none;
             padding-left: 0;
+
+            li {
+              line-height: 1.7rem;
+            }
           `}>
             <li>Development (Full stack)</li>
             <li>Linux</li>
@@ -37,10 +41,10 @@ export default function About() {
             </li>
             <li>LGBTIQA+ Rights and Causes</li>
           </ul>
-        </div>
-        <div css={css`
+        </section>
+        <section css={css`
           flex: 1 1 50%;
-          min-width: 10rem;
+          min-width: 12rem;
         `}>
           <h2>Background</h2>
           <ul css={css`
@@ -55,7 +59,7 @@ export default function About() {
             <li>Experience in Ruby, C#, .NET, Bash</li>
             <li>Currently learning a new stack with HTML5, CSS3, React, Node - follow my adventures!</li>
           </ul>
-        </div>
+        </section>
       </div>
     </div>
   );
