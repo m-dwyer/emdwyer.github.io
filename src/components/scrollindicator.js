@@ -90,11 +90,32 @@ class ScrollIndicator extends React.Component {
           animation-iteration-count: 1;
         }
 
+        .pulsing-point {
+          animation: pulsing-point 1s infinite;
+        }
+
+        @keyframes pulsing-point {
+          0% {
+            transform: scale(0.8);
+          }
+
+          50% {
+            transform: scale(1.0);
+          }
+
+          100% {
+            transform: scale(0.8);
+          }
+        }
+
       `}>
       {
         this.state.sections.map((section, idx) => {
           let color = section === this.state.currentSection ?
-                        'green' : 'red'
+                        'green' : 'red';
+
+          let pulsingClass = section === this.state.currentSection ?
+                              'pulsing-point' : '';
           return (
             <ReferencedScrollItem
               key={idx}
@@ -102,6 +123,7 @@ class ScrollIndicator extends React.Component {
               css={css`
                 background-color: ${color}
               `}
+              className={pulsingClass}
               {...this.props}
             />
           );
