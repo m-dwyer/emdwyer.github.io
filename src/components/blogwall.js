@@ -7,7 +7,7 @@ import _ from 'lodash';
 
 export default function BlogWall({ posts }) {
   return (
-    <React.Fragment>
+    <div>
       {posts.map(({childMarkdownRemark: p}) => {
         const fluid = _.get(p, "frontmatter.cover.childImageSharp.fluid");
         return (
@@ -51,6 +51,6 @@ export default function BlogWall({ posts }) {
           </React.Fragment>
         );
       })}
-    </React.Fragment>
+    </div>
   );
 }
