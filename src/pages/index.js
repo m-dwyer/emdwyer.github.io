@@ -67,7 +67,8 @@ class Index extends React.Component {
         </IndexSection>
         <IndexSection forwardedRef={this.blogRef}>
           <div css={css`
-            width: 40vw;
+            min-width: 20rem;
+            max-width: 42rem;
             margin: 1.5em auto;
           `}>
           <BlogPreview posts={posts} />
