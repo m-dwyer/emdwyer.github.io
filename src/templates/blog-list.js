@@ -5,6 +5,7 @@ import BlogWall from "../components/blogwall";
 import BlogNavigation from "../components/blognavigation";
 import { generateNavigation } from "../utils/helpers";
 import _ from "lodash";
+import IndexSection from "../components/indexsection";
 
 export default function Posts({data, pageContext}) {
   const posts = _.get(data, "posts.nodes");
@@ -14,22 +15,14 @@ export default function Posts({data, pageContext}) {
 
   return (
     <Layout>
-      <section css={css`
-        margin-left: auto;
-        margin-right: auto;
-        padding: 5em 3em;
-        max-height: 80vh;
-        max-width: 80vw;
-      `}>
-        <div>
+      <IndexSection>
           <BlogNavigation
             previous={previous}
             next={next}
           />
           <hr />
           <BlogWall posts={posts} />
-        </div>
-      </section>
+      </IndexSection>
     </Layout>
   );
 }
