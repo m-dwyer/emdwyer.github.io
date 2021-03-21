@@ -1,8 +1,10 @@
 import React from "react"
 import { Link } from "gatsby"
 import { css } from "@emotion/core"
+import { useTheme } from "emotion-theming"
 
 const NavBar = ({ children }) => {
+  const theme = useTheme()
   return (
     <nav>
       <ul

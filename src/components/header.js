@@ -1,10 +1,13 @@
 import React from "react"
 import { css } from "@emotion/core"
+import { useTheme } from "emotion-theming"
 
 const Header = ({ logo, children }) => {
+  const theme = useTheme()
+
   return (
     <header
-      css={theme => css`
+      css={css`
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -21,7 +24,7 @@ const Header = ({ logo, children }) => {
       `}
     >
       <div
-        css={theme => css`
+        css={css`
           padding: 10px;
           color: ${theme.colors.fontColor};
           display: flex;
