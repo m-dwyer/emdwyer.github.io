@@ -1,11 +1,12 @@
 import React from "react"
 import { useStaticQuery, graphql } from "gatsby"
 import Img from "gatsby-image"
-import { css, Global } from "@emotion/core"
+import { css } from "@emotion/core"
 import { ThemeProvider } from "emotion-theming"
 import NavBar from "./navbar"
 import Header from "./header"
 import Crossfade from "./crossfade"
+import GlobalStyles from "./globalstyles"
 
 const Layout = ({ children }) => {
   const data = useStaticQuery(
@@ -97,40 +98,7 @@ const Layout = ({ children }) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Global
-        styles={theme => css`
-          @font-face {
-            font-family: "Ubuntu";
-            src: url("https://fonts.googleapis.com/css2?family=Ubuntu&display=swap");
-          }
-
-          html,
-          body {
-            margin: 0;
-            padding: 0;
-          }
-
-          * {
-            box-sizing: border-box;
-          }
-
-          body {
-            font-family: "Ubuntu", sans-serif;
-            background-color: ${theme.colors.bgColor};
-            color: ${theme.colors.fontColor};
-          }
-
-          h1 {
-            font-weight: 600;
-            font-size: 4rem;
-            text-align: center;
-          }
-
-          a {
-            color: inherit;
-          }
-        `}
-      />
+      <GlobalStyles />
       <Header logo={logo}>
         <NavBar />
       </Header>
