@@ -1,7 +1,6 @@
 import React from "react"
 import Layout from "../components/layout"
 import BlogWall from "../components/blogwall"
-import Index from "../pages"
 import IndexSection from "../components/indexsection"
 import _ from "lodash"
 

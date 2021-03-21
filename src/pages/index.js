@@ -10,15 +10,12 @@ import BlogPreview from "../components/blogpreview"
 import CallToAction from "../components/calltoaction"
 import _ from "lodash"
 import HeroBackground from "../../static/bg.svg"
-import ScrollIndicator from "../components/scrollindicator"
 
 const Index = ({ data }) => {
   const heroRef = React.createRef()
   const aboutRef = React.createRef()
   const contactRef = React.createRef()
   const blogRef = React.createRef()
-
-  const allRefs = [heroRef, aboutRef, contactRef, blogRef]
 
   const scrollToContent = () => {
     contactRef.current.scrollIntoView({

@@ -8,7 +8,7 @@ const NavBar = ({ children }) => {
   return (
     <nav>
       <ul
-        css={theme => css`
+        css={css`
           display: flex;
           justify-content: flex-end;
           list-style-type: none;
