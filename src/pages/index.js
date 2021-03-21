@@ -30,8 +30,6 @@ const Index = ({ data }) => {
   const contacts = _.get(data, "site.siteMetadata.contact")
   const posts = _.get(data, "posts.nodes")
 
-  console.log("DATA", data)
-
   return (
     <Layout>
       <IndexSection
