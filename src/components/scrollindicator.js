@@ -1,67 +1,56 @@
-import React from "react";
-import { css } from "@emotion/core";
+import React, { useEffect, useState } from "react"
+import { css } from "@emotion/core"
 
-class ScrollIndicator extends React.Component {
-  constructor(props) {
-    super(props);
+const ScrollIndicator = props => {
+  const [state, setState] = useState({
+    sections: props.sectionRefs,
+    currentSection: null,
+  })
 
-    this.scrollToContent = this.scrollToContent.bind(this);
-    this.handleScroll = this.handleScroll.bind(this);
-
-    this.state = {
-      sections: props.sectionRefs,
-      currentSection: null
-    }
+  const scrollToContent = ref => {
+    ref.current.scrollIntoView({ block: "start", behavior: "smooth" })
   }
 
-  scrollToContent(ref) {
-    ref.current.scrollIntoView({ block: "start", behavior: "smooth" });
-  }
-
-
-  handleScroll() {
-    let currentSection = this.state.sections[0];
+  const handleScroll = () => {
+    let currentSection = this.state.sections[0]
 
     for (let i = 0; i < this.state.sections.length; i++) {
       if (window.pageYOffset > this.state.sections[i].current.offsetTop) {
-        currentSection = this.state.sections[i];
+        currentSection = this.state.sections[i]
       }
     }
 
-    this.setState({
-      currentSection: currentSection
-    });
+    setState({
+      currentSection: currentSection,
+    })
   }
 
-  componentDidMount() {
-    window.addEventListener('scroll', this.handleScroll);
-  }
+  useEffect(() => {
+    window.onscroll = handleScroll
+  }, [])
 
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll);
-  }
-
-  render() {
-    const ReferencedScrollItem = React.forwardRef((props, ref) => {
-      return (
-        <span
-          css={css`
-            height: 20px;
-            width: 20px;
-            background-color: red;
-            border-radius: 50%;
-          `}
-          onClick={() => this.scrollToContent(ref)}
-          {...props}
-        >
-          {props.children}
-        </span>
-    )});
-
+  const ReferencedScrollItem = React.forwardRef((props, ref) => {
     return (
-      <div css={css`
+      <span
+        css={css`
+          height: 20px;
+          width: 20px;
+          background-color: red;
+          border-radius: 50%;
+        `}
+        onClick={() => scrollToContent(ref)}
+        {...props}
+      >
+        {props.children}
+      </span>
+    )
+  })
+
+  return (
+    <div
+      css={css`
         position: fixed;
-        ${'' /* right: -9vw; */}
+        ${"" /* right: -9vw; */}
         right: 0vw;
         width: 10vw;
         border: 2px red solid;
@@ -76,7 +65,7 @@ class ScrollIndicator extends React.Component {
           @keyframes show-sidebar {
             0% {
               right: 0vw;
-              ${'' /* right: -9vw; */}
+              ${"" /* right: -9vw; */}
             }
 
             100% {
@@ -100,38 +89,34 @@ class ScrollIndicator extends React.Component {
           }
 
           50% {
-            transform: scale(1.0);
+            transform: scale(1);
           }
 
           100% {
             transform: scale(0.8);
           }
         }
+      `}
+    >
+      {state.sections.map((section, idx) => {
+        let color = section === state.currentSection ? "green" : "red"
 
-      `}>
-      {
-        this.state.sections.map((section, idx) => {
-          let color = section === this.state.currentSection ?
-                        'green' : 'red';
-
-          let pulsingClass = section === this.state.currentSection ?
-                              'pulsing-point' : '';
-          return (
-            <ReferencedScrollItem
-              key={idx}
-              ref={section}
-              css={css`
-                background-color: ${color}
-              `}
-              className={pulsingClass}
-              {...this.props}
-            />
-          );
-        })
-      }
-      </div>
-    );
-  }
+        let pulsingClass =
+          section === state.currentSection ? "pulsing-point" : ""
+        return (
+          <ReferencedScrollItem
+            key={idx}
+            ref={section}
+            css={css`
+              background-color: ${color};
+            `}
+            className={pulsingClass}
+            {...props}
+          />
+        )
+      })}
+    </div>
+  )
 }
 
-export default ScrollIndicator;
+export default ScrollIndicator

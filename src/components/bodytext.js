@@ -1,9 +1,9 @@
-import React from "react";
-import { css } from "@emotion/core";
+import React from "react"
+import { css } from "@emotion/core"
 
-export default function BodyText({ content }) {
+const BodyText = ({ content }) => {
   return (
-    <React.Fragment>
+    <>
       <div
         dangerouslySetInnerHTML={{ __html: content }}
         css={css`
@@ -16,7 +16,9 @@ export default function BodyText({ content }) {
             margin: 0 0 3em;
           }
         `}
-        />
-    </React.Fragment>
-  );
+      />
+    </>
+  )
 }
+
+export default BodyText

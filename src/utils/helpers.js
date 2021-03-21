@@ -1,10 +1,10 @@
-export function generateNavigation(path, label) {
+export const generateNavigation = (path, label) => {
   if (Boolean(path)) {
     return {
       path: path,
-      label
-    };
+      label,
+    }
   }
 
-  return null;
+  return null
 }

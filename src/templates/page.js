@@ -1,10 +1,10 @@
-import React from "react";
-import { graphql } from "gatsby";
-import Layout from "../components/layout";
-import IndexSection from "../components/indexsection";
+import React from "react"
+import { graphql } from "gatsby"
+import Layout from "../components/layout"
+import IndexSection from "../components/indexsection"
 
-export default function Page({ data }) {
-  const content = data.markdownRemark;
+const Page = ({ data }) => {
+  const content = data.markdownRemark
   return (
     <Layout>
       <IndexSection>
@@ -12,16 +12,18 @@ export default function Page({ data }) {
         <div dangerouslySetInnerHTML={{ __html: content.html }} />
       </IndexSection>
     </Layout>
-  );
+  )
 }
+
+export default Page
 
 export const query = graphql`
   query($slug: String!) {
-    markdownRemark(fields: { slug: { eq: $slug }}) {
+    markdownRemark(fields: { slug: { eq: $slug } }) {
       html
       frontmatter {
         title
       }
     }
   }
-`;
+`

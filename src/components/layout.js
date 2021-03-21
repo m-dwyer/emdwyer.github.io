@@ -1,20 +1,20 @@
-import React from "react";
-import { useStaticQuery, graphql } from "gatsby";
-import Img from "gatsby-image";
-import { css, Global } from "@emotion/core";
-import { ThemeProvider } from "emotion-theming";
-import NavBar from "./navbar";
-import Header from "./header";
-import Crossfade from "./crossfade";
+import React from "react"
+import { useStaticQuery, graphql } from "gatsby"
+import Img from "gatsby-image"
+import { css, Global } from "@emotion/core"
+import { ThemeProvider } from "emotion-theming"
+import NavBar from "./navbar"
+import Header from "./header"
+import Crossfade from "./crossfade"
 
-export default function Layout({ children }) {
+const Layout = ({ children }) => {
   const data = useStaticQuery(
     graphql`
       query {
         allFile(
           filter: {
-            internal: {mediaType: {eq: "text/markdown"}},
-            sourceInstanceName: {eq: "pages"}
+            internal: { mediaType: { eq: "text/markdown" } }
+            sourceInstanceName: { eq: "pages" }
           }
         ) {
           nodes {
@@ -30,7 +30,10 @@ export default function Layout({ children }) {
             }
           }
         }
-        logo: file(relativePath: {eq: "icon.png"}, sourceInstanceName: {eq: "images"}) {
+        logo: file(
+          relativePath: { eq: "icon.png" }
+          sourceInstanceName: { eq: "images" }
+        ) {
           childImageSharp {
             fixed(width: 35, height: 35) {
               base64
@@ -41,7 +44,10 @@ export default function Layout({ children }) {
             }
           }
         }
-        avatar: file(relativePath: {eq: "avatar.jpg"}, sourceInstanceName: {eq: "images"}) {
+        avatar: file(
+          relativePath: { eq: "avatar.jpg" }
+          sourceInstanceName: { eq: "images" }
+        ) {
           childImageSharp {
             fixed(width: 35, height: 35) {
               base64
@@ -54,46 +60,52 @@ export default function Layout({ children }) {
         }
       }
     `
-  );
-    
+  )
+
   const theme = {
     colors: {
-      fontColor: 'hsl(0, 0%, 90%)',
-      bgColor: 'hsl(0, 0%, 14%)',
-      altBgColor: 'hsl(0, 5%, 14%)',
-      altBgColor2: 'hsl(0, 0%, 14%)',
-      fgColor: 'hsl(0, 0%, 70%)',
-      secondaryBgColor: 'hsl(275,59%,47%)'
-    }
+      fontColor: "hsl(0, 0%, 90%)",
+      bgColor: "hsl(0, 0%, 14%)",
+      altBgColor: "hsl(0, 5%, 14%)",
+      altBgColor2: "hsl(0, 0%, 14%)",
+      fgColor: "hsl(0, 0%, 70%)",
+      secondaryBgColor: "hsl(275,59%,47%)",
+    },
   }
 
-  const backgroundLogo =
+  const backgroundLogo = (
     <Img
       fixed={data.avatar.childImageSharp.fixed}
-      css={css`border-radius: 50%;`}
-    />;
+      css={css`
+        border-radius: 50%;
+      `}
+    />
+  )
 
-  const foregroundLogo =
+  const foregroundLogo = (
     <Img
       fixed={data.logo.childImageSharp.fixed}
-      css={css`border-radius: 50%;`}
-    />;
+      css={css`
+        border-radius: 50%;
+      `}
+    />
+  )
 
-  const logo = <Crossfade
-                  background={backgroundLogo}
-                  foreground={foregroundLogo}
-                />;
+  const logo = (
+    <Crossfade background={backgroundLogo} foreground={foregroundLogo} />
+  )
 
   return (
     <ThemeProvider theme={theme}>
       <Global
         styles={theme => css`
           @font-face {
-            font-family: 'Ubuntu';
-            src: url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
+            font-family: "Ubuntu";
+            src: url("https://fonts.googleapis.com/css2?family=Ubuntu&display=swap");
           }
 
-          html, body {
+          html,
+          body {
             margin: 0;
             padding: 0;
           }
@@ -103,7 +115,7 @@ export default function Layout({ children }) {
           }
 
           body {
-            font-family: 'Ubuntu', sans-serif;
+            font-family: "Ubuntu", sans-serif;
             background-color: ${theme.colors.bgColor};
             color: ${theme.colors.fontColor};
           }
@@ -122,17 +134,21 @@ export default function Layout({ children }) {
       <Header logo={logo}>
         <NavBar />
       </Header>
-      <main css={theme => css`
-        > section:nth-child(1n) {
-          background-color: ${theme.colors.altBgColor};
-        }
+      <main
+        css={theme => css`
+          > section:nth-child(1n) {
+            background-color: ${theme.colors.altBgColor};
+          }
 
-        > section:nth-child(2n) {
-          background-color: ${theme.colors.altBgColor2};
-        }
-      `}>
-          {children}
+          > section:nth-child(2n) {
+            background-color: ${theme.colors.altBgColor2};
+          }
+        `}
+      >
+        {children}
       </main>
     </ThemeProvider>
-  );
+  )
 }
+
+export default Layout
