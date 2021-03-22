@@ -1,7 +1,9 @@
-import React from "react"
+import React, { useContext, useEffect, useRef } from "react"
 import { css } from "@emotion/core"
 
-const IndexSection = ({ forwardedRef, children, ...props }) => {
+import { NavContext } from "./layout"
+
+const IndexSection = ({ children, navLabel, ...props }) => {
   const ReferencedSection = React.forwardRef((props, ref) => {
     return (
       <section
@@ -22,8 +24,16 @@ const IndexSection = ({ forwardedRef, children, ...props }) => {
     )
   })
 
+  const { setNavItems } = useContext(NavContext)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    setNavItems({ label: navLabel, ref })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
-    <ReferencedSection ref={forwardedRef} {...props}>
+    <ReferencedSection ref={ref} {...props}>
       {children}
     </ReferencedSection>
   )

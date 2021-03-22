@@ -12,10 +12,7 @@ import _ from "lodash"
 import HeroBackground from "../../static/bg.svg"
 
 const Index = ({ data }) => {
-  const heroRef = React.createRef()
-  const aboutRef = React.createRef()
   const contactRef = React.createRef()
-  const blogRef = React.createRef()
 
   const scrollToContent = () => {
     contactRef.current.scrollIntoView({
@@ -40,7 +37,7 @@ const Index = ({ data }) => {
           background-size: cover;
           background-repeat: no-repeat;
         `}
-        forwardedRef={heroRef}
+        navLabel="Home"
       >
         <h1>Hi, I'm mdwyer</h1>
         <button
@@ -56,13 +53,13 @@ const Index = ({ data }) => {
           <CallToAction />
         </button>
       </IndexSection>
-      <IndexSection forwardedRef={aboutRef}>
+      <IndexSection navLabel="About">
         <About />
       </IndexSection>
-      <IndexSection forwardedRef={contactRef}>
+      <IndexSection navLabel="Contact">
         <Contact contacts={contacts} />
       </IndexSection>
-      <IndexSection forwardedRef={blogRef}>
+      <IndexSection navLabel="Posts">
         <BlogPreview posts={posts} />
       </IndexSection>
     </Layout>

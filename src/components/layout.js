@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useReducer, createContext } from "react"
 import { useStaticQuery, graphql } from "gatsby"
 import Img from "gatsby-image"
 import { css } from "@emotion/core"
@@ -7,6 +7,8 @@ import NavBar from "./navbar"
 import Header from "./header"
 import Crossfade from "./crossfade"
 import GlobalStyles from "./globalstyles"
+
+export const NavContext = createContext()
 
 const Layout = ({ children }) => {
   const data = useStaticQuery(
@@ -96,25 +98,33 @@ const Layout = ({ children }) => {
     <Crossfade background={backgroundLogo} foreground={foregroundLogo} />
   )
 
+  const reducer = (state, item) => {
+    return [...state, item]
+  }
+
+  const [navItems, setNavItems] = useReducer(reducer, [])
+
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
-      <Header logo={logo}>
-        <NavBar />
-      </Header>
-      <main
-        css={theme => css`
-          > section:nth-child(1n) {
-            background-color: ${theme.colors.altBgColor};
-          }
+      <NavContext.Provider value={{ navItems, setNavItems }}>
+        <Header logo={logo}>
+          <NavBar />
+        </Header>
+        <main
+          css={theme => css`
+            > section:nth-child(1n) {
+              background-color: ${theme.colors.altBgColor};
+            }
 
-          > section:nth-child(2n) {
-            background-color: ${theme.colors.altBgColor2};
-          }
-        `}
-      >
-        {children}
-      </main>
+            > section:nth-child(2n) {
+              background-color: ${theme.colors.altBgColor2};
+            }
+          `}
+        >
+          {children}
+        </main>
+      </NavContext.Provider>
     </ThemeProvider>
   )
 }
