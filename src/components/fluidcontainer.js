@@ -5,14 +5,9 @@ const FluidContainer = ({ children }) => {
   return (
     <div
       css={css`
-        margin-left: auto;
-        margin-right: auto;
+        margin: 0 auto;
         padding: 2.5rem 1.3rem;
-        max-width: 42rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        max-width: 85%;
       `}
     >
       {children}

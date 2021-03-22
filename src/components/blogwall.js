@@ -7,12 +7,24 @@ import _ from "lodash"
 
 const BlogWall = ({ posts }) => {
   return (
-    <div>
+    <div
+      css={css`
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: center;
+      `}
+    >
       {posts.map(({ childMarkdownRemark: p }) => {
         const fluid = _.get(p, "frontmatter.cover.childImageSharp.fluid")
         return (
           <React.Fragment key={p.fields.slug}>
-            <article>
+            <article
+              css={css`
+                max-width: 20em;
+                margin: 0.5em;
+              `}
+            >
               <Link
                 to={p.fields.slug}
                 css={css`

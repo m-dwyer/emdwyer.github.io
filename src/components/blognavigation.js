@@ -1,13 +1,14 @@
 import React from "react"
 import { css } from "@emotion/core"
 import { Link } from "gatsby"
+import FluidContainer from "./fluidcontainer"
 
 const BlogNavigation = ({ previous, next }) => {
   return (
     <div
       css={css`
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-wrap: wrap;
       `}
     >
       <div

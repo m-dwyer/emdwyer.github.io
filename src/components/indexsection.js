@@ -18,7 +18,7 @@ const IndexSection = ({ forwardedRef, children, ...props }) => {
         ref={ref}
         {...props}
       >
-        <FluidContainer>{props.children}</FluidContainer>
+        {children}
       </section>
     )
   })

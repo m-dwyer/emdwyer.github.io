@@ -1,10 +1,12 @@
 import React from "react"
+import { css } from "@emotion/core"
+
 import Layout from "../components/layout"
 import BlogWall from "../components/blogwall"
 import BlogNavigation from "../components/blognavigation"
 import { generateNavigation } from "../utils/helpers"
 import _ from "lodash"
-import IndexSection from "../components/indexsection"
+import FluidContainer from "../components/fluidcontainer"
 
 const Posts = ({ data, pageContext }) => {
   const posts = _.get(data, "posts.nodes")
@@ -14,11 +16,17 @@ const Posts = ({ data, pageContext }) => {
 
   return (
     <Layout>
-      <IndexSection>
+      <FluidContainer>
+        <h1
+          css={css`
+            margin-bottom: 1.5em;
+          `}
+        >
+          Blog
+        </h1>
         <BlogNavigation previous={previous} next={next} />
-        <hr />
         <BlogWall posts={posts} />
-      </IndexSection>
+      </FluidContainer>
     </Layout>
   )
 }
