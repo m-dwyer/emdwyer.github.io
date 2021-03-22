@@ -1,7 +1,8 @@
-import React, { useContext, useEffect } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { css } from "@emotion/core"
 import { FaArrowDown } from "react-icons/fa"
 import { NavContext } from "./layout"
+import { motion, AnimatePresence } from "framer-motion"
 
 const Hero = () => {
   const { navItems } = useContext(NavContext)
