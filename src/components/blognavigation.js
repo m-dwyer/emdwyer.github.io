@@ -1,8 +1,6 @@
 import React from "react"
 import { css } from "@emotion/core"
 import { Link } from "gatsby"
-import FluidContainer from "./fluidcontainer"
-
 const BlogNavigation = ({ previous, next }) => {
   return (
     <div
