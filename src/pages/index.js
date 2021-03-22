@@ -7,20 +7,11 @@ import IndexSection from "../components/indexsection"
 import About from "../components/about"
 import Contact from "../components/contact"
 import BlogPreview from "../components/blogpreview"
-import CallToAction from "../components/calltoaction"
+import Hero from "../components/hero"
 import _ from "lodash"
 import HeroBackground from "../../static/bg.svg"
 
 const Index = ({ data }) => {
-  const contactRef = React.createRef()
-
-  const scrollToContent = () => {
-    contactRef.current.scrollIntoView({
-      block: "start",
-      behavior: "smooth",
-    })
-  }
-
   const contacts = _.get(data, "site.siteMetadata.contact")
   const posts = _.get(data, "posts.nodes")
 
@@ -39,19 +30,7 @@ const Index = ({ data }) => {
         `}
         navLabel="Home"
       >
-        <h1>Hi, I'm mdwyer</h1>
-        <button
-          css={css`
-            border: 0;
-            border-radius: 50%;
-            height: 80px;
-            width: 80px;
-            cursor: pointer;
-          `}
-          onClick={scrollToContent}
-        >
-          <CallToAction />
-        </button>
+        <Hero />
       </IndexSection>
       <IndexSection navLabel="About">
         <About />
