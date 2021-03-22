@@ -1,6 +1,5 @@
 import React from "react"
 import { css } from "@emotion/core"
-import FluidContainer from "./fluidcontainer"
 
 const IndexSection = ({ forwardedRef, children, ...props }) => {
   const ReferencedSection = React.forwardRef((props, ref) => {
