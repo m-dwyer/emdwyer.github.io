@@ -37,19 +37,36 @@ const NavBar = ({ children }) => {
           color: ${theme.colors.fontColor};
           margin: 1em;
           visibility: ${visible ? "hidden" : "visible"};
+
+          @media (min-width: 480px) {
+            visibility: hidden;
+          }
         `}
         onClick={toggleMenu}
       />
       <nav
         css={css`
-          display: ${visible ? "unset" : "none"};
+          background: ${theme.colors.bgColor};
           height: 100vh;
           position: fixed;
           z-index: 999;
           width: 30%;
           right: 0;
           top: 0;
-          background: ${theme.colors.bgColor};
+          display: ${visible ? "unset" : "none"};
+
+          @media (min-width: 480px) {
+            display: flex;
+            justify-content: flex-end;
+            position: unset;
+            background: none;
+            height: unset;
+            width: auto;
+
+            ul {
+              display: flex;
+            }
+          }
         `}
       >
         <CloseIcon
@@ -59,6 +76,10 @@ const NavBar = ({ children }) => {
             top: 0;
             color: ${theme.colors.fontColor};
             margin: 1em;
+
+            @media (min-width: 480px) {
+              visibility: hidden;
+            }
           `}
           onClick={toggleMenu}
         />
@@ -76,6 +97,15 @@ const NavBar = ({ children }) => {
 
               &:hover {
                 font-weight: bold;
+              }
+
+              @media (min-width: 480px) {
+                text-align: center;
+                padding: 1em 0.5em;
+                height: 100%;
+                :first-child {
+                  margin-top: unset;
+                }
               }
             }
           `}
