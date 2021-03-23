@@ -4,8 +4,8 @@ import { useTheme } from "emotion-theming"
 
 import { NavContext } from "./layout"
 
-import HamburgerIcon from "../../static/hamburger.svg"
-import CloseIcon from "../../static/closemenu.svg"
+import HamburgerIcon from "../../static/hamburger.inline.svg"
+import CloseIcon from "../../static/closemenu.inline.svg"
 
 const NavBar = ({ children }) => {
   const theme = useTheme()
