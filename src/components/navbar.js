@@ -42,7 +42,7 @@ const NavBar = ({ children }) => {
       />
       <nav
         css={css`
-          // display: ${visible ? "unset" : "none"};
+          display: ${visible ? "unset" : "none"};
           height: 100vh;
           position: fixed;
           z-index: 999;
@@ -60,6 +60,7 @@ const NavBar = ({ children }) => {
             color: ${theme.colors.fontColor};
             margin: 1em;
           `}
+          onClick={toggleMenu}
         />
         <ul
           css={css`
