@@ -8,8 +8,6 @@ import Header from "./header"
 import Crossfade from "./crossfade"
 import GlobalStyles from "./globalstyles"
 
-import { motion } from "framer-motion"
-
 export const NavContext = createContext()
 
 const Layout = ({ children }) => {
@@ -113,7 +111,7 @@ const Layout = ({ children }) => {
         <Header logo={logo}>
           <NavBar />
         </Header>
-        <motion.main
+        <main
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -128,7 +126,7 @@ const Layout = ({ children }) => {
           `}
         >
           {children}
-        </motion.main>
+        </main>
       </NavContext.Provider>
     </ThemeProvider>
   )
