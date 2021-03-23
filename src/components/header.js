@@ -1,6 +1,7 @@
 import React from "react"
 import { css } from "@emotion/core"
 import { useTheme } from "emotion-theming"
+import { Link } from "gatsby"
 
 const Header = ({ logo, children }) => {
   const theme = useTheme()
@@ -22,24 +23,26 @@ const Header = ({ logo, children }) => {
         box-shadow: 0px 2px 10px hsl(0, 0%, 15%);
       `}
     >
-      <div
-        css={css`
-          padding: 10px;
-          color: ${theme.colors.fontColor};
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        `}
-      >
-        {logo}
+      <Link to="/">
         <div
           css={css`
-            margin: 0 15px;
+            padding: 10px;
+            color: ${theme.colors.fontColor};
+            display: flex;
+            justify-content: center;
+            align-items: center;
           `}
         >
-          mdwyer
+          {logo}
+          <div
+            css={css`
+              margin: 0 15px;
+            `}
+          >
+            mdwyer
+          </div>
         </div>
-      </div>
+      </Link>
       {children}
     </header>
   )

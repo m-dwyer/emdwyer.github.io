@@ -34,6 +34,7 @@ const GlobalStyles = () => {
 
         a {
           color: inherit;
+          text-decoration: none;
         }
 
         ul {
