@@ -35,6 +35,11 @@ const GlobalStyles = () => {
         a {
           color: inherit;
         }
+
+        ul {
+          list-style-type: none;
+          padding: 0;
+        }
       `}
     />
   )
