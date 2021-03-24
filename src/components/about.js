@@ -12,72 +12,37 @@ const About = () => {
       <div
         css={css`
           display: flex;
-          justify-content: space-between;
+          justify-content: space-around;
           flex-direction: row;
           flex-wrap: wrap;
+
+          margin: 0 2em;
+
+          section {
+            flex: 1 1 50%;
+            padding: 3em;
+          }
+
+          ul li {
+            line-height: 2.5em;
+          }
         `}
       >
-        <section
-          css={css`
-            flex: 1 1 50%;
-            min-width: 12rem;
-          `}
-        >
-          <h2>Interests</h2>
-          <ul
-            css={css`
-              list-style: none;
-              padding-left: 0;
-
-              li {
-                line-height: 1.7rem;
-              }
-            `}
-          >
-            <li>Development (Full stack)</li>
-            <li>Linux</li>
-            <li>InfoSec</li>
-            <li>
-              Fitness
-              <ul
-                css={css`
-                  list-style: none;
-                `}
-              >
-                <li>Cycling</li>
-                <li>Strength Training</li>
-                <li>Running</li>
-              </ul>
-            </li>
-            <li>LGBTIQA+ Rights and Causes</li>
+        <section>
+          <h2>Qualifications</h2>
+          <ul>
+            <li>B. Engineering (Software)</li>
+            <li>PRINCE2 Foundation</li>
+            <li>ITIL Foundation</li>
           </ul>
         </section>
-        <section
-          css={css`
-            flex: 1 1 50%;
-            min-width: 12rem;
-          `}
-        >
-          <h2>Background</h2>
-          <ul
-            css={css`
-              list-style: none;
-              padding-left: 0;
-              li {
-                padding: 10px 0 10px 0;
-              }
-            `}
-          >
-            <li>B. Engineering (Software)</li>
-            <li>
-              Over a decade in various IT roles, including Development, QA
-              Engineering, Automation and Support
-            </li>
-            <li>Experience in Ruby, C#, .NET, Bash</li>
-            <li>
-              Currently learning a new stack with HTML5, CSS3, React, Node -
-              follow my adventures!
-            </li>
+        <section>
+          <h2>Interests</h2>
+          <ul>
+            <li>Software Development (React, Node, JavaScript)</li>
+            <li>Open Source (Linux)</li>
+            <li>InfoSec</li>
+            <li>Fitness</li>
           </ul>
         </section>
       </div>
