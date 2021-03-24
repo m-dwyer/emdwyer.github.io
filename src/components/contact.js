@@ -17,7 +17,7 @@ const Contact = ({ contacts }) => {
         css={css`
           display: flex;
           justify-content: center;
-          width: 90vw;
+          width: 100vw;
         `}
       >
         {contacts["github"] && (
