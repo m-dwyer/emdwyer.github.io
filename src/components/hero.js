@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react"
+import React, { useContext, useEffect } from "react"
 import { css } from "@emotion/core"
 import { FaArrowDown } from "react-icons/fa"
 import { NavContext } from "./layout"
@@ -10,6 +10,7 @@ const Hero = () => {
 
   useEffect(() => {
     if (navItems && navItems.length > 0) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       callToActionRef = navItems.find(i => i.label === "About").ref
     }
   }, [navItems])

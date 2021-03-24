@@ -7,7 +7,7 @@ import { NavContext } from "./layout"
 import HamburgerIcon from "../../static/hamburger.inline.svg"
 import CloseIcon from "../../static/closemenu.inline.svg"
 
-const NavBar = ({ children }) => {
+const NavBar = () => {
   const theme = useTheme()
 
   const { navItems } = useContext(NavContext)
@@ -43,6 +43,7 @@ const NavBar = ({ children }) => {
           }
         `}
         onClick={toggleMenu}
+        onKeyDown={toggleMenu}
       />
       <nav
         css={css`
@@ -82,6 +83,7 @@ const NavBar = ({ children }) => {
             }
           `}
           onClick={toggleMenu}
+          onKeyDown={toggleMenu}
         />
         <ul
           css={css`
@@ -110,44 +112,21 @@ const NavBar = ({ children }) => {
             }
           `}
         >
-          {navItems.map(v => (
-            <li key={v.label} onClick={() => scrollIntoView(v.ref)}>
-              {v.label}
+          {navItems.map((v, i) => (
+            <li>
+              <a
+                href="#0"
+                onClick={() => scrollIntoView(v.ref)}
+                onKeyDown={() => scrollIntoView(v.ref)}
+              >
+                {v.label}
+              </a>
             </li>
           ))}
         </ul>
       </nav>
     </div>
   )
-
-  // return (
-  //   <nav>
-  //     <ul
-  //       css={css`
-  //         display: flex;
-  //         justify-content: flex-end;
-  //         list-style-type: none;
-
-  //         li {
-  //           cursor: pointer;
-  //           padding: 0.5em;
-  //           text-decoration: none;
-  //           color: ${theme.colors.fgColor};
-  //           &:hover {
-  //             color: ${theme.colors.fontColor};
-  //             font-weight: bold;
-  //           }
-  //         }
-  //       `}
-  //     >
-  //       {navItems.map(v => (
-  //         <li key={v.label} onClick={() => scrollIntoView(v.ref)}>
-  //           {v.label}
-  //         </li>
-  //       ))}
-  //     </ul>
-  //   </nav>
-  // )
 }
 
 export default NavBar
