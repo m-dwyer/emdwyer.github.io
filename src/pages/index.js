@@ -10,7 +10,7 @@ import BlogPreview from "../components/blogpreview"
 import Hero from "../components/hero"
 import _ from "lodash"
 import HeroBackground from "../../static/bg.svg"
-import { FaChevronRight } from "react-icons/fa"
+import SideSection from "../components/sidesection"
 
 const Index = ({ data }) => {
   const contacts = _.get(data, "site.siteMetadata.contact")
@@ -46,17 +46,7 @@ const Index = ({ data }) => {
         `}
       >
         <BlogPreview posts={posts} />
-        <Link className="link" to="/blog/">
-          <FaChevronRight
-            css={css`
-              width: 3em;
-              height: 3em;
-              position: absolute;
-              right: 0px;
-              top: 50%;
-            `}
-          />
-        </Link>
+        <SideSection to="/blog" />
       </IndexSection>
     </Layout>
   )
