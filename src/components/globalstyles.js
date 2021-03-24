@@ -3,9 +3,6 @@ import { css, Global, useTheme } from "@emotion/react"
 
 const GlobalStyles = () => {
   const theme = useTheme()
-
-  console.log("THEME!:", theme)
-
   return (
     <Global
       styles={css`
