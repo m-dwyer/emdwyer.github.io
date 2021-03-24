@@ -51,7 +51,7 @@ const NavBar = () => {
           height: 100vh;
           position: fixed;
           z-index: 999;
-          width: 30%;
+          width: 40%;
           right: 0;
           top: 0;
           display: ${visible ? "unset" : "none"};
