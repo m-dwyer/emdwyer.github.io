@@ -22,7 +22,7 @@ const BlogWall = ({ posts }) => {
             <article
               css={css`
                 max-width: 20em;
-                margin: 0.5em;
+                margin: 2.5em;
               `}
             >
               <Link
