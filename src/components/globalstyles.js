@@ -1,14 +1,15 @@
 import React from "react"
-import { css, Global } from "@emotion/core"
+import { css, Global, useTheme } from "@emotion/react"
 
 const GlobalStyles = () => {
+  const theme = useTheme()
+
+  console.log("THEME!:", theme)
+
   return (
     <Global
-      styles={theme => css`
-        @font-face {
-          font-family: "Ubuntu";
-          src: url("https://fonts.googleapis.com/css2?family=Ubuntu&display=swap");
-        }
+      styles={css`
+        @import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&family=Source+Code+Pro&display=swap");
 
         html,
         body {
@@ -21,13 +22,13 @@ const GlobalStyles = () => {
         }
 
         body {
-          font-family: "Ubuntu", sans-serif;
+          font-family: "Nunito Sans", sans-serif;
           background-color: ${theme.colors.bgColor};
           color: ${theme.colors.fontColor};
         }
 
         h1 {
-          font-weight: 600;
+          font-family: "Nunito Sans";
           font-size: 4rem;
           text-align: center;
         }

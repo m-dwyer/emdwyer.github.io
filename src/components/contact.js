@@ -1,5 +1,5 @@
 import React from "react"
-import { css } from "@emotion/core"
+import { css } from "@emotion/react"
 import { FaGithub, FaTwitter, FaStrava } from "react-icons/fa"
 
 const Contact = ({ contacts }) => {

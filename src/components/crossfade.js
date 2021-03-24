@@ -1,5 +1,5 @@
 import React from "react"
-import { css } from "@emotion/core"
+import { css } from "@emotion/react"
 
 const Crossfade = ({ background, foreground, ...props }) => {
   return (

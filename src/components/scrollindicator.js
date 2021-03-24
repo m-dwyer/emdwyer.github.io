@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { css } from "@emotion/core"
+import { css } from "@emotion/react"
 
 const ScrollIndicator = props => {
   const [state, setState] = useState({

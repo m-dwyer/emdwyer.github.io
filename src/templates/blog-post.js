@@ -1,5 +1,5 @@
 import React from "react"
-import { css } from "@emotion/core"
+import { css } from "@emotion/react"
 import { graphql } from "gatsby"
 import Layout from "../components/layout"
 import { FaCalendar } from "react-icons/fa"

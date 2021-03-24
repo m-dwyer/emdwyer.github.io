@@ -1,8 +1,7 @@
 import React, { useReducer, createContext } from "react"
 import { useStaticQuery, graphql } from "gatsby"
 import Img from "gatsby-image"
-import { css } from "@emotion/core"
-import { ThemeProvider } from "emotion-theming"
+import { css, ThemeProvider } from "@emotion/react"
 import NavBar from "./navbar"
 import Header from "./header"
 import Crossfade from "./crossfade"
@@ -112,10 +111,7 @@ const Layout = ({ children }) => {
           <NavBar />
         </Header>
         <main
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          css={theme => css`
+          css={css`
             > section:nth-child(1n) {
               background-color: ${theme.colors.altBgColor};
             }

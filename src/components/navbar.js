@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react"
-import { css } from "@emotion/core"
-import { useTheme } from "emotion-theming"
+import { css, useTheme } from "@emotion/react"
 
 import { NavContext } from "./layout"
 
