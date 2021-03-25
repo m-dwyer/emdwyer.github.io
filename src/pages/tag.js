@@ -2,6 +2,7 @@ import React from "react"
 import { css } from "@emotion/react"
 import { graphql, Link } from "gatsby"
 import Layout from "../components/layout"
+import FluidContainer from "../components/fluidcontainer"
 import _ from "lodash"
 
 const Tag = ({ data }) => {
@@ -29,50 +30,58 @@ const Tag = ({ data }) => {
 
   return (
     <Layout>
-      <h1>Posts by tag</h1>
-      {Object.keys(postsByTag).map(tag => {
-        return (
-          <section
-            key={tag}
-            css={css`
-              margin-bottom: 5em;
-            `}
-          >
-            <h2>
-              <Link
-                to={`/tag/${tag}`}
-                css={css`
-                  text-decoration: none;
-                `}
-              >
-                {_.capitalize(tag)}
-              </Link>
-            </h2>
-            <ul
+      <FluidContainer>
+        <h1
+          css={css`
+            margin-bottom: 1.5em;
+          `}
+        >
+          Posts by tag
+        </h1>
+        {Object.keys(postsByTag).map(tag => {
+          return (
+            <section
+              key={tag}
               css={css`
-                margin: 0;
-                list-style: circle;
-                padding-left: 20px;
+                margin-bottom: 5em;
               `}
             >
-              {postsByTag[tag].slice(0, LIMIT_PER_TAG).map(p => {
-                return (
-                  <li key={p.fields.slug}>
-                    <Link
-                      to={p.fields.slug}
-                      css={css`
-                        text-decoration: none;
-                      `}
-                    >
-                      {p.frontmatter.title}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-        )
-      })}
+              <h2>
+                <Link
+                  to={`/tag/${tag}`}
+                  css={css`
+                    text-decoration: none;
+                  `}
+                >
+                  {_.capitalize(tag)}
+                </Link>
+              </h2>
+              <ul
+                css={css`
+                  margin: 0;
+                  list-style: circle;
+                  padding-left: 20px;
+                `}
+              >
+                {postsByTag[tag].slice(0, LIMIT_PER_TAG).map(p => {
+                  return (
+                    <li key={p.fields.slug}>
+                      <Link
+                        to={p.fields.slug}
+                        css={css`
+                          text-decoration: none;
+                        `}
+                      >
+                        {p.frontmatter.title}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          )
+        })}
+      </FluidContainer>
     </Layout>
   )
 }
