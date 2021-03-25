@@ -64,7 +64,8 @@ exports.createPages = async ({ graphql, actions }) => {
     const { node, next = null, previous = null } = edge
 
     if (node.frontmatter.tags) {
-      tags.add(node.frontmatter.tags.map(t => t.toLowerCase()))
+      node.frontmatter.tags.forEach(t => tags.add(t.toLowerCase()))
+      console.log("tags", tags)
     }
 
     createPage({
@@ -83,7 +84,7 @@ exports.createPages = async ({ graphql, actions }) => {
       path: `/tag/${t}`,
       component: path.resolve("./src/templates/tag.js"),
       context: {
-        tags: t,
+        tag: t,
       },
     })
   })
