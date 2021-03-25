@@ -118,7 +118,7 @@ const NavBar = () => {
           `}
         >
           {navItems.map((v, i) => (
-            <li>
+            <li key={v.label}>
               <a
                 href="#0"
                 onClick={() => scrollIntoView(v.ref)}
