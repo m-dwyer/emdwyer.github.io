@@ -60,11 +60,16 @@ const NavBar = () => {
             justify-content: flex-end;
             position: unset;
             background: none;
-            height: unset;
+            height: 100%;
             width: auto;
 
             ul {
               display: flex;
+
+              li {
+                display: flex;
+                align-items: center;
+              }
             }
           }
         `}
