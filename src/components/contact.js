@@ -1,6 +1,6 @@
 import React from "react"
 import { css } from "@emotion/react"
-import { FaGithub, FaTwitter, FaStrava } from "react-icons/fa"
+import { FaGithub, FaTwitter, FaStrava, FaLinkedin } from "react-icons/fa"
 
 const Contact = ({ contacts }) => {
   return (
@@ -18,8 +18,22 @@ const Contact = ({ contacts }) => {
           display: flex;
           justify-content: center;
           width: 100%;
+
+          a {
+            padding: 0 1em;
+          }
         `}
       >
+        {contacts["linkedin"] && (
+          <a
+            href={contacts["linkedin"]}
+            className="link"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <FaLinkedin size={60} />
+          </a>
+        )}
         {contacts["github"] && (
           <a
             href={contacts["github"]}

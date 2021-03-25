@@ -9,6 +9,7 @@ module.exports = {
     title: "mdwyer.io",
     description: "mdwyer's personal site",
     contact: {
+      linkedin: "https://www.linkedin.com/in/m-dwyer",
       github: "https://github.com/m-dwyer",
       strava: "https://www.strava.com/athletes/thatmd",
     },

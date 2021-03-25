@@ -81,6 +81,7 @@ export const query = graphql`
     site {
       siteMetadata {
         contact {
+          linkedin
           github
           strava
         }
