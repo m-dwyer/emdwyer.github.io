@@ -23,7 +23,13 @@ const BlogPost = ({ data, pageContext }) => {
 
   return (
     <Layout>
-      <FluidContainer>
+      <FluidContainer
+        css={css`
+          max-width: 100%;
+          padding: 2em 1.5em;
+          max-width: 40em;
+        `}
+      >
         <main>
           <article
             css={css`

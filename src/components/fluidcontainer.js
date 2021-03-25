@@ -1,7 +1,7 @@
 import React from "react"
 import { css } from "@emotion/react"
 
-const FluidContainer = ({ children }) => {
+const FluidContainer = ({ children, ...props }) => {
   return (
     <div
       css={css`
@@ -9,6 +9,7 @@ const FluidContainer = ({ children }) => {
         padding: 2.5rem 1.3rem;
         max-width: 85%;
       `}
+      {...props}
     >
       {children}
     </div>
