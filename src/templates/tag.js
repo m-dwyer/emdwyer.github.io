@@ -23,7 +23,7 @@ export const query = graphql`
       filter: {
         sourceInstanceName: { eq: "blog" }
         internal: { mediaType: { eq: "text/markdown" } }
-        childMarkdownRemark: { frontmatter: { tags: { eq: $tag } } }
+        childMarkdownRemark: { frontmatter: { tags: { in: [$tag] } } }
       }
       sort: { fields: childMarkdownRemark___frontmatter___date, order: DESC }
     ) {
