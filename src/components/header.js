@@ -7,7 +7,7 @@ const Header = ({ logo, children }) => {
 
   return (
     <header
-      css={css`
+      css={css`s
         top: 0;
         left: 0;
         margin: 0;
@@ -24,6 +24,7 @@ const Header = ({ logo, children }) => {
           width: 100%;
           display: flex;
           justify-content: space-between;
+          align-items: center;
           z-index: 1;
           padding: 0 2em;
         `}

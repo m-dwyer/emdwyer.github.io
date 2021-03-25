@@ -65,6 +65,7 @@ const NavBar = () => {
 
             ul {
               display: flex;
+              margin: 0 auto;
 
               li {
                 display: flex;
