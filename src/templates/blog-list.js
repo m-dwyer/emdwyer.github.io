@@ -52,6 +52,7 @@ export const query = graphql`
           excerpt
           frontmatter {
             title
+            tags
             date(formatString: "dddd, MMMM Do YYYY")
             cover {
               childImageSharp {

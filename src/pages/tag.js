@@ -12,7 +12,6 @@ const Tag = ({ data }) => {
   posts.reduce((accum, { node: post }) => {
     let tags = _.get(post, "frontmatter.tags")
     tags = tags.map(t => t.toLowerCase())
-    console.log("tags", tags)
 
     tags.forEach(t => {
       if (!accum.hasOwnProperty(t)) {
@@ -25,8 +24,6 @@ const Tag = ({ data }) => {
   }, postsByTag)
 
   const LIMIT_PER_TAG = 5
-
-  console.log("postsByTag", postsByTag)
 
   return (
     <Layout>

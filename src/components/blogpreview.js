@@ -24,6 +24,7 @@ const BlogPreview = () => {
               excerpt
               frontmatter {
                 title
+                tags
                 date(formatString: "dddd, MMMM Do YYYY")
                 cover {
                   childImageSharp {
