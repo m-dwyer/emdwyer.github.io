@@ -25,7 +25,13 @@ const BlogPost = ({ data, pageContext }) => {
     <Layout>
       <FluidContainer>
         <main>
-          <article>
+          <article
+            css={css`
+              max-width: 50em;
+              text-align: justify;
+              margin: 0 auto;
+            `}
+          >
             <header
               css={css`
                 margin-bottom: 2rem;
@@ -35,7 +41,7 @@ const BlogPost = ({ data, pageContext }) => {
                 css={css`
                   text-align: left;
                   margin-top: 2rem;
-                  margin-bottom: 1rem;
+                  margin-bottom: 0rem;
                 `}
               >
                 {content.frontmatter.title}

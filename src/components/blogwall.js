@@ -38,6 +38,8 @@ const BlogWall = ({ posts }) => {
                     css={css`
                       border-radius: 10px;
                     `}
+                    style={{ height: "20em", width: "20em" }}
+                    imgStyle={{ objectFit: "cover" }}
                   />
                   <h2
                     css={css`
@@ -60,6 +62,7 @@ const BlogWall = ({ posts }) => {
                     css={css`
                       margin-top: 0.75em;
                       margin-bottom: 2.5em;
+                      text-align: justify;
                     `}
                     dangerouslySetInnerHTML={{
                       __html: p.frontmatter.description || p.excerpt,
