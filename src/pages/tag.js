@@ -4,43 +4,48 @@ import { graphql, Link } from "gatsby"
 import Layout from "../components/layout"
 import _ from "lodash"
 
-const Category = ({ data }) => {
+const Tag = ({ data }) => {
   let posts = _.get(data, "posts.edges")
 
-  let postsByCategory = {}
+  let postsByTag = {}
   posts.reduce((accum, { node: post }) => {
-    let category = _.get(post, "frontmatter.category")
-    category = category.toLowerCase()
+    let tags = _.get(post, "frontmatter.tags")
+    tags = tags.map(t => t.toLowerCase())
+    console.log("tags", tags)
 
-    if (!accum.hasOwnProperty(category)) {
-      accum[category] = []
-    }
+    tags.forEach(t => {
+      if (!accum.hasOwnProperty(t)) {
+        accum[t] = []
+      }
 
-    accum[category].push(post)
+      accum[t].push(post)
+    })
     return accum
-  }, postsByCategory)
+  }, postsByTag)
 
-  const LIMIT_PER_CATEGORY = 5
+  const LIMIT_PER_TAG = 5
+
+  console.log("postsByTag", postsByTag)
 
   return (
     <Layout>
-      <h1>Posts by category</h1>
-      {Object.keys(postsByCategory).map(category => {
+      <h1>Posts by tag</h1>
+      {Object.keys(postsByTag).map(tag => {
         return (
           <section
-            key={category}
+            key={tag}
             css={css`
               margin-bottom: 5em;
             `}
           >
             <h2>
               <Link
-                to={`/category/${category}`}
+                to={`/tag/${tag}`}
                 css={css`
                   text-decoration: none;
                 `}
               >
-                {_.capitalize(category)}
+                {_.capitalize(tag)}
               </Link>
             </h2>
             <ul
@@ -50,7 +55,7 @@ const Category = ({ data }) => {
                 padding-left: 20px;
               `}
             >
-              {postsByCategory[category].slice(0, LIMIT_PER_CATEGORY).map(p => {
+              {postsByTag[tag].slice(0, LIMIT_PER_TAG).map(p => {
                 return (
                   <li key={p.fields.slug}>
                     <Link
@@ -72,7 +77,7 @@ const Category = ({ data }) => {
   )
 }
 
-export default Category
+export default Tag
 
 export const query = graphql`
   query {
@@ -86,7 +91,7 @@ export const query = graphql`
           }
           frontmatter {
             title
-            category
+            tags
           }
         }
       }

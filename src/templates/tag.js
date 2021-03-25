@@ -4,26 +4,26 @@ import BlogWall from "../components/blogwall"
 import IndexSection from "../components/indexsection"
 import _ from "lodash"
 
-const Category = ({ data, pageContext }) => {
+const Tag = ({ data, pageContext }) => {
   return (
     <Layout>
       <IndexSection>
-        <h1>{_.capitalize(pageContext.category)}</h1>
+        <h1>{_.capitalize(pageContext.tag)}</h1>
         <BlogWall posts={data.posts.nodes} />
       </IndexSection>
     </Layout>
   )
 }
 
-export default Category
+export default Tag
 
 export const query = graphql`
-  query($category: String!) {
+  query($tag: String!) {
     posts: allFile(
       filter: {
         sourceInstanceName: { eq: "blog" }
         internal: { mediaType: { eq: "text/markdown" } }
-        childMarkdownRemark: { frontmatter: { category: { eq: $category } } }
+        childMarkdownRemark: { frontmatter: { tags: { eq: $tag } } }
       }
       sort: { fields: childMarkdownRemark___frontmatter___date, order: DESC }
     ) {
@@ -33,7 +33,7 @@ export const query = graphql`
           excerpt
           frontmatter {
             title
-            category
+            tags
             date(formatString: "dddd, MMMM Do YYYY")
             cover {
               childImageSharp {

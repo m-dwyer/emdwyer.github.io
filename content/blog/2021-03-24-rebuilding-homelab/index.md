@@ -1,6 +1,6 @@
 ---
 title: Rebuilding Homelab - Part 1
-category: homelab
+tags: ["homelab", "infosec"]
 date: 2021-03-24
 cover: mini_pc.jpg
 author: mdwyer

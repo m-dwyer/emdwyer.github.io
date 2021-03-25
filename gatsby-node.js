@@ -34,7 +34,7 @@ exports.createPages = async ({ graphql, actions }) => {
               slug
             }
             frontmatter {
-              category
+              tags
             }
           }
           next {
@@ -58,13 +58,13 @@ exports.createPages = async ({ graphql, actions }) => {
     }
   `)
 
-  let categories = new Set()
+  let tags = new Set()
 
   result.data.posts.edges.forEach(edge => {
     const { node, next = null, previous = null } = edge
 
-    if (node.frontmatter.category) {
-      categories.add(node.frontmatter.category.toLowerCase())
+    if (node.frontmatter.tags) {
+      tags.add(node.frontmatter.tags.map(t => t.toLowerCase()))
     }
 
     createPage({
@@ -78,12 +78,12 @@ exports.createPages = async ({ graphql, actions }) => {
     })
   })
 
-  categories.forEach(c => {
+  tags.forEach(t => {
     createPage({
-      path: `/category/${c}`,
-      component: path.resolve("./src/templates/category.js"),
+      path: `/tag/${t}`,
+      component: path.resolve("./src/templates/tag.js"),
       context: {
-        category: c,
+        tags: t,
       },
     })
   })
