@@ -63,7 +63,8 @@ const BlogWall = ({ posts }) => {
                     `}
                   >
                     {p.frontmatter.tags.map(t => (
-                      <span
+                      <Link
+                        to={`/tag/${t}`}
                         css={css`
                           :nth-child(n + 2) {
                             padding-left: 1em;
@@ -72,7 +73,7 @@ const BlogWall = ({ posts }) => {
                       >
                         <FaTag />
                         {t}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 </header>
