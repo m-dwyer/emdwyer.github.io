@@ -6,6 +6,7 @@ const BlogNavigation = ({ previous, next }) => {
     <div
       css={css`
         display: flex;
+        justify-content: space-between;
         flex-wrap: wrap;
       `}
     >
@@ -23,7 +24,7 @@ const BlogNavigation = ({ previous, next }) => {
             to={previous.path}
             rel="prev"
           >
-            {previous.label}
+            ← {previous.label}
           </Link>
         )}
       </div>
@@ -41,7 +42,7 @@ const BlogNavigation = ({ previous, next }) => {
             to={next.path}
             rel="next"
           >
-            {next.label}
+            {next.label} →
           </Link>
         )}
       </div>
