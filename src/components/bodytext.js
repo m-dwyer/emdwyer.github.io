@@ -11,7 +11,6 @@ const BodyText = ({ content }) => {
 
           p {
             margin: 0 0 1.75em;
-            line-height: 2em;
           }
 
           figcaption {
@@ -26,6 +25,10 @@ const BodyText = ({ content }) => {
 
           ol {
             margin-bottom: 2em;
+          }
+
+          li {
+            margin-bottom: 0.5em;
           }
         `}
       />
