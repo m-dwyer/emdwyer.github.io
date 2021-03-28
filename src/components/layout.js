@@ -8,6 +8,7 @@ import Crossfade from "./crossfade"
 import GlobalStyles from "./globalstyles"
 
 export const NavContext = createContext()
+export const LayoutContext = createContext()
 
 const Layout = ({ children }) => {
   const data = useStaticQuery(
@@ -76,7 +77,7 @@ const Layout = ({ children }) => {
     },
   }
 
-  const backgroundLogo = (
+  const avatar = (
     <Img
       fixed={data.avatar.childImageSharp.fixed}
       css={css`
@@ -94,9 +95,7 @@ const Layout = ({ children }) => {
     />
   )
 
-  const logo = (
-    <Crossfade background={backgroundLogo} foreground={foregroundLogo} />
-  )
+  const logo = <Crossfade background={avatar} foreground={foregroundLogo} />
 
   const reducer = (state, item) => {
     return [...state, item]
@@ -105,27 +104,29 @@ const Layout = ({ children }) => {
   const [navItems, setNavItems] = useReducer(reducer, [])
 
   return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      <NavContext.Provider value={{ navItems, setNavItems }}>
-        <Header logo={logo}>
-          <NavBar />
-        </Header>
-        <main
-          css={css`
-            > section:nth-child(1n) {
-              background-color: ${theme.colors.altBgColor};
-            }
+    <LayoutContext.Provider value={{ avatar }}>
+      <ThemeProvider theme={theme}>
+        <GlobalStyles />
+        <NavContext.Provider value={{ navItems, setNavItems }}>
+          <Header logo={logo}>
+            <NavBar />
+          </Header>
+          <main
+            css={css`
+              > section:nth-child(1n) {
+                background-color: ${theme.colors.altBgColor};
+              }
 
-            > section:nth-child(2n) {
-              background-color: ${theme.colors.altBgColor2};
-            }
-          `}
-        >
-          {children}
-        </main>
-      </NavContext.Provider>
-    </ThemeProvider>
+              > section:nth-child(2n) {
+                background-color: ${theme.colors.altBgColor2};
+              }
+            `}
+          >
+            {children}
+          </main>
+        </NavContext.Provider>
+      </ThemeProvider>
+    </LayoutContext.Provider>
   )
 }
 

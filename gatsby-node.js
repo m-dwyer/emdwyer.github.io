@@ -65,12 +65,11 @@ exports.createPages = async ({ graphql, actions }) => {
 
     if (node.frontmatter.tags) {
       node.frontmatter.tags.forEach(t => tags.add(t.toLowerCase()))
-      console.log("tags", tags)
     }
 
     createPage({
       path: node.fields.slug,
-      component: path.resolve("./src/templates/blog-post.js"),
+      component: path.resolve("./src/templates/blog-template.js"),
       context: {
         slug: node.fields.slug,
         next,
