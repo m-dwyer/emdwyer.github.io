@@ -72,6 +72,7 @@ const Layout = ({ children }) => {
       altBgColor2: "hsl(0, 0%, 14%)",
       fgColor: "hsl(0, 0%, 70%)",
       secondaryBgColor: "hsl(275,59%,47%)",
+      highlightColor: "hsl(300,100%,78%)",
     },
   }
 

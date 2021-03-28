@@ -1,7 +1,8 @@
 import React from "react"
-import { css } from "@emotion/react"
+import { css, useTheme } from "@emotion/react"
 
 const BodyText = ({ content }) => {
+  const theme = useTheme()
   return (
     <>
       <div
@@ -29,6 +30,11 @@ const BodyText = ({ content }) => {
 
           li {
             margin-bottom: 0.5em;
+          }
+
+          a {
+            text-decoration: underline;
+            color: ${theme.colors.highlightColor};
           }
         `}
       />
