@@ -4,7 +4,6 @@ import { FaCalendar } from "react-icons/fa"
 import BlogNavigation from "./blognavigation"
 import BodyText from "./bodytext"
 import Bio from "./bio"
-import _ from "lodash"
 
 const BlogPost = props => {
   const { title, date, content, previous, next } = props
