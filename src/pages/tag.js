@@ -25,8 +25,6 @@ const Tag = ({ data }) => {
     return accum
   }, postsByTag)
 
-  const LIMIT_PER_TAG = 5
-
   return (
     <FluidContainer>
       <h1

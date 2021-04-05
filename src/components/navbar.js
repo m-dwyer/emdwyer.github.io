@@ -1,7 +1,6 @@
 import React from "react"
 import { css, useTheme } from "@emotion/react"
-import { Link } from "gatsby"
-import { FaPencilAlt, FaTag, FaTags } from "react-icons/fa"
+import { FaPencilAlt, FaTag } from "react-icons/fa"
 import NavItem from "./navitem"
 
 const NavBar = props => {
@@ -32,7 +31,7 @@ const NavBar = props => {
         </li>
         <li>
           <NavItem to="/tag">
-            <FaTags size={20} />
+            <FaTag size={20} />
             <span>tags</span>
           </NavItem>
         </li>

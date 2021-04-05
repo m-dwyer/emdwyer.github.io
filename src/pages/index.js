@@ -1,9 +1,9 @@
 import React from "react"
 
 import { graphql } from "gatsby"
-import Layout from "../components/layout"
 import BlogPreview from "../components/blogpreview"
 import _ from "lodash"
+import Layout from "../components/layout"
 
 const Index = ({ data }) => {
   const posts = _.get(data, "posts.nodes")
@@ -11,6 +11,7 @@ const Index = ({ data }) => {
   return <BlogPreview posts={posts} />
 }
 
+Index.Layout = Layout
 export default Index
 
 export const query = graphql`

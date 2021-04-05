@@ -1,10 +1,8 @@
 import React from "react"
 import { graphql } from "gatsby"
-
-import Layout from "../components/layout"
 import BlogWall from "../components/blogwall"
-import IndexSection from "../components/indexsection"
 import _ from "lodash"
+import Layout from "../components/layout"
 
 const Tag = ({ data, pageContext }) => {
   return (
@@ -15,6 +13,7 @@ const Tag = ({ data, pageContext }) => {
   )
 }
 
+Tag.Layout = Layout
 export default Tag
 
 export const query = graphql`
