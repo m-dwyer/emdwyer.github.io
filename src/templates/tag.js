@@ -8,12 +8,10 @@ import _ from "lodash"
 
 const Tag = ({ data, pageContext }) => {
   return (
-    <Layout>
-      <IndexSection>
-        <h1>{_.capitalize(pageContext.tag)}</h1>
-        <BlogWall posts={data.posts.nodes} />
-      </IndexSection>
-    </Layout>
+    <>
+      <h1>{_.capitalize(pageContext.tag)}</h1>
+      <BlogWall posts={data.posts.nodes} />
+    </>
   )
 }
 
