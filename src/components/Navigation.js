@@ -12,15 +12,29 @@ const Navigation = ({ previous, next }) => {
     >
       <div>
         {previous && (
-          <Link to={previous.path} rel="prev">
-            {previous.label}
+          <Link
+            to={previous.path}
+            rel="prev"
+            css={css`
+              text-decoration: underline;
+              font-weight: bold;
+            `}
+          >
+            &#8592;{previous.label}
           </Link>
         )}
       </div>
       <div>
         {next && (
-          <Link to={next.path} rel="next">
-            {next.label}
+          <Link
+            to={next.path}
+            rel="next"
+            css={css`
+              text-decoration: underline;
+              font-weight: bold;
+            `}
+          >
+            {next.label}&#8594;
           </Link>
         )}
       </div>
