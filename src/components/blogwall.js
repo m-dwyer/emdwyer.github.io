@@ -11,6 +11,7 @@ const BlogWall = ({ posts }) => {
         display: flex;
         flex-wrap: wrap;
         flex-direction: row;
+        justify-content: center;
       `}
     >
       {posts.map(({ childMarkdownRemark: p }) => {
