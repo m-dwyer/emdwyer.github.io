@@ -1,15 +1,9 @@
-import React, { useState } from "react"
+import React from "react"
 import { css, useTheme } from "@emotion/react"
 import { Link } from "gatsby"
 
 const NavBar = props => {
   const theme = useTheme()
-
-  const [visible, setVisible] = useState(false)
-
-  const toggleMenu = () => {
-    setVisible(!visible)
-  }
 
   return (
     <nav

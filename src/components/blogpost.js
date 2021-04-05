@@ -1,7 +1,7 @@
 import React from "react"
 import { css } from "@emotion/react"
 import { FaCalendar } from "react-icons/fa"
-import BlogNavigation from "./blognavigation"
+import Navigation from "../components/Navigation"
 import BodyText from "./bodytext"
 import Bio from "./bio"
 
@@ -52,7 +52,7 @@ const BlogPost = props => {
           `}
         >
           <Bio />
-          <BlogNavigation previous={previous} next={next} />
+          <Navigation previous={previous} next={next} />
         </footer>
       </article>
     </main>

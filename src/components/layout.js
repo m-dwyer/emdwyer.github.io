@@ -1,6 +1,6 @@
 import React, { createContext } from "react"
 import { useStaticQuery, graphql } from "gatsby"
-import Img from "gatsby-image"
+import { GatsbyImage } from "gatsby-plugin-image"
 import { css, ThemeProvider } from "@emotion/react"
 import NavBar from "./navbar"
 import Header from "./header"
@@ -16,7 +16,7 @@ export const LayoutContext = createContext()
 const Layout = ({ children }) => {
   const data = useStaticQuery(
     graphql`
-      query {
+      {
         allFile(
           filter: {
             internal: { mediaType: { eq: "text/markdown" } }
@@ -41,13 +41,12 @@ const Layout = ({ children }) => {
           sourceInstanceName: { eq: "images" }
         ) {
           childImageSharp {
-            fixed(width: 35, height: 35) {
-              base64
-              width
-              height
-              src
-              srcSet
-            }
+            gatsbyImageData(
+              width: 35
+              height: 35
+              placeholder: BLURRED
+              layout: FIXED
+            )
           }
         }
         avatar: file(
@@ -55,13 +54,12 @@ const Layout = ({ children }) => {
           sourceInstanceName: { eq: "images" }
         ) {
           childImageSharp {
-            fixed(width: 35, height: 35) {
-              base64
-              width
-              height
-              src
-              srcSet
-            }
+            gatsbyImageData(
+              width: 35
+              height: 35
+              placeholder: BLURRED
+              layout: FIXED
+            )
           }
         }
       }
@@ -81,8 +79,9 @@ const Layout = ({ children }) => {
   }
 
   const avatar = (
-    <Img
-      fixed={data.avatar.childImageSharp.fixed}
+    <GatsbyImage
+      image={data.avatar.childImageSharp.gatsbyImageData}
+      alt="avatar"
       css={css`
         border-radius: 50%;
       `}
@@ -90,8 +89,9 @@ const Layout = ({ children }) => {
   )
 
   const logo = (
-    <Img
-      fixed={data.logo.childImageSharp.fixed}
+    <GatsbyImage
+      image={data.logo.childImageSharp.gatsbyImageData}
+      alt="logo"
       css={css`
         border-radius: 50%;
       `}

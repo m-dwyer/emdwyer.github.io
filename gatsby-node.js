@@ -1,5 +1,4 @@
 const { createFilePath } = require("gatsby-source-filesystem")
-const { paginate } = require("gatsby-awesome-pagination")
 const path = require("path")
 
 exports.onCreateNode = ({ node, getNode, actions }) => {
@@ -58,9 +57,13 @@ exports.createPages = async ({ graphql, actions }) => {
     }
   `)
 
+  const posts = result.data.posts.edges
+  const postsPerPage = 5
+  const numPages = Math.ceil(posts.length / postsPerPage)
+
   let tags = new Set()
 
-  result.data.posts.edges.forEach(edge => {
+  posts.forEach(edge => {
     const { node, next = null, previous = null } = edge
 
     if (node.frontmatter.tags) {
@@ -88,11 +91,16 @@ exports.createPages = async ({ graphql, actions }) => {
     })
   })
 
-  paginate({
-    createPage,
-    items: result.data.posts.edges,
-    itemsPerPage: 5,
-    pathPrefix: "/blog",
-    component: path.resolve("./src/templates/blog-list.js"),
+  Array.from({ length: numPages }).forEach((_, i) => {
+    createPage({
+      path: i === 0 ? `/blog` : `/blog/${i + 1}`,
+      component: path.resolve("./src/templates/blog-list.js"),
+      context: {
+        limit: postsPerPage,
+        skip: i * postsPerPage,
+        numPages,
+        currentPage: i + 1,
+      },
+    })
   })
 }

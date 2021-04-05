@@ -1,9 +1,3 @@
-/**
- * Configure your Gatsby site with this file.
- *
- * See: https://www.gatsbyjs.org/docs/gatsby-config/
- */
-
 module.exports = {
   siteMetadata: {
     title: "mdwyer.io",
@@ -15,7 +9,16 @@ module.exports = {
     },
   },
   plugins: [
-    "gatsby-plugin-emotion",
+    `gatsby-plugin-emotion`,
+    `gatsby-plugin-react-helmet`,
+    `gatsby-plugin-image`,
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `images`,
+        path: `${__dirname}/src/images`,
+      },
+    },
     {
       resolve: "gatsby-source-filesystem",
       options: {
@@ -23,19 +26,27 @@ module.exports = {
         path: `${__dirname}/content/blog`,
       },
     },
+    `gatsby-transformer-sharp`,
+    `gatsby-plugin-sharp`,
     {
-      resolve: "gatsby-source-filesystem",
+      resolve: `gatsby-plugin-manifest`,
       options: {
-        name: "images",
-        path: `${__dirname}/src/images`,
+        name: `mdwyerio`,
+        short_name: `mdwyerio`,
+        start_url: `/`,
+        background_color: `#323232`,
+        theme_color: `#cb4ec7`,
+        display: `minimal-ui`,
+        icon: `src/images/icon.png`, // This path is relative to the root of the site.
       },
     },
+    `gatsby-plugin-gatsby-cloud`,
     {
-      resolve: "gatsby-transformer-remark",
+      resolve: `gatsby-transformer-remark`,
       options: {
         plugins: [
           {
-            resolve: "gatsby-remark-images",
+            resolve: `gatsby-remark-images`,
             options: {
               maxWidth: 600,
               showCaptions: ["title"],
@@ -43,7 +54,7 @@ module.exports = {
             },
           },
           {
-            resolve: "gatsby-remark-external-links",
+            resolve: `gatsby-remark-external-links`,
             options: {
               target: "_blank",
               rel: "nofollow",
@@ -52,34 +63,8 @@ module.exports = {
         ],
       },
     },
-    "gatsby-transformer-sharp",
-    "gatsby-plugin-sharp",
-    {
-      resolve: "gatsby-plugin-manifest",
-      options: {
-        name: "mdwyerio",
-        short_name: "mdwyerio",
-        start_url: "/",
-        background_color: "#323232",
-        theme_color: "#cb4ec7",
-        display: "standalone",
-        icon: "src/images/icon.png",
-      },
-    },
-    "gatsby-awesome-pagination",
-    {
-      resolve: "gatsby-plugin-lodash",
-      options: {
-        disableFeatures: ["cloning"],
-      },
-    },
-    {
-      resolve: "gatsby-plugin-react-svg",
-      options: {
-        rule: {
-          include: /\.inline\.svg$/,
-        },
-      },
-    },
+    // this (optional) plugin enables Progressive Web App + Offline functionality
+    // To learn more, visit: https://gatsby.dev/offline
+    // `gatsby-plugin-offline`,
   ],
 }

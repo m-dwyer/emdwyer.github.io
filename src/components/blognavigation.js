@@ -1,53 +1,22 @@
 import React from "react"
-import { css } from "@emotion/react"
-import { Link } from "gatsby"
-const BlogNavigation = ({ previous, next }) => {
-  return (
-    <div
-      css={css`
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-      `}
-    >
-      <div
-        css={css`
-          text-align: left;
-        `}
-      >
-        {previous && (
-          <Link
-            className="link"
-            css={css`
-              grid-column: 1;
-            `}
-            to={previous.path}
-            rel="prev"
-          >
-            ← {previous.label}
-          </Link>
-        )}
-      </div>
-      <div
-        css={css`
-          text-align: right;
-        `}
-      >
-        {next && (
-          <Link
-            className="link"
-            css={css`
-              grid-column: 2;
-            `}
-            to={next.path}
-            rel="next"
-          >
-            {next.label} →
-          </Link>
-        )}
-      </div>
-    </div>
-  )
+import { generateNavigation } from "../utils/helpers"
+import Navigation from "./Navigation"
+const BlogNavigation = ({ pageContext }) => {
+  const { currentPage, numPages } = pageContext
+  const isFirst = currentPage === 1
+  const isLast = currentPage === numPages
+
+  const pathPrefix = "/blog"
+  const prevPagePath =
+    currentPage - 1 === 1 ? pathPrefix : `${pathPrefix}/${currentPage - 1}`
+  const nextPagePath = `${pathPrefix}/${currentPage + 1}`
+
+  const previous = !isFirst
+    ? generateNavigation(prevPagePath, "Previous")
+    : null
+  const next = !isLast ? generateNavigation(nextPagePath, "Next") : null
+
+  return <Navigation previous={previous} next={next} />
 }
 
 export default BlogNavigation

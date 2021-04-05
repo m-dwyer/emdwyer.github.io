@@ -1,19 +1,16 @@
 import React from "react"
 import { css } from "@emotion/react"
+import { graphql } from "gatsby"
 
 import Layout from "../components/layout"
-import BlogWall from "../components/blogwall"
 import BlogNavigation from "../components/blognavigation"
-import { generateNavigation } from "../utils/helpers"
+import BlogWall from "../components/blogwall"
 import _ from "lodash"
 import FluidContainer from "../components/fluidcontainer"
 import SideSection from "../components/sidesection"
 
 const Posts = ({ data, pageContext }) => {
   const posts = _.get(data, "posts.nodes")
-
-  const previous = generateNavigation(pageContext.previousPagePath, "Previous")
-  const next = generateNavigation(pageContext.nextPagePath, "Next")
 
   return (
     <Layout>
@@ -25,7 +22,7 @@ const Posts = ({ data, pageContext }) => {
         >
           Blog
         </h1>
-        <BlogNavigation previous={previous} next={next} />
+        <BlogNavigation pageContext={pageContext} />
         <BlogWall posts={posts} />
         <SideSection to="/" left />
       </FluidContainer>
@@ -56,9 +53,7 @@ export const query = graphql`
             date(formatString: "dddd, MMMM Do YYYY")
             cover {
               childImageSharp {
-                fluid(maxWidth: 600) {
-                  ...GatsbyImageSharpFluid
-                }
+                gatsbyImageData(width: 600, layout: CONSTRAINED)
               }
             }
           }

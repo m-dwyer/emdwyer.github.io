@@ -1,9 +1,8 @@
 import React from "react"
 import { css } from "@emotion/react"
 import { Link } from "gatsby"
-import Img from "gatsby-image"
+import { GatsbyImage } from "gatsby-plugin-image"
 import { FaCalendar, FaTag } from "react-icons/fa"
-import _ from "lodash"
 
 const BlogWall = ({ posts }) => {
   return (
@@ -15,8 +14,6 @@ const BlogWall = ({ posts }) => {
       `}
     >
       {posts.map(({ childMarkdownRemark: p }) => {
-        const fluid = _.get(p, "frontmatter.cover.childImageSharp.fluid")
-
         return (
           <React.Fragment key={p.fields.slug}>
             <article
@@ -33,8 +30,9 @@ const BlogWall = ({ posts }) => {
                 `}
               >
                 <header>
-                  <Img
-                    fluid={fluid}
+                  <GatsbyImage
+                    image={p.frontmatter.cover.childImageSharp.gatsbyImageData}
+                    alt={p.frontmatter.title}
                     css={css`
                       border-radius: 10px;
                     `}
@@ -63,6 +61,7 @@ const BlogWall = ({ posts }) => {
                   >
                     {p.frontmatter.tags.map(t => (
                       <Link
+                        key={t}
                         to={`/tag/${t}`}
                         css={css`
                           :nth-child(n + 2) {

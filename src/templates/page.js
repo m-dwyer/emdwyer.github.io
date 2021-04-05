@@ -1,5 +1,4 @@
 import React from "react"
-import { graphql } from "gatsby"
 import Layout from "../components/layout"
 import IndexSection from "../components/indexsection"
 
@@ -16,14 +15,3 @@ const Page = ({ data }) => {
 }
 
 export default Page
-
-export const query = graphql`
-  query($slug: String!) {
-    markdownRemark(fields: { slug: { eq: $slug } }) {
-      html
-      frontmatter {
-        title
-      }
-    }
-  }
-`
