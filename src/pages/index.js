@@ -7,7 +7,6 @@ import IndexSection from "../components/indexsection"
 import About from "../components/about"
 import Contact from "../components/contact"
 import BlogPreview from "../components/blogpreview"
-import Hero from "../components/hero"
 import _ from "lodash"
 import HeroBackground from "../../static/bg.svg"
 import SideSection from "../components/sidesection"
@@ -29,18 +28,14 @@ const Index = ({ data }) => {
           background-size: cover;
           background-repeat: no-repeat;
         `}
-        navLabel="Home"
-      >
-        <Hero />
-      </IndexSection>
-      <IndexSection navLabel="About">
+      ></IndexSection>
+      <IndexSection>
         <About />
       </IndexSection>
-      <IndexSection navLabel="Contact">
+      <IndexSection>
         <Contact contacts={contacts} />
       </IndexSection>
       <IndexSection
-        navLabel="Posts"
         css={css`
           position: relative;
         `}

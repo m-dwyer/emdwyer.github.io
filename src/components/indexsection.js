@@ -1,11 +1,9 @@
 import React from "react"
 import { css } from "@emotion/react"
 
-import ScrollableSection from "./ScrollableSection"
-
 const IndexSection = ({ children, ...props }) => {
   return (
-    <ScrollableSection
+    <section
       css={css`
         display: flex;
         flex-direction: column;
@@ -18,7 +16,7 @@ const IndexSection = ({ children, ...props }) => {
       {...props}
     >
       {children}
-    </ScrollableSection>
+    </section>
   )
 }
 

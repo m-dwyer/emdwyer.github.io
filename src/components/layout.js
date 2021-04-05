@@ -1,11 +1,14 @@
-import React, { useReducer, createContext } from "react"
+import React, { createContext } from "react"
 import { useStaticQuery, graphql } from "gatsby"
 import Img from "gatsby-image"
 import { css, ThemeProvider } from "@emotion/react"
 import NavBar from "./navbar"
 import Header from "./header"
-import Crossfade from "./crossfade"
 import GlobalStyles from "./globalstyles"
+import Body from "./body"
+import Footer from "./footer"
+
+import { FaGithub, FaLinkedin } from "react-icons/fa"
 
 export const NavContext = createContext()
 export const LayoutContext = createContext()
@@ -86,7 +89,7 @@ const Layout = ({ children }) => {
     />
   )
 
-  const foregroundLogo = (
+  const logo = (
     <Img
       fixed={data.logo.childImageSharp.fixed}
       css={css`
@@ -95,36 +98,43 @@ const Layout = ({ children }) => {
     />
   )
 
-  const logo = <Crossfade background={avatar} foreground={foregroundLogo} />
-
-  const reducer = (state, item) => {
-    return [...state, item]
-  }
-
-  const [navItems, setNavItems] = useReducer(reducer, [])
-
   return (
     <LayoutContext.Provider value={{ avatar }}>
       <ThemeProvider theme={theme}>
         <GlobalStyles />
-        <NavContext.Provider value={{ navItems, setNavItems }}>
-          <Header logo={logo}>
-            <NavBar />
+        <div
+          css={css`
+            display: grid;
+            height: 100vh;
+            width: 100%;
+            grid-template-rows: max-content auto max-content;
+            grid-template-columns: auto;
+          `}
+        >
+          <Header>
+            <div>{logo}</div>
+            <div>{avatar}</div>
           </Header>
-          <main
+          <Body>
+            <NavBar />
+            <main
+              css={css`
+                overflow-y: scroll;
+              `}
+            >
+              {children}
+            </main>
+          </Body>
+          <Footer
             css={css`
-              > section:nth-child(1n) {
-                background-color: ${theme.colors.altBgColor};
-              }
-
-              > section:nth-child(2n) {
-                background-color: ${theme.colors.altBgColor2};
-              }
+              background: ${theme.colors.altBgColor};
+              grid-area: 3/1/4/2;
             `}
           >
-            {children}
-          </main>
-        </NavContext.Provider>
+            <FaGithub size={60} />
+            <FaLinkedin size={60} />
+          </Footer>
+        </div>
       </ThemeProvider>
     </LayoutContext.Provider>
   )

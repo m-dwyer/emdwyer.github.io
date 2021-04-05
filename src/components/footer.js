@@ -1,22 +1,18 @@
 import React from "react"
 import { css, useTheme } from "@emotion/react"
 
-const Header = ({ children }) => {
+const Footer = ({ children }) => {
   const theme = useTheme()
-
   return (
-    <header
+    <footer
       css={css`
         background: ${theme.colors.altBgColor};
-        grid-area: 1/1/2/2;
-
-        display: flex;
-        justify-content: space-between;
+        grid-area: 3/1/4/2;
       `}
     >
       {children}
-    </header>
+    </footer>
   )
 }
 
-export default Header
+export default Footer
