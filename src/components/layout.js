@@ -1,5 +1,5 @@
 import React, { createContext } from "react"
-import { useStaticQuery, graphql } from "gatsby"
+import { useStaticQuery, graphql, Link } from "gatsby"
 import { GatsbyImage } from "gatsby-plugin-image"
 import { css, ThemeProvider } from "@emotion/react"
 import NavBar from "./navbar"
@@ -7,8 +7,8 @@ import Header from "./header"
 import GlobalStyles from "./globalstyles"
 import Body from "./body"
 import Footer from "./footer"
-
-import { FaGithub, FaLinkedin } from "react-icons/fa"
+import ContactLinks from "./contactlinks"
+import _ from "lodash"
 
 export const NavContext = createContext()
 export const LayoutContext = createContext()
@@ -62,6 +62,15 @@ const Layout = ({ children }) => {
             )
           }
         }
+        site {
+          siteMetadata {
+            contact {
+              linkedin
+              github
+              strava
+            }
+          }
+        }
       }
     `
   )
@@ -98,6 +107,8 @@ const Layout = ({ children }) => {
     />
   )
 
+  const contacts = _.get(data, "site.siteMetadata.contact")
+
   return (
     <LayoutContext.Provider value={{ avatar }}>
       <ThemeProvider theme={theme}>
@@ -112,8 +123,8 @@ const Layout = ({ children }) => {
           `}
         >
           <Header>
-            <div>{logo}</div>
-            <div>{avatar}</div>
+            <Link to="/">{logo}</Link>
+            <Link to="/about">{avatar}</Link>
           </Header>
           <Body>
             <NavBar />
@@ -125,14 +136,9 @@ const Layout = ({ children }) => {
               {children}
             </main>
           </Body>
-          <Footer
-            css={css`
-              background: ${theme.colors.altBgColor};
-              grid-area: 3/1/4/2;
-            `}
-          >
-            <FaGithub size={60} />
-            <FaLinkedin size={60} />
+          <Footer css={css``}>
+            <span>Created with love by mdwyer</span>
+            <ContactLinks contacts={contacts} />
           </Footer>
         </div>
       </ThemeProvider>

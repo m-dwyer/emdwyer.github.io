@@ -3,46 +3,15 @@ import { css } from "@emotion/react"
 
 import { graphql } from "gatsby"
 import Layout from "../components/layout"
-import IndexSection from "../components/indexsection"
-import About from "../components/about"
-import Contact from "../components/contact"
 import BlogPreview from "../components/blogpreview"
 import _ from "lodash"
-import HeroBackground from "../../static/bg.svg"
-import SideSection from "../components/sidesection"
 
 const Index = ({ data }) => {
-  const contacts = _.get(data, "site.siteMetadata.contact")
   const posts = _.get(data, "posts.nodes")
 
   return (
     <Layout>
-      <IndexSection
-        css={css`
-          background-image: linear-gradient(
-              rgba(0, 0, 0, 0.5),
-              rgba(0, 0, 0, 0.5)
-            ),
-            url(${HeroBackground});
-          background-position: center;
-          background-size: cover;
-          background-repeat: no-repeat;
-        `}
-      ></IndexSection>
-      <IndexSection>
-        <About />
-      </IndexSection>
-      <IndexSection>
-        <Contact contacts={contacts} />
-      </IndexSection>
-      <IndexSection
-        css={css`
-          position: relative;
-        `}
-      >
-        <BlogPreview posts={posts} />
-        <SideSection to="/blog" />
-      </IndexSection>
+      <BlogPreview posts={posts} />
     </Layout>
   )
 }

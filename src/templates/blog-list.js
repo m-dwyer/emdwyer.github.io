@@ -7,7 +7,6 @@ import BlogNavigation from "../components/blognavigation"
 import BlogWall from "../components/blogwall"
 import _ from "lodash"
 import FluidContainer from "../components/fluidcontainer"
-import SideSection from "../components/sidesection"
 
 const Posts = ({ data, pageContext }) => {
   const posts = _.get(data, "posts.nodes")
@@ -24,7 +23,6 @@ const Posts = ({ data, pageContext }) => {
         </h1>
         <BlogNavigation pageContext={pageContext} />
         <BlogWall posts={posts} />
-        <SideSection to="/" left />
       </FluidContainer>
     </Layout>
   )
