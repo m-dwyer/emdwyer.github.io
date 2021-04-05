@@ -4,7 +4,14 @@ import { Link } from "gatsby"
 
 const NavItem = ({ children, ...props }) => {
   return (
-    <Link {...props}>
+    <Link
+      {...props}
+      css={css`
+        display: inline-block;
+        margin: 0;
+        padding: 2em 2em;
+      `}
+    >
       <div
         css={css`
           display: flex;

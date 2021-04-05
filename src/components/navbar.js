@@ -12,9 +12,14 @@ const NavBar = props => {
       css={css`
         background: ${theme.colors.altBgColor};
         box-shadow: 1px 2px 10px rgba(0, 0, 0, 0.4);
-        ul li {
-          padding: 1.5em 2.5em;
-          text-transform: uppercase;
+        padding: 0;
+
+        ul {
+          margin: 0;
+          li {
+            padding: 0;
+            text-transform: uppercase;
+          }
         }
       `}
     >
