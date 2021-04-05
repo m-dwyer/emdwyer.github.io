@@ -1,5 +1,4 @@
 import React from "react"
-import { css } from "@emotion/react"
 
 import { graphql } from "gatsby"
 import Layout from "../components/layout"
@@ -9,11 +8,7 @@ import _ from "lodash"
 const Index = ({ data }) => {
   const posts = _.get(data, "posts.nodes")
 
-  return (
-    <Layout>
-      <BlogPreview posts={posts} />
-    </Layout>
-  )
+  return <BlogPreview posts={posts} />
 }
 
 export default Index

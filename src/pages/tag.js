@@ -1,11 +1,13 @@
 import React from "react"
-import { css } from "@emotion/react"
+import { css, useTheme } from "@emotion/react"
 import { graphql, Link } from "gatsby"
 import Layout from "../components/layout"
 import FluidContainer from "../components/fluidcontainer"
 import _ from "lodash"
 
 const Tag = ({ data }) => {
+  const theme = useTheme()
+
   let posts = _.get(data, "posts.edges")
 
   let postsByTag = {}
@@ -26,63 +28,37 @@ const Tag = ({ data }) => {
   const LIMIT_PER_TAG = 5
 
   return (
-    <Layout>
-      <FluidContainer>
-        <h1
-          css={css`
-            margin-bottom: 1.5em;
-          `}
-        >
-          Posts by tag
-        </h1>
-        {Object.keys(postsByTag).map(tag => {
-          return (
-            <section
-              key={tag}
-              css={css`
-                margin-bottom: 5em;
-              `}
-            >
-              <h2>
-                <Link
-                  to={`/tag/${tag}`}
-                  css={css`
-                    text-decoration: none;
-                  `}
-                >
-                  {_.capitalize(tag)}
-                </Link>
-              </h2>
-              <ul
-                css={css`
-                  margin: 0;
-                  list-style: circle;
-                  padding-left: 20px;
-                `}
-              >
-                {postsByTag[tag].slice(0, LIMIT_PER_TAG).map(p => {
-                  return (
-                    <li key={p.fields.slug}>
-                      <Link
-                        to={p.fields.slug}
-                        css={css`
-                          text-decoration: none;
-                        `}
-                      >
-                        {p.frontmatter.title}
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
-            </section>
-          )
-        })}
-      </FluidContainer>
-    </Layout>
+    <FluidContainer>
+      <h1
+        css={css`
+          margin-bottom: 1.5em;
+        `}
+      >
+        Tags
+      </h1>
+      {Object.entries(postsByTag).map(post => {
+        return (
+          <Link
+            to={`/tag/${post[0]}`}
+            key={post[0]}
+            css={css`
+              text-decoration: none;
+              text-transform: lowercase;
+              border: 2px solid ${theme.colors.forecolour};
+              border-radius: 1em;
+              padding: 0.25em 1em;
+              margin: 0.25em 0.25em;
+            `}
+          >
+            {post[0]} ({post[1].length})
+          </Link>
+        )
+      })}
+    </FluidContainer>
   )
 }
 
+Tag.Layout = Layout
 export default Tag
 
 export const query = graphql`

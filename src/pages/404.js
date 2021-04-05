@@ -6,19 +6,17 @@ import FluidContainer from "../components/fluidcontainer"
 
 const NotFoundPage = () => {
   return (
-    <Layout>
-      <FluidContainer>
-        <h1>Whoops..</h1>
-        <p>
-          It looks like you tried to access a route that doesn&#39;t exist..
-          Ouch.
-        </p>
-        <p>
-          You should maybe consider <Link to="/">heading home</Link>
-        </p>
-      </FluidContainer>
-    </Layout>
+    <FluidContainer>
+      <h1>Whoops..</h1>
+      <p>
+        It looks like you tried to access a route that doesn&#39;t exist.. Ouch.
+      </p>
+      <p>
+        You should maybe consider <Link to="/">heading home</Link>
+      </p>
+    </FluidContainer>
   )
 }
 
+NotFoundPage.Layout = Layout
 export default NotFoundPage

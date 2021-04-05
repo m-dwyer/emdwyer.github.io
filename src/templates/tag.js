@@ -19,30 +19,35 @@ const Tag = ({ data, pageContext }) => {
 
 export default Tag
 
-export const query = graphql`query ($tag: String!) {
-  posts: allFile(
-    filter: {sourceInstanceName: {eq: "blog"}, internal: {mediaType: {eq: "text/markdown"}}, childMarkdownRemark: {frontmatter: {tags: {in: [$tag]}}}}
-    sort: {fields: childMarkdownRemark___frontmatter___date, order: DESC}
-  ) {
-    nodes {
-      childMarkdownRemark {
-        id
-        excerpt
-        frontmatter {
-          title
-          tags
-          date(formatString: "dddd, MMMM Do YYYY")
-          cover {
-            childImageSharp {
-              gatsbyImageData(width: 600, layout: CONSTRAINED)
+export const query = graphql`
+  query($tag: String!) {
+    posts: allFile(
+      filter: {
+        sourceInstanceName: { eq: "blog" }
+        internal: { mediaType: { eq: "text/markdown" } }
+        childMarkdownRemark: { frontmatter: { tags: { in: [$tag] } } }
+      }
+      sort: { fields: childMarkdownRemark___frontmatter___date, order: DESC }
+    ) {
+      nodes {
+        childMarkdownRemark {
+          id
+          excerpt
+          frontmatter {
+            title
+            tags
+            date(formatString: "dddd, MMMM Do YYYY")
+            cover {
+              childImageSharp {
+                gatsbyImageData(width: 600, layout: CONSTRAINED)
+              }
             }
           }
-        }
-        fields {
-          slug
+          fields {
+            slug
+          }
         }
       }
     }
   }
-}
 `
