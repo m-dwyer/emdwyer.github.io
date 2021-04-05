@@ -23,26 +23,25 @@ const BlogTemplate = ({ data, pageContext }) => {
   const next = generateNavigation(nextSlug, nextTitle)
 
   return (
-    <Layout>
-      <FluidContainer
-        css={css`
-          max-width: 100%;
-          padding: 2em 1.5em;
-          max-width: 40em;
-        `}
-      >
-        <BlogPost
-          title={title}
-          date={date}
-          content={content}
-          previous={previous}
-          next={next}
-        />
-      </FluidContainer>
-    </Layout>
+    <FluidContainer
+      css={css`
+        max-width: 100%;
+        padding: 2em 1.5em;
+        max-width: 40em;
+      `}
+    >
+      <BlogPost
+        title={title}
+        date={date}
+        content={content}
+        previous={previous}
+        next={next}
+      />
+    </FluidContainer>
   )
 }
 
+BlogTemplate.Layout = Layout
 export default BlogTemplate
 
 export const query = graphql`

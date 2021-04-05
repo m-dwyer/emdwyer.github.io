@@ -12,22 +12,21 @@ const Posts = ({ data, pageContext }) => {
   const posts = _.get(data, "posts.nodes")
 
   return (
-    <Layout>
-      <FluidContainer>
-        <h1
-          css={css`
-            margin-bottom: 1.5em;
-          `}
-        >
-          Blog
-        </h1>
-        <BlogNavigation pageContext={pageContext} />
-        <BlogWall posts={posts} />
-      </FluidContainer>
-    </Layout>
+    <FluidContainer>
+      <h1
+        css={css`
+          margin-bottom: 1.5em;
+        `}
+      >
+        Blog
+      </h1>
+      <BlogNavigation pageContext={pageContext} />
+      <BlogWall posts={posts} />
+    </FluidContainer>
   )
 }
 
+Posts.Layout = Layout
 export default Posts
 
 export const query = graphql`
