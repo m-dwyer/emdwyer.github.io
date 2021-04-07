@@ -23,14 +23,14 @@ const BlogWall = ({ posts }) => {
                 margin: 2.5em;
               `}
             >
-              <Link
-                to={p.fields.slug}
-                css={css`
-                  color: inherit;
-                  text-decoration: none;
-                `}
-              >
-                <header>
+              <header>
+                <Link
+                  to={p.fields.slug}
+                  css={css`
+                    color: inherit;
+                    text-decoration: none;
+                  `}
+                >
                   <GatsbyImage
                     image={p.frontmatter.cover.childImageSharp.gatsbyImageData}
                     alt={p.frontmatter.title}
@@ -47,48 +47,48 @@ const BlogWall = ({ posts }) => {
                   >
                     {p.frontmatter.title}
                   </h2>
-                  <small>
-                    <FaCalendar
+                </Link>
+                <small>
+                  <FaCalendar
+                    css={css`
+                      margin: 0 10px 0 0;
+                    `}
+                  />{" "}
+                  {p.frontmatter.date}
+                </small>
+                <div
+                  css={css`
+                    margin-top: 1em;
+                  `}
+                >
+                  {p.frontmatter.tags.map(t => (
+                    <Link
+                      key={t}
+                      to={`/tag/${t}`}
                       css={css`
-                        margin: 0 10px 0 0;
+                        :nth-child(n + 2) {
+                          padding-left: 1em;
+                        }
                       `}
-                    />{" "}
-                    {p.frontmatter.date}
-                  </small>
-                  <div
-                    css={css`
-                      margin-top: 1em;
-                    `}
-                  >
-                    {p.frontmatter.tags.map(t => (
-                      <Link
-                        key={t}
-                        to={`/tag/${t}`}
-                        css={css`
-                          :nth-child(n + 2) {
-                            padding-left: 1em;
-                          }
-                        `}
-                      >
-                        <FaTag />
-                        {t}
-                      </Link>
-                    ))}
-                  </div>
-                </header>
-                <section>
-                  <p
-                    css={css`
-                      margin-top: 0.75em;
-                      margin-bottom: 2.5em;
-                      text-align: justify;
-                    `}
-                    dangerouslySetInnerHTML={{
-                      __html: p.frontmatter.description || p.excerpt,
-                    }}
-                  />
-                </section>
-              </Link>
+                    >
+                      <FaTag />
+                      {t}
+                    </Link>
+                  ))}
+                </div>
+              </header>
+              <section>
+                <p
+                  css={css`
+                    margin-top: 0.75em;
+                    margin-bottom: 2.5em;
+                    text-align: justify;
+                  `}
+                  dangerouslySetInnerHTML={{
+                    __html: p.frontmatter.description || p.excerpt,
+                  }}
+                />
+              </section>
             </article>
           </React.Fragment>
         )
