@@ -80,10 +80,7 @@ const Layout = ({ children }) => {
       fontColor: "hsl(0, 0%, 90%)",
       bgColor: "hsl(0, 0%, 14%)",
       altBgColor: "hsl(0, 5%, 14%)",
-      altBgColor2: "hsl(0, 0%, 14%)",
-      fgColor: "hsl(0, 0%, 70%)",
-      secondaryBgColor: "hsl(275,59%,47%)",
-      highlightColor: "hsl(300,100%,78%)",
+      highlightColor: "hsl(300, 100%, 78%)",
     },
   }
 
