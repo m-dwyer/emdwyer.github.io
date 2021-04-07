@@ -34,25 +34,34 @@ const Tag = ({ data }) => {
       >
         Tags
       </h1>
-      {Object.entries(postsByTag).map(post => {
-        return (
-          <Link
-            to={`/tag/${post[0]}`}
-            key={post[0]}
-            css={css`
-              display: inline-block;
-              text-decoration: none;
-              text-transform: lowercase;
-              border: 2px solid ${theme.colors.forecolour};
-              border-radius: 1em;
-              padding: 0.25em 1em;
-              margin: 0.25em 0.25em;
-            `}
-          >
-            {post[0]} ({post[1].length})
-          </Link>
-        )
-      })}
+      <div
+        css={css`
+          margin: 0 auto;
+          display: flex;
+          justify-content: center;
+          flex-wrap: wrap;
+        `}
+      >
+        {Object.entries(postsByTag).map(post => {
+          return (
+            <Link
+              to={`/tag/${post[0]}`}
+              key={post[0]}
+              css={css`
+                display: inline-block;
+                text-decoration: none;
+                text-transform: lowercase;
+                border: 2px solid ${theme.colors.forecolour};
+                border-radius: 1em;
+                padding: 0.25em 1em;
+                margin: 0.25em 0.25em;
+              `}
+            >
+              {post[0]} ({post[1].length})
+            </Link>
+          )
+        })}
+      </div>
     </FluidContainer>
   )
 }
