@@ -18,6 +18,10 @@ const NavBar = props => {
           li {
             padding: 0;
             text-transform: uppercase;
+
+            span {
+              padding-left: 1em;
+            }
           }
         }
       `}
