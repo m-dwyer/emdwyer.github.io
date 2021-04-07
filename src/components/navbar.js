@@ -1,5 +1,5 @@
 import React from "react"
-import { css, useTheme } from "@emotion/react"
+import { css, useTheme, keyframes } from "@emotion/react"
 import { FaPencilAlt, FaTag } from "react-icons/fa"
 import NavItem from "./navitem"
 
@@ -12,6 +12,16 @@ const NavBar = props => {
         background: ${theme.colors.altBgColor};
         box-shadow: 1px 2px 10px rgba(0, 0, 0, 0.4);
         padding: 0;
+        transition: width 0.2s ease;
+        width: 5em;
+
+        :hover {
+          width: 10em;
+
+          span {
+            display: inline;
+          }
+        }
 
         ul {
           margin: 0;
@@ -19,8 +29,13 @@ const NavBar = props => {
             padding: 0;
             text-transform: uppercase;
 
+            :hover {
+              background: ${theme.colors.bgColor};
+            }
+
             span {
               padding-left: 1em;
+              display: none;
             }
           }
         }

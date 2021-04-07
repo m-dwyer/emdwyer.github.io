@@ -18,6 +18,7 @@ const NavItem = ({ children, ...props }) => {
           justify-content: space-between;
           align-items: center;
           width: 100%;
+          height: 2em;
           font-size: 1.25em;
         `}
       >
