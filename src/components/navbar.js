@@ -12,43 +12,53 @@ const NavBar = props => {
         background: ${theme.colors.altBgColor};
         box-shadow: 1px 2px 10px rgba(0, 0, 0, 0.4);
         padding: 0;
-        transition: width 0.2s ease;
-        width: 5em;
         z-index: 100;
 
-        :hover {
-          width: 10em;
-
-          span {
-            display: inline;
-          }
-        }
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
 
         ul {
           margin: 0;
+
+          display: flex;
+          justify-content: center;
+
           li {
             padding: 0;
             text-transform: uppercase;
 
-            :hover {
-              background: ${theme.colors.bgColor};
+            span {
+              display: none;
             }
 
-            span {
-              padding-left: 1em;
-              display: none;
+            :hover {
+              background: ${theme.colors.bgColor};
             }
           }
         }
 
-        @media only screen and (max-width: 700px) {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          width: 100%;
+        @media only screen and (min-width: 700px) {
+          transition: width 0.2s ease;
+          position: initial;
+          width: 5em;
 
           ul {
             display: flex;
+            flex-direction: column;
+          }
+
+          span {
+            padding-left: 0.75em;
+          }
+
+          :hover {
+            width: 10em;
+
+            span {
+              display: inline;
+            }
           }
         }
       `}

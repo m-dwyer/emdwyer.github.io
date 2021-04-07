@@ -9,7 +9,11 @@ const NavItem = ({ children, ...props }) => {
       css={css`
         display: inline-block;
         margin: 0;
-        padding: 2em 2em;
+        padding: 1.25em 1.25em;
+
+        @media only screen and (min-width: 700px) {
+          padding: 2em 2em;
+        }
       `}
     >
       <div

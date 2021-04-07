@@ -40,6 +40,7 @@ const Tag = ({ data }) => {
             to={`/tag/${post[0]}`}
             key={post[0]}
             css={css`
+              display: inline-block;
               text-decoration: none;
               text-transform: lowercase;
               border: 2px solid ${theme.colors.forecolour};
