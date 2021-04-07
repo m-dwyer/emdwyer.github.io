@@ -14,6 +14,7 @@ const NavBar = props => {
         padding: 0;
         transition: width 0.2s ease;
         width: 5em;
+        z-index: 100;
 
         :hover {
           width: 10em;
@@ -37,6 +38,17 @@ const NavBar = props => {
               padding-left: 1em;
               display: none;
             }
+          }
+        }
+
+        @media only screen and (max-width: 700px) {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+
+          ul {
+            display: flex;
           }
         }
       `}

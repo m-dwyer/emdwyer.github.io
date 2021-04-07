@@ -8,6 +8,10 @@ const Body = ({ children }) => {
         display: grid;
         grid-template-columns: auto 1fr;
         overflow: hidden;
+
+        @media only screen and (max-width: 700px) {
+          grid-template-columns: 1fr;
+        }
       `}
     >
       {children}

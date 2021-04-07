@@ -17,6 +17,10 @@ const Footer = ({ children, ...props }) => {
         * + * {
           margin-left: 1.25em;
         }
+
+        @media only screen and (max-width: 700px) {
+          display: none;
+        }
       `}
       {...props}
     >
