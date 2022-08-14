@@ -4,7 +4,7 @@ category: development
 tags: ["development"]
 date: 2020-07-13
 cover: mitchell-luo-FWoq_ldWlNQ-unsplash.jpg
-author: mdwyer
+author: emdwyer
 ---
 
 ![coding](./mitchell-luo-FWoq_ldWlNQ-unsplash.jpg)

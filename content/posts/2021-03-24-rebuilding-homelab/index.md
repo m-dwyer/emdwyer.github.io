@@ -3,7 +3,7 @@ title: Rebuilding Homelab - Part 1
 tags: ["homelab", "infosec"]
 date: 2021-03-24
 cover: mini_pc.jpg
-author: mdwyer
+author: emdwyer
 ---
 
 ![Cable management](./homelab_just_dont.jpg "Cable management - please don't do this. Ever.")

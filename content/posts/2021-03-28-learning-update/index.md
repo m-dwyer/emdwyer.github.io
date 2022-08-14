@@ -3,7 +3,7 @@ title: My Current Dev Setup and Activity
 tags: ["development", "study", "projects"]
 date: 2021-03-28
 cover: 20210202_162449.jpg
-author: mdwyer
+author: emdwyer
 ---
 
 ![My current setup](./20210202_162449.jpg "My current setup")

@@ -4,7 +4,7 @@ category: development
 tags: ["development"]
 date: 2020-03-30
 cover: danielle-macinnes-IuLgi9PWETU-unsplash.jpg
-author: mdwyer
+author: emdwyer
 ---
 Well, here it is.  I thought I should attempt to start *some* platform to rant and share things on, tech related and whatnot.
 So - here's my first blog, which I'll use to share anything related to Linux, development, maybe some fitness and other miscellaneous subjects.
