@@ -1,10 +1,10 @@
-baseURL = "https://m-dwyer.github.io"
+baseURL = "https://emdwyer.github.io"
 
 theme = "LoveIt"
 # themes directory
 themesDir = "themes/"
 
-title = "mdwyer"
+title = "emdwyer"
 
 defaultContentLanguage = "en"
 languageCode = "en"
@@ -15,7 +15,7 @@ paginate = 12
 
 # google analytics code [UA-XXXXXXXX-X]
 googleAnalytics = ""
-copyright = "mdwyer 2022"
+copyright = "emdwyer 2022"
 
 # whether to use robots.txt
 enableRobotsTXT = true
@@ -28,8 +28,8 @@ staticDir = ['static']
 
 # Author config
 [author]
-  name = "mdwyer"
-  email = "mdwyer@mdwyer.io"
+  name = "emdwyer"
+  email = "hello@emdwyer.dev"
   link = ""
 
 # Menu config
@@ -66,16 +66,16 @@ staticDir = ['static']
   # site default theme ["auto", "light", "dark"]
   defaultTheme = "dark"
   # public git repo url only then enableGitInfo is true
-  gitRepo = "https://github.com/m-dwyer/m-dwyer.github.io"
+  gitRepo = "https://github.com/m-dwyer/emdwyer.github.io"
   # which hash function used for SRI, when empty, no SRI is used
   # ["sha256", "sha384", "sha512", "md5"]
   fingerprint = ""
   # date format
   dateFormat = "2006-01-02"
   # website title for Open Graph and Twitter Cards
-  title = "mdwyer"
+  title = "emdwyer"
   # website description for RSS, SEO, Open Graph and Twitter Cards
-  description = "mdwyer's personal site - development, infosec, security"
+  description = "emdwyer's personal site - development, infosec, security"
   # website images for Open Graph and Twitter Cards
   images = ["/logo.png"]
 
@@ -90,7 +90,7 @@ staticDir = ['static']
       # URL of the LOGO
       logo = ""
       # title name
-      name = "mdwyer"
+      name = "emdwyer"
       # you can add extra information before the name (HTML format is supported), such as icons
       pre = "<i class='far fa-solid fa-terminal' aria-hidden='true'></i>"
       # you can add extra information after the name (HTML format is supported), such as icons
@@ -137,7 +137,7 @@ staticDir = ['static']
   # App icon config
   [params.app]
     # optional site title override for the app when added to an iOS home screen or Android launcher
-    title = "mdwyer"
+    title = "emdwyer"
     # whether to omit favicon resource links
     noFavicon = false
     # modern SVG favicon to use in place of older style .png and .ico files
@@ -183,7 +183,7 @@ staticDir = ['static']
       # URL of avatar shown in home page
       avatarURL = "/avatar.jpg"
       # title shown in home page (HTML format is supported)
-      title = "mdwyer"
+      title = "emdwyer"
       # subtitle shown in home page (HTML format is supported)
       subtitle = "A personal site focused on various tech"
       # whether to use typeit animation for subtitle
@@ -439,7 +439,7 @@ staticDir = ['static']
       images = []
       # Publisher info
       [params.page.seo.publisher]
-        name = "mdwyer"
+        name = "emdwyer"
         logoUrl = "/avatar.jpg"
 
   # TypeIt config

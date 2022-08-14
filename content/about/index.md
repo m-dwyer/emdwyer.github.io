@@ -1,8 +1,8 @@
 ---
-title: "About mdwyer"
+title: "About emdwyer"
 date: 2022-05-23T17:04:50+10:00
 draft: false
-description: "About mdwyer"
+description: "About emdwyer"
 ---
 
 # Interests

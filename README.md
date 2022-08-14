@@ -1,4 +1,4 @@
-# mdwyer.io
+# emdwyer.dev
 
 My own personal site created using Hugo.
 
