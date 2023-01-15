@@ -141,7 +141,7 @@ The page looks fairly static, apart from the *Search for users* button which doe
 
 
 
-If i inject into this with `' || 1==1//` ,  I get to users in the download link that shows - http://shoppy.htb/exports/export-search.json:
+If i inject into this with `' || 1==1//` ,  I get two users in the download link that shows - http://shoppy.htb/exports/export-search.json:
 
 ```json
 [
