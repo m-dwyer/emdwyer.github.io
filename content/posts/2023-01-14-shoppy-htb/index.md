@@ -104,7 +104,7 @@ I did notice the timeouts only occur when injecting into user, not password -- s
 
 But the above was a modified intercepted request from Firefox with a legitimate user agent string along with other headers -- so perhaps not a WAF and something else?..
 
-After a little while of unsuccessful SQL Injection both with SQLMap and manuall, I back tracked a little to look at other injection techniques and started reading [NoSQL injection - HackTricks](https://book.hacktricks.xyz/pentesting-web/nosql-injection)
+After a little while of unsuccessful SQL Injection both with SQLMap and y, I back tracked a little to look at other injection techniques and started reading [NoSQL injection - HackTricks](https://book.hacktricks.xyz/pentesting-web/nosql-injection)
 
 I then tried the following to see if I was dealing with some document database that could be injected into:
 
