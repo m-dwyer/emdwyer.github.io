@@ -591,6 +591,7 @@ staticDir = ['static']
 # Multilingual
 [languages]
   [languages.en]
+    timeZone = 'Australia/Melbourne'
     weight = 1
     languageCode = "en"
     languageName = "English"
