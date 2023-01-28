@@ -1,6 +1,6 @@
 ---
 title: Shoppy HTB Walkthrough
-tags: ["pentesting", "infosec", "penetration testing", "security", "docker", "reversing"]
+tags: ["pentesting", "security", "penetration testing", "ctf", "docker", "reversing"]
 date: 2023-01-14
 author: emdwyer
 ---

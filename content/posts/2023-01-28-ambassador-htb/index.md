@@ -1,6 +1,6 @@
 ---
 title: Ambassador HTB Walkthrough
-tags: ["pentesting", "infosec", "penetration testing", "ctf", "consul", "grafana"]
+tags: ["pentesting", "security", "penetration testing", "ctf", "consul", "grafana"]
 date: 2023-01-28
 author: emdwyer
 ---
