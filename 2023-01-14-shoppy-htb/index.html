@@ -137,7 +137,7 @@ So, here is the first of hopefully many walkthroughs I will post up as time perm
 </span></span><span class=line><span class=cl>Connection: close
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>username=admin&#39; || 1==1%00&amp;password=foobar
-</span></span></code></pre></td></tr></table></div></div><p>The initial example of <code>username=admin' || 1==1//&password=foobar</code> gave a 504, but the above worked and gave the following response!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span></span></code></pre></td></tr></table></div></div><p>The initial example of <code>username=admin' || 1==1//&amp;password=foobar</code> gave a 504, but the above worked and gave the following response!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
 </span><span class=lnt> 2
 </span><span class=lnt> 3
 </span><span class=lnt> 4
