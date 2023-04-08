@@ -1,6 +1,6 @@
 ---
 title: BroScience HTB Walkthrough
-tags: ["htb", "security", "penetration testing", "ctf", "php", "deserialization" "injection"]
+tags: ["htb", "security", "penetration testing", "ctf", "php", "deserialization", "injection"]
 date: 2023-04-08
 author: emdwyer
 ---
