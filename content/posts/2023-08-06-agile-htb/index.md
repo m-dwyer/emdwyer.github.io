@@ -375,6 +375,8 @@ We see in the header tag, the following javascript:
     </script>
 ```
 
+## Foothold
+
 So we have *some* secret (JWT signing key?).  Oh, let's try LFI with a basic path traversal by modifying our CSV download GET HTTP request:
 
 ```
