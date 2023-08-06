@@ -1689,9 +1689,9 @@
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
-</span></span><span class=line><span class=cl><span class=err>    </span><span class=nt>&#34;action&#34;</span><span class=p>:</span><span class=s2>&#34;b64encode&#34;</span><span class=p>,</span>
-</span></span><span class=line><span class=cl><span class=err>    </span><span class=nt>&#34;data&#34;</span><span class=p>:</span><span class=s2>&#34;hello world!&#34;</span><span class=p>,</span>
-</span></span><span class=line><span class=cl><span class=err>    </span><span class=nt>&#34;uri_path&#34;</span><span class=p>:</span><span class=s2>&#34;/v3/tools/string&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;action&#34;</span><span class=p>:</span><span class=s2>&#34;b64encode&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;data&#34;</span><span class=p>:</span><span class=s2>&#34;hello world!&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;uri_path&#34;</span><span class=p>:</span><span class=s2>&#34;/v3/tools/string&#34;</span>
 </span></span><span class=line><span class=cl><span class=p>}</span>
 </span></span></code></pre></td></tr></table></div></div><p><code>handler.php</code> simply checks for the existence of the <code>action</code> and <code>uri_path</code> keys, before calling <code>$response = make_api_call($action, $data, $uri_path, $is_file);</code>. Our <code>make_api_call()</code> function is shown below:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
 </span><span class=lnt> 2
